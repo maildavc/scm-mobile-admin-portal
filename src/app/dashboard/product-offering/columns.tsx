@@ -4,7 +4,7 @@ import { Column } from "@/components/Dashboard/Table";
 import { StatusBadge } from "@/components/Dashboard/StatusBadge";
 import { TbFilterEdit } from "react-icons/tb";
 import { HiMenu } from "react-icons/hi";
-import { FiEye, FiEdit3, FiCheck, FiTrash2 } from "react-icons/fi";
+import { FiEye, FiEdit3, FiCheck, FiTrash2, FiX } from "react-icons/fi";
 import { useState, useRef, useEffect } from "react";
 
 type Product = {
@@ -27,10 +27,12 @@ const OptionsButton = ({
   product,
   onEditProduct,
   onViewProduct,
+  isApprover,
 }: {
   product: Product;
   onEditProduct?: (product: Product) => void;
   onViewProduct?: (product: Product) => void;
+  isApprover?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -51,12 +53,21 @@ const OptionsButton = ({
     };
   }, [isOpen]);
 
-  const menuItems = [
+  // Different menu items based on role
+  const initiatorMenuItems = [
     { icon: FiEye, label: "View Product" },
     { icon: FiEdit3, label: "Edit Product" },
     { icon: FiCheck, label: "Approve Request" },
     { icon: FiTrash2, label: "Deactivate Product" },
   ];
+
+  const approverMenuItems = [
+    { icon: FiEye, label: "View Request" },
+    { icon: FiCheck, label: "Approve Request" },
+    { icon: FiX, label: "Reject Request" },
+  ];
+
+  const menuItems = isApprover ? approverMenuItems : initiatorMenuItems;
 
   return (
     <>
@@ -82,7 +93,12 @@ const OptionsButton = ({
                 onClick={() => {
                   if (item.label === "Edit Product" && onEditProduct) {
                     onEditProduct(product);
-                  } else if (item.label === "View Product" && onViewProduct) {
+                  } else if (
+                    (item.label === "View Product" ||
+                      item.label === "View Request" ||
+                      item.label === "Approve Request") &&
+                    onViewProduct
+                  ) {
                     onViewProduct(product);
                   }
                   setIsOpen(false);
@@ -232,6 +248,7 @@ export const createProductColumns = (
         product={product}
         onEditProduct={onEditProduct}
         onViewProduct={onViewProduct}
+        isApprover={isApprover}
       />
     ),
   },

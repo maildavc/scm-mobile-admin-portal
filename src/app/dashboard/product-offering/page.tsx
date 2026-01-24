@@ -7,6 +7,7 @@ import StatsCard from "@/components/Dashboard/ProductOffering/StatsCard";
 import Table from "@/components/Dashboard/Table";
 import CreateProductForm from "@/components/Dashboard/ProductOffering/CreateProductForm";
 import ViewProduct from "@/components/Dashboard/ProductOffering/ViewProduct";
+import ViewProductRequest from "@/components/Dashboard/ProductOffering/ViewProductRequest";
 import {
   PRODUCTS,
   PRODUCT_OFFERING_SIDEBAR_ITEMS,
@@ -119,15 +120,31 @@ export default function ProductOffering() {
                 }}
               />
             ) : viewProduct ? (
-              <ViewProduct
-                product={viewProduct}
-                onEdit={() => handleEditProduct(viewProduct)}
-                onDeactivate={() => {
-                  // Handle deactivation
-                  setCurrentView("Overview");
-                  setViewProduct(null);
-                }}
-              />
+              isApprover ? (
+                <ViewProductRequest
+                  product={viewProduct}
+                  onApprove={() => {
+                    // Handle approval
+                    setCurrentView("Overview");
+                    setViewProduct(null);
+                  }}
+                  onReject={() => {
+                    // Handle rejection
+                    setCurrentView("Overview");
+                    setViewProduct(null);
+                  }}
+                />
+              ) : (
+                <ViewProduct
+                  product={viewProduct}
+                  onEdit={() => handleEditProduct(viewProduct)}
+                  onDeactivate={() => {
+                    // Handle deactivation
+                    setCurrentView("Overview");
+                    setViewProduct(null);
+                  }}
+                />
+              )
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
                 {currentView} view coming soon
