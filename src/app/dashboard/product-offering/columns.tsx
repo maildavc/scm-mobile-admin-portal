@@ -23,12 +23,12 @@ const FilterableHeader = ({ children }: { children: string }) => (
   </div>
 );
 
-const OptionsButton = ({ 
-  product, 
+const OptionsButton = ({
+  product,
   onEditProduct,
-  onViewProduct 
-}: { 
-  product: Product; 
+  onViewProduct,
+}: {
+  product: Product;
   onEditProduct?: (product: Product) => void;
   onViewProduct?: (product: Product) => void;
 }) => {
@@ -61,19 +61,19 @@ const OptionsButton = ({
   return (
     <>
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40"
           onClick={() => setIsOpen(false)}
         />
       )}
       <div className="relative" ref={menuRef}>
-        <button 
+        <button
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center gap-2 px-3 py-1.5 bg-[#F4F4F5] rounded-xl text-xs font-bold text-[#B2171E] hover:bg-red-600 hover:text-white transition-colors"
         >
           <HiMenu color="black" /> Options
         </button>
-        
+
         {isOpen && (
           <div className="absolute right-0 top-[calc(100%+8px)] bg-white rounded-2xl shadow-2xl z-50 py-2 min-w-50 border border-gray-100">
             {menuItems.map((item, index) => (
@@ -90,7 +90,9 @@ const OptionsButton = ({
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
               >
                 <item.icon size={18} className="text-[#2F3140]" />
-                <span className="text-sm text-[#2F3140] font-medium">{item.label}</span>
+                <span className="text-sm text-[#2F3140] font-medium">
+                  {item.label}
+                </span>
               </button>
             ))}
           </div>
@@ -124,9 +126,7 @@ export const productColumns: Column<Product>[] = [
     header: <FilterableHeader>PRODUCT TYPE</FilterableHeader>,
     className: "w-[15%]",
     render: (product) => (
-      <span className="text-sm text-[#2F3140] font-medium">
-        {product.type}
-      </span>
+      <span className="text-sm text-[#2F3140] font-medium">{product.type}</span>
     ),
   },
   {
@@ -163,9 +163,63 @@ export const productColumns: Column<Product>[] = [
 
 export const createProductColumns = (
   onEditProduct?: (product: Product) => void,
-  onViewProduct?: (product: Product) => void
+  onViewProduct?: (product: Product) => void,
+  isApprover?: boolean,
 ): Column<Product>[] => [
-  ...productColumns.slice(0, 5),
+  {
+    header: (
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          className="rounded border-gray-300"
+          aria-label="Select all products"
+        />
+        <span className="uppercase text-[#2F3140]">PRODUCT (5)</span>
+      </div>
+    ),
+    className: "w-[20%]",
+    render: (product) => (
+      <div>
+        <p className="font-bold text-[#2F3140] text-sm">{product.name}</p>
+        <p className="text-[#707781] text-xs">{product.id}</p>
+      </div>
+    ),
+  },
+  {
+    header: <FilterableHeader>PRODUCT TYPE</FilterableHeader>,
+    className: "w-[15%]",
+    render: (product) => (
+      <span className="text-sm text-[#2F3140] font-medium">{product.type}</span>
+    ),
+  },
+  {
+    header: <FilterableHeader>PORTFOLIO SIZE</FilterableHeader>,
+    className: "w-[15%]",
+    render: (product) => (
+      <span className="text-sm text-[#2F3140] font-bold">{product.size}</span>
+    ),
+  },
+  {
+    header: <FilterableHeader>STATUS</FilterableHeader>,
+    className: "w-[15%]",
+    render: (product) => (
+      <StatusBadge
+        status={product.status}
+        displayLabel={
+          isApprover && product.status === "Active" ? "Approved" : undefined
+        }
+      />
+    ),
+  },
+  {
+    header: <FilterableHeader>LAST UPDATED ON</FilterableHeader>,
+    className: "w-[15%]",
+    render: (product) => (
+      <span className="text-sm text-[#2F3140] font-medium">
+        {product.updated}
+      </span>
+    ),
+  },
   {
     header: (
       <div className="flex items-center gap-1">
@@ -173,6 +227,12 @@ export const createProductColumns = (
       </div>
     ),
     className: "w-[10%]",
-    render: (product) => <OptionsButton product={product} onEditProduct={onEditProduct} onViewProduct={onViewProduct} />,
+    render: (product) => (
+      <OptionsButton
+        product={product}
+        onEditProduct={onEditProduct}
+        onViewProduct={onViewProduct}
+      />
+    ),
   },
 ];

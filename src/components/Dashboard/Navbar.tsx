@@ -6,6 +6,7 @@ import { FiSearch } from "react-icons/fi";
 import { BiUser } from "react-icons/bi";
 import SearchResults from "./SearchResults";
 import { SEARCH_ITEMS } from "@/constants/search";
+import RoleToggle from "./RoleToggle";
 
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -19,7 +20,7 @@ export default function Navbar() {
 
   return (
     <div className="w-full bg-[#1A1A1A] text-white px-4 py-3 md:px-8 md:py-4">
-      <div className="flex flex-wrap md:flex-nowrap items-center gap-3 md:gap-6">
+      <div className="flex flex-nowrap items-center gap-3 md:gap-6">
         {/* Logo */}
         <div className="flex items-center shrink-0 order-1">
           <Image
@@ -31,8 +32,11 @@ export default function Navbar() {
           />
         </div>
 
-        {/* Mobile Right Side - Search Icon + User Icon */}
+        {/* Mobile Right Side - Role Toggle + Search Icon + User Icon */}
         <div className="flex md:hidden items-center gap-3 ml-auto order-2">
+          {/* Role Toggle - Mobile */}
+          <RoleToggle />
+
           {/* Search Icon - Mobile only */}
           <div
             onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -89,8 +93,13 @@ export default function Navbar() {
           )}
         </div>
 
+        {/* Role Toggle - Desktop */}
+        <div className="hidden md:flex items-center shrink-0 order-3">
+          <RoleToggle />
+        </div>
+
         {/* User Profile - Desktop shows full info */}
-        <div className="hidden md:flex items-center gap-3 shrink-0 order-3">
+        <div className="hidden md:flex items-center gap-3 shrink-0 order-4">
           <div className="text-right">
             <p className="text-sm font-semibold text-white">Ehizojie Ihayere</p>
             <p className="text-xs text-gray-400">Initiator Permission Name</p>

@@ -15,6 +15,7 @@ import {
   getBreadcrumbs,
 } from "@/constants/productOffering/productOffering";
 import { createProductColumns } from "./columns";
+import { useRole } from "@/context/RoleContext";
 
 type Product = {
   id: string;
@@ -26,13 +27,21 @@ type Product = {
 };
 
 export default function ProductOffering() {
+  const { isApprover } = useRole();
   const [currentView, setCurrentView] = useState("Overview");
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [viewProduct, setViewProduct] = useState<Product | null>(null);
 
-  const sidebarItems = PRODUCT_OFFERING_SIDEBAR_ITEMS.map((item) => ({
+  // Filter sidebar items based on role - Approver only sees Overview
+  const filteredSidebarItems = isApprover
+    ? PRODUCT_OFFERING_SIDEBAR_ITEMS.filter((item) => item.label === "Overview")
+    : PRODUCT_OFFERING_SIDEBAR_ITEMS;
+
+  const sidebarItems = filteredSidebarItems.map((item) => ({
     ...item,
-    isActive: viewProduct ? item.label === "Overview" : item.label === currentView,
+    isActive: viewProduct
+      ? item.label === "Overview"
+      : item.label === currentView,
   }));
 
   const handleSidebarClick = (label: string) => {
@@ -53,7 +62,11 @@ export default function ProductOffering() {
     setCurrentView(product.name);
   };
 
-  const columns = createProductColumns(handleEditProduct, handleViewProduct);
+  const columns = createProductColumns(
+    handleEditProduct,
+    handleViewProduct,
+    isApprover,
+  );
 
   return (
     <SidebarProvider>
@@ -61,7 +74,9 @@ export default function ProductOffering() {
         <div className="w-full border-b border-gray-50 md:border-0 md:px-0">
           <PageHeader
             title={PAGE_CONFIG.title}
-            breadcrumbs={getBreadcrumbs(viewProduct ? viewProduct.name : currentView)}
+            breadcrumbs={getBreadcrumbs(
+              viewProduct ? viewProduct.name : currentView,
+            )}
           />
         </div>
         <div className="flex-1 flex h-full">
@@ -92,7 +107,7 @@ export default function ProductOffering() {
                 />
               </>
             ) : currentView === "Create Product" ? (
-              <CreateProductForm 
+              <CreateProductForm
                 initialData={editProduct}
                 onSuccess={() => {
                   setCurrentView("Overview");
@@ -104,7 +119,7 @@ export default function ProductOffering() {
                 }}
               />
             ) : viewProduct ? (
-              <ViewProduct 
+              <ViewProduct
                 product={viewProduct}
                 onEdit={() => handleEditProduct(viewProduct)}
                 onDeactivate={() => {
