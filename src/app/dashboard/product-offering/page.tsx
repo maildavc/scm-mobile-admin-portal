@@ -69,16 +69,26 @@ export default function ProductOffering() {
     isApprover,
   );
 
+  const resetView = () => {
+    setCurrentView("Overview");
+    setEditProduct(null);
+    setViewProduct(null);
+  };
+
+  const breadcrumbs = getBreadcrumbs(
+    viewProduct ? viewProduct.name : currentView,
+  ).map((crumb) => {
+    if (crumb.label === "Product Offering") {
+      return { ...crumb, onClick: resetView, href: undefined };
+    }
+    return crumb;
+  });
+
   return (
     <SidebarProvider>
       <div className="flex flex-col h-full">
         <div className="w-full border-b border-gray-50 md:border-0 md:px-0">
-          <PageHeader
-            title={PAGE_CONFIG.title}
-            breadcrumbs={getBreadcrumbs(
-              viewProduct ? viewProduct.name : currentView,
-            )}
-          />
+          <PageHeader title={PAGE_CONFIG.title} breadcrumbs={breadcrumbs} />
         </div>
         <div className="flex-1 flex h-full">
           <Sidebar menuItems={sidebarItems} onItemClick={handleSidebarClick} />

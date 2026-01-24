@@ -32,7 +32,9 @@ export default function CustomerManagement() {
 
   const sidebarItems = CUSTOMER_MANAGEMENT_SIDEBAR_ITEMS.map((item) => ({
     ...item,
-    isActive: viewCustomer ? item.label === "Overview" : item.label === currentView,
+    isActive: viewCustomer
+      ? item.label === "Overview"
+      : item.label === currentView,
   }));
 
   const handleSidebarClick = (label: string) => {
@@ -55,14 +57,26 @@ export default function CustomerManagement() {
 
   const columns = createCustomerColumns(handleEditCustomer, handleViewCustomer);
 
+  const resetView = () => {
+    setCurrentView("Overview");
+    setEditCustomer(null);
+    setViewCustomer(null);
+  };
+
+  const breadcrumbs = getBreadcrumbs(
+    viewCustomer ? viewCustomer.name : currentView,
+  ).map((crumb) => {
+    if (crumb.label === "Customer Management") {
+      return { ...crumb, onClick: resetView, href: undefined };
+    }
+    return crumb;
+  });
+
   return (
     <SidebarProvider>
       <div className="flex flex-col h-full">
         <div className="w-full border-b border-gray-50 md:border-0 md:px-0">
-          <PageHeader
-            title={PAGE_CONFIG.title}
-            breadcrumbs={getBreadcrumbs(viewCustomer ? viewCustomer.name : currentView)}
-          />
+          <PageHeader title={PAGE_CONFIG.title} breadcrumbs={breadcrumbs} />
         </div>
         <div className="flex-1 flex h-full">
           <Sidebar menuItems={sidebarItems} onItemClick={handleSidebarClick} />
@@ -87,7 +101,7 @@ export default function CustomerManagement() {
                 />
               </>
             ) : currentView === "Create Customer" ? (
-              <CreateCustomerForm 
+              <CreateCustomerForm
                 initialData={editCustomer}
                 onSuccess={() => {
                   setCurrentView("Overview");
@@ -99,7 +113,7 @@ export default function CustomerManagement() {
                 }}
               />
             ) : viewCustomer ? (
-              <ViewCustomer 
+              <ViewCustomer
                 customer={viewCustomer}
                 onEdit={() => handleEditCustomer(viewCustomer)}
                 onDeactivate={() => {

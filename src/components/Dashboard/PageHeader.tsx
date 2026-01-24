@@ -1,13 +1,14 @@
-import React from 'react';
-import Link from 'next/link';
-import { FiChevronRight } from 'react-icons/fi';
-import { SidebarToggle } from './Sidebar';
+import React from "react";
+import Link from "next/link";
+import { FiChevronRight } from "react-icons/fi";
+import { SidebarToggle } from "./Sidebar";
 
 interface PageHeaderProps {
   title: string;
   breadcrumbs: {
     label: string;
     href?: string;
+    onClick?: () => void;
   }[];
 }
 
@@ -22,8 +23,19 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, breadcrumbs }) => {
         {breadcrumbs.map((crumb, index) => (
           <React.Fragment key={index}>
             {index > 0 && <FiChevronRight size={12} />}
-            {crumb.href ? (
-              <Link href={crumb.href} className="font-normal">
+            {crumb.onClick ? (
+              <button
+                onClick={crumb.onClick}
+                className="font-normal hover:text-[#2F3140] transition-colors"
+                type="button"
+              >
+                {crumb.label}
+              </button>
+            ) : crumb.href ? (
+              <Link
+                href={crumb.href}
+                className="font-normal hover:text-[#2F3140] transition-colors"
+              >
                 {crumb.label}
               </Link>
             ) : (
