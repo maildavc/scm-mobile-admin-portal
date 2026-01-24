@@ -57,7 +57,6 @@ const OptionsButton = ({
   const initiatorMenuItems = [
     { icon: FiEye, label: "View Product" },
     { icon: FiEdit3, label: "Edit Product" },
-    { icon: FiCheck, label: "Approve Request" },
     { icon: FiTrash2, label: "Deactivate Product" },
   ];
 
@@ -96,7 +95,8 @@ const OptionsButton = ({
                   } else if (
                     (item.label === "View Product" ||
                       item.label === "View Request" ||
-                      item.label === "Approve Request") &&
+                      item.label === "Approve Request" ||
+                      item.label === "Reject Request") &&
                     onViewProduct
                   ) {
                     onViewProduct(product);
