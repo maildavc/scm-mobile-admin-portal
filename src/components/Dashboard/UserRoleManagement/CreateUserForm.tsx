@@ -1,0 +1,213 @@
+"use client";
+
+import React, { useState, useMemo } from "react";
+import Input from "@/components/Input";
+import Button from "@/components/Button";
+import Image from "next/image";
+
+interface CreateUserFormProps {
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+const FORM_SECTIONS = [
+  {
+    title: "Basic Information",
+    description: "Tell us about user",
+    fields: [
+      {
+        label: "First Name",
+        placeholder: "Enter name",
+        type: "text",
+        required: true,
+      },
+      {
+        label: "Middle Name",
+        placeholder: "Enter name",
+        type: "text",
+        required: false,
+      },
+      {
+        label: "Last Name",
+        placeholder: "Enter name",
+        type: "text",
+        required: true,
+      },
+      {
+        label: "Email Address",
+        placeholder: "Enter email address",
+        type: "email",
+        required: true,
+      },
+      {
+        label: "Phone Number",
+        placeholder: "+234 800 000 0000",
+        type: "text",
+        required: true,
+      },
+      {
+        label: "Department",
+        placeholder: "Select Option",
+        type: "select",
+        required: true,
+        options: [
+          { label: "Technology Team", value: "Technology Team" },
+          { label: "Human Resources", value: "Human Resources" },
+          { label: "Finance", value: "Finance" },
+        ],
+      },
+    ],
+  },
+  {
+    title: "Assign Role",
+    description: "Assign a role to this user",
+    fields: [
+      {
+        label: "Assign Role",
+        placeholder: "Select Option",
+        type: "select",
+        required: true,
+        options: [
+          { label: "Approver", value: "Approver" },
+          { label: "User", value: "User" },
+          { label: "Viewer", value: "Viewer" },
+          { label: "Auditor", value: "Auditor" },
+        ],
+      },
+      {
+        label: "Expiry Status",
+        placeholder: "Select Option",
+        type: "select",
+        required: true,
+        options: [
+          { label: "Permanent", value: "Permanent" },
+          { label: "Temporary", value: "Temporary" },
+        ],
+      },
+      {
+        label: "Expires",
+        placeholder: "DD/MM/YYYY",
+        type: "date",
+        required: true,
+      },
+    ],
+  },
+];
+
+const CreateUserForm: React.FC<CreateUserFormProps> = ({
+  onSuccess,
+  onCancel,
+}) => {
+  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const requiredFields = useMemo(
+    () =>
+      FORM_SECTIONS.flatMap((section) =>
+        section.fields
+          .filter((field) => field.required)
+          .map((field) => field.label),
+      ),
+    [],
+  );
+
+  const isFormValid = useMemo(() => {
+    return requiredFields.every((fieldLabel) => {
+      const value = formData[fieldLabel];
+      return value !== undefined && value !== "" && value !== null;
+    });
+  }, [formData, requiredFields]);
+
+  const handleInputChange = (label: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [label]: value }));
+  };
+
+  const handleCreateUser = () => {
+    if (isFormValid) {
+      setShowSuccess(true);
+    }
+  };
+
+  const handleCreateAnother = () => {
+    setShowSuccess(false);
+    setFormData({});
+  };
+
+  const handleDone = () => {
+    setShowSuccess(false);
+    setFormData({});
+    onSuccess?.();
+  };
+
+  if (showSuccess) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="mb-6">
+          <Image src="/success.svg" alt="Success" width={80} height={80} />
+        </div>
+        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
+          User Creation Successful
+        </h2>
+        <p className="text-sm text-[#707781] mb-8 text-center">
+          User creation was successfully sent for approver confirmation.
+        </p>
+        <div className="flex gap-4">
+          <div className=" w-56">
+            <Button
+              text="Create Another User"
+              variant="outline"
+              onClick={handleCreateAnother}
+            />
+          </div>
+          <div className="w-32">
+            <Button text="Done" variant="primary" onClick={handleDone} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-8 pb-8">
+      {FORM_SECTIONS.map((section, index) => (
+        <section key={index}>
+          <h3 className="text-sm font-bold text-[#2F3140] mb-1">
+            {section.title}
+          </h3>
+          <p className="text-xs text-[#707781] mb-4">{section.description}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {section.fields.map((field, fieldIndex) => (
+              <Input
+                key={fieldIndex}
+                label={field.label}
+                placeholder={field.placeholder}
+                theme="light"
+                type={field.type as "text" | "select" | "date" | "email"}
+                options={field.options}
+                required={field.required}
+                value={formData[field.label] || ""}
+                onChange={(e) => handleInputChange(field.label, e.target.value)}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
+
+      <div className="flex justify-end gap-4 mt-8 pt-4">
+        <div className="w-32">
+          <Button text="Cancel" variant="outline" onClick={onCancel} />
+        </div>
+        <div className="w-40">
+          <Button
+            text="Create User"
+            variant="primary"
+            disabled={!isFormValid}
+            onClick={handleCreateUser}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CreateUserForm;

@@ -19,6 +19,7 @@ import { useRole } from "@/context/RoleContext";
 import { createUserColumns } from "./columns";
 import { createRoleColumns } from "./roleColumns";
 import { createDepartmentColumns } from "./departmentColumns";
+import CreateUserForm from "@/components/Dashboard/UserRoleManagement/CreateUserForm";
 
 type User = {
   // ... User type stays same
@@ -129,6 +130,11 @@ export default function UserRoleManagement() {
                   </div>
                 )}
               </>
+            ) : currentView === "Create New User" ? (
+              <CreateUserForm
+                onCancel={() => setCurrentView("Overview")}
+                onSuccess={() => setCurrentView("Overview")}
+              />
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
                 {currentView} view coming soon
