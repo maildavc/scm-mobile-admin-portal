@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Tabs from "@/components/Dashboard/Tabs";
 import CustomerInfoTab from "./CustomerInfoTab";
 import ConfigurationTab from "./ConfigurationTab";
 import DocumentsTab from "./DocumentsTab";
@@ -22,7 +23,11 @@ interface ViewCustomerProps {
   onDeactivate?: () => void;
 }
 
-const ViewCustomer: React.FC<ViewCustomerProps> = ({ customer, onEdit, onDeactivate }) => {
+const ViewCustomer: React.FC<ViewCustomerProps> = ({
+  customer,
+  onEdit,
+  onDeactivate,
+}) => {
   const [activeTab, setActiveTab] = useState("Customer Info");
 
   const tabs = [
@@ -31,32 +36,18 @@ const ViewCustomer: React.FC<ViewCustomerProps> = ({ customer, onEdit, onDeactiv
     "Payments & Cards",
     "Documents",
     "Activity Log",
-    "Configuration"
+    "Configuration",
   ];
 
   return (
     <div className="flex flex-col gap-6">
       {/* Tabs */}
-      <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-bold transition-colors cursor-pointer border whitespace-nowrap ${
-              activeTab === tab
-                ? "bg-[#FDE4E5] text-[#B2171E] border-[#FFC6C5]"
-                : "bg-white text-[#2F3140] border-[#7077813D]"
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
       {activeTab === "Customer Info" ? (
-        <CustomerInfoTab 
+        <CustomerInfoTab
           customer={customer}
-          onEdit={onEdit} 
+          onEdit={onEdit}
           onDeactivate={onDeactivate}
         />
       ) : activeTab === "Active Products" ? (

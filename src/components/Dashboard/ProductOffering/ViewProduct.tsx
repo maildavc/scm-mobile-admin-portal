@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Tabs from "@/components/Dashboard/Tabs";
 import ProductInfoTab from "./ProductInfoTab";
 import ConfigurationTab from "./ConfigurationTab";
 
@@ -19,7 +20,11 @@ interface ViewProductProps {
   onDeactivate?: () => void;
 }
 
-const ViewProduct: React.FC<ViewProductProps> = ({ product, onEdit, onDeactivate }) => {
+const ViewProduct: React.FC<ViewProductProps> = ({
+  product,
+  onEdit,
+  onDeactivate,
+}) => {
   const [activeTab, setActiveTab] = useState("Product Info");
 
   const tabs = ["Product Info", "Configuration"];
@@ -27,24 +32,14 @@ const ViewProduct: React.FC<ViewProductProps> = ({ product, onEdit, onDeactivate
   return (
     <div className="flex flex-col gap-6">
       {/* Tabs */}
-      <div className="flex gap-4">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-5 py-2.5 rounded-full text-sm font-bold transition-colors cursor-pointer border ${
-              activeTab === tab
-                ? "bg-[#FDE4E5] text-[#B2171E] border-[#FFC6C5]"
-                : "bg-white text-[#2F3140] border-[#7077813D]"
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
       {activeTab === "Product Info" ? (
-        <ProductInfoTab onEdit={onEdit} onDeactivate={onDeactivate} status={product.status} />
+        <ProductInfoTab
+          onEdit={onEdit}
+          onDeactivate={onDeactivate}
+          status={product.status}
+        />
       ) : (
         <ConfigurationTab onDeactivate={onDeactivate} />
       )}
