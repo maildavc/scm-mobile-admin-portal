@@ -4,7 +4,7 @@ import { Column } from "@/components/Dashboard/Table";
 import { StatusBadge } from "@/components/Dashboard/StatusBadge";
 import { TbFilterEdit } from "react-icons/tb";
 import { HiMenu } from "react-icons/hi";
-import { FiEye, FiEdit3, FiUser, FiTrash2 } from "react-icons/fi";
+import { FiEye, FiEdit3, FiUser, FiTrash2, FiCheck, FiX } from "react-icons/fi";
 import { useState, useRef, useEffect } from "react";
 
 type User = {
@@ -29,10 +29,12 @@ const OptionsButton = ({
   user,
   onEditUser,
   onViewUser,
+  isApprover,
 }: {
   user: User;
   onEditUser?: (user: User) => void;
   onViewUser?: (user: User) => void;
+  isApprover?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -53,11 +55,19 @@ const OptionsButton = ({
     };
   }, [isOpen]);
 
-  const menuItems = [
+  const initiatorMenuItems = [
     { icon: FiEye, label: "View User" },
     { icon: FiEdit3, label: "Edit User" },
     { icon: FiTrash2, label: "Deactivate User" },
   ];
+
+  const approverMenuItems = [
+    { icon: FiEye, label: "View User" },
+    { icon: FiCheck, label: "Approve Request" },
+    { icon: FiX, label: "Reject Request" },
+  ];
+
+  const menuItems = isApprover ? approverMenuItems : initiatorMenuItems;
 
   return (
     <>
@@ -83,7 +93,13 @@ const OptionsButton = ({
                 onClick={() => {
                   if (item.label === "Edit User" && onEditUser) {
                     onEditUser(user);
-                  } else if (item.label === "View User" && onViewUser) {
+                  } else if (
+                    (item.label === "View User" ||
+                      item.label === "View Request" ||
+                      item.label === "Approve Request" ||
+                      item.label === "Reject Request") &&
+                    onViewUser
+                  ) {
                     onViewUser(user);
                   }
                   setIsOpen(false);
@@ -177,6 +193,7 @@ export const userColumns: Column<User>[] = [
 export const createUserColumns = (
   onEditUser?: (user: User) => void,
   onViewUser?: (user: User) => void,
+  isApprover?: boolean,
 ): Column<User>[] => [
   ...userColumns.slice(0, 5),
   {
@@ -191,6 +208,7 @@ export const createUserColumns = (
         user={user}
         onEditUser={onEditUser}
         onViewUser={onViewUser}
+        isApprover={isApprover}
       />
     ),
   },

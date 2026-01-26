@@ -4,7 +4,7 @@ import { Column } from "@/components/Dashboard/Table";
 import { StatusBadge } from "@/components/Dashboard/StatusBadge";
 import { TbFilterEdit } from "react-icons/tb";
 import { HiMenu } from "react-icons/hi";
-import { FiEye, FiEdit3, FiTrash2 } from "react-icons/fi";
+import { FiEye, FiEdit3, FiTrash2, FiCheck, FiX } from "react-icons/fi";
 import { useState, useRef, useEffect } from "react";
 
 type Department = {
@@ -27,10 +27,12 @@ const OptionsButton = ({
   department,
   onEditDepartment,
   onViewDepartment,
+  isApprover,
 }: {
   department: Department;
   onEditDepartment?: (department: Department) => void;
   onViewDepartment?: (department: Department) => void;
+  isApprover?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -51,11 +53,19 @@ const OptionsButton = ({
     };
   }, [isOpen]);
 
-  const menuItems = [
+  const initiatorMenuItems = [
     { icon: FiEye, label: "View Department" },
     { icon: FiEdit3, label: "Edit Department" },
     { icon: FiTrash2, label: "Deactivate Department" },
   ];
+
+  const approverMenuItems = [
+    { icon: FiEye, label: "View Department" },
+    { icon: FiCheck, label: "Approve Request" },
+    { icon: FiX, label: "Reject Request" },
+  ];
+
+  const menuItems = isApprover ? approverMenuItems : initiatorMenuItems;
 
   return (
     <>
@@ -68,7 +78,7 @@ const OptionsButton = ({
       <div className="relative" ref={menuRef}>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 px-3 py-1.5 bg-[#F4F4F5] rounded-xl text-xs font-bold text-[#B2171E] hover:bg-gray-200 transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 bg-[#F4F4F5] rounded-xl text-xs font-bold text-[#2F3140] hover:bg-gray-200 transition-colors"
         >
           <HiMenu color="black" /> Options
         </button>
@@ -82,7 +92,10 @@ const OptionsButton = ({
                   if (item.label === "Edit Department" && onEditDepartment) {
                     onEditDepartment(department);
                   } else if (
-                    item.label === "View Department" &&
+                    (item.label === "View Department" ||
+                      item.label === "View Request" ||
+                      item.label === "Approve Request" ||
+                      item.label === "Reject Request") &&
                     onViewDepartment
                   ) {
                     onViewDepartment(department);
@@ -161,6 +174,7 @@ export const departmentColumns: Column<Department>[] = [
 export const createDepartmentColumns = (
   onEditDepartment?: (department: Department) => void,
   onViewDepartment?: (department: Department) => void,
+  isApprover?: boolean,
 ): Column<Department>[] => [
   ...departmentColumns.slice(0, 4),
   {
@@ -175,6 +189,7 @@ export const createDepartmentColumns = (
         department={department}
         onEditDepartment={onEditDepartment}
         onViewDepartment={onViewDepartment}
+        isApprover={isApprover}
       />
     ),
   },

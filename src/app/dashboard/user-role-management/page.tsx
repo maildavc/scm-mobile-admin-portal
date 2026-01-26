@@ -15,11 +15,13 @@ import {
   PAGE_CONFIG,
   getBreadcrumbs,
 } from "@/constants/userRoleManagement/userRoleManagement";
+import { useRole } from "@/context/RoleContext";
 import { createUserColumns } from "./columns";
 import { createRoleColumns } from "./roleColumns";
 import { createDepartmentColumns } from "./departmentColumns";
 
 type User = {
+  // ... User type stays same
   id: string;
   name: string;
   email: string;
@@ -35,11 +37,16 @@ export default function UserRoleManagement() {
   const [activeTab, setActiveTab] = useState("Users");
   const [editUser, setEditUser] = useState<User | null>(null);
   const [viewUser, setViewUser] = useState<User | null>(null);
+  const { isApprover } = useRole();
 
-  const sidebarItems = USER_ROLE_SIDEBAR_ITEMS.map((item) => ({
+  const allSidebarItems = USER_ROLE_SIDEBAR_ITEMS.map((item) => ({
     ...item,
     isActive: item.label === currentView,
   }));
+
+  const sidebarItems = isApprover
+    ? allSidebarItems.filter((item) => item.label === "Overview")
+    : allSidebarItems;
 
   const handleSidebarClick = (label: string) => {
     setCurrentView(label);
@@ -57,9 +64,13 @@ export default function UserRoleManagement() {
     // Navigate/Set view logic if viewable
   };
 
-  const columns = createUserColumns(handleEditUser, handleViewUser);
-  const roleColumns = createRoleColumns();
-  const departmentColumns = createDepartmentColumns();
+  const columns = createUserColumns(handleEditUser, handleViewUser, isApprover);
+  const roleColumns = createRoleColumns(undefined, undefined, isApprover);
+  const departmentColumns = createDepartmentColumns(
+    undefined,
+    undefined,
+    isApprover,
+  );
 
   return (
     <SidebarProvider>

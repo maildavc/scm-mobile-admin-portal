@@ -4,7 +4,7 @@ import { Column } from "@/components/Dashboard/Table";
 import { StatusBadge } from "@/components/Dashboard/StatusBadge";
 import { TbFilterEdit } from "react-icons/tb";
 import { HiMenu } from "react-icons/hi";
-import { FiEye, FiEdit3, FiTrash2 } from "react-icons/fi";
+import { FiEye, FiEdit3, FiTrash2, FiCheck, FiX } from "react-icons/fi";
 import { useState, useRef, useEffect } from "react";
 
 type Role = {
@@ -26,10 +26,12 @@ const OptionsButton = ({
   role,
   onEditRole,
   onViewRole,
+  isApprover,
 }: {
   role: Role;
   onEditRole?: (role: Role) => void;
   onViewRole?: (role: Role) => void;
+  isApprover?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -50,11 +52,19 @@ const OptionsButton = ({
     };
   }, [isOpen]);
 
-  const menuItems = [
+  const initiatorMenuItems = [
     { icon: FiEye, label: "View Role" },
     { icon: FiEdit3, label: "Edit Role" },
     { icon: FiTrash2, label: "Deactivate Role" },
   ];
+
+  const approverMenuItems = [
+    { icon: FiEye, label: "View Role" },
+    { icon: FiCheck, label: "Approve Request" },
+    { icon: FiX, label: "Reject Request" },
+  ];
+
+  const menuItems = isApprover ? approverMenuItems : initiatorMenuItems;
 
   return (
     <>
@@ -80,7 +90,13 @@ const OptionsButton = ({
                 onClick={() => {
                   if (item.label === "Edit Role" && onEditRole) {
                     onEditRole(role);
-                  } else if (item.label === "View Role" && onViewRole) {
+                  } else if (
+                    (item.label === "View Role" ||
+                      item.label === "View Request" ||
+                      item.label === "Approve Request" ||
+                      item.label === "Reject Request") &&
+                    onViewRole
+                  ) {
                     onViewRole(role);
                   }
                   setIsOpen(false);
@@ -146,6 +162,7 @@ export const roleColumns: Column<Role>[] = [
 export const createRoleColumns = (
   onEditRole?: (role: Role) => void,
   onViewRole?: (role: Role) => void,
+  isApprover?: boolean,
 ): Column<Role>[] => [
   ...roleColumns.slice(0, 3),
   {
@@ -160,6 +177,7 @@ export const createRoleColumns = (
         role={role}
         onEditRole={onEditRole}
         onViewRole={onViewRole}
+        isApprover={isApprover}
       />
     ),
   },
