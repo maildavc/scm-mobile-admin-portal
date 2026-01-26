@@ -21,6 +21,7 @@ import { createRoleColumns } from "./roleColumns";
 import { createDepartmentColumns } from "./departmentColumns";
 import CreateUserForm from "@/components/Dashboard/UserRoleManagement/CreateUserForm";
 import CreateRoleForm from "@/components/Dashboard/UserRoleManagement/CreateRoleForm";
+import CreateDepartmentForm from "@/components/Dashboard/UserRoleManagement/CreateDepartmentForm";
 
 type User = {
   // ... User type stays same
@@ -138,6 +139,11 @@ export default function UserRoleManagement() {
               />
             ) : currentView === "Create New Role" ? (
               <CreateRoleForm
+                onCancel={() => setCurrentView("Overview")}
+                onSuccess={() => setCurrentView("Overview")}
+              />
+            ) : currentView === "Create Department" ? (
+              <CreateDepartmentForm
                 onCancel={() => setCurrentView("Overview")}
                 onSuccess={() => setCurrentView("Overview")}
               />
