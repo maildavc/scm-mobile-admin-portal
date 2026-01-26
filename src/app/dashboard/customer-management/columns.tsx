@@ -4,7 +4,14 @@ import { Column } from "@/components/Dashboard/Table";
 import { StatusBadge } from "@/components/Dashboard/StatusBadge";
 import { TbFilterEdit } from "react-icons/tb";
 import { HiMenu } from "react-icons/hi";
-import { FiEye, FiEdit3, FiUser, FiCheck, FiTrash2, FiBox } from "react-icons/fi";
+import {
+  FiEye,
+  FiEdit3,
+  FiUser,
+  FiCheck,
+  FiTrash2,
+  FiBox,
+} from "react-icons/fi";
 import { useState, useRef, useEffect } from "react";
 
 type Customer = {
@@ -14,6 +21,7 @@ type Customer = {
   status: "Active" | "Deactivated" | "Awaiting Approval";
   kycStatus: "Awaiting Approval" | "Completed";
   updated: string;
+  requestType?: string;
 };
 
 const FilterableHeader = ({ children }: { children: string }) => (
@@ -27,10 +35,12 @@ const OptionsButton = ({
   customer,
   onEditCustomer,
   onViewCustomer,
+  isApprover,
 }: {
   customer: Customer;
   onEditCustomer?: (customer: Customer) => void;
   onViewCustomer?: (customer: Customer) => void;
+  isApprover?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -51,13 +61,20 @@ const OptionsButton = ({
     };
   }, [isOpen]);
 
-  const menuItems = [
+  const approverMenuItems = [
+    { icon: FiEye, label: "View Request" },
+    { icon: FiCheck, label: "Approve Request" },
+    { icon: FiTrash2, label: "Reject Request" },
+  ];
+
+  const initiatorMenuItems = [
     { icon: FiEye, label: "View Customer" },
     { icon: FiEdit3, label: "Edit Customer" },
     { icon: FiBox, label: "Assign Product" },
-    { icon: FiCheck, label: "Approve Request" },
     { icon: FiTrash2, label: "Deactivate Customer" },
   ];
+
+  const menuItems = isApprover ? approverMenuItems : initiatorMenuItems;
 
   return (
     <>
@@ -83,7 +100,11 @@ const OptionsButton = ({
                 onClick={() => {
                   if (item.label === "Edit Customer" && onEditCustomer) {
                     onEditCustomer(customer);
-                  } else if (item.label === "View Customer" && onViewCustomer) {
+                  } else if (
+                    (item.label === "View Customer" ||
+                      item.label === "View Request") &&
+                    onViewCustomer
+                  ) {
                     onViewCustomer(customer);
                   }
                   setIsOpen(false);
@@ -163,21 +184,96 @@ export const customerColumns: Column<Customer>[] = [
 export const createCustomerColumns = (
   onEditCustomer?: (customer: Customer) => void,
   onViewCustomer?: (customer: Customer) => void,
-): Column<Customer>[] => [
-  ...customerColumns.slice(0, 4),
-  {
-    header: (
-      <div className="flex items-center gap-1">
-        <span className="uppercase">ACTION</span>
-      </div>
-    ),
-    className: "w-[10%]",
-    render: (customer) => (
-      <OptionsButton
-        customer={customer}
-        onEditCustomer={onEditCustomer}
-        onViewCustomer={onViewCustomer}
-      />
-    ),
-  },
-];
+  isApprover?: boolean,
+): Column<Customer>[] => {
+  if (isApprover) {
+    return [
+      {
+        header: (
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              className="rounded border-gray-300"
+              aria-label="Select all customers"
+            />
+            <span className="uppercase text-[#2F3140]">CUSTOMERS (5)</span>
+          </div>
+        ),
+        className: "w-[25%]",
+        render: (customer) => (
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#F4F4F5] flex items-center justify-center text-white">
+                <FiUser size={20} color="#2F3140" />
+              </div>
+              <div>
+                <p className="font-bold text-[#2F3140] text-sm">
+                  {customer.name}
+                </p>
+                <p className="text-[#707781] text-xs">{customer.tier}</p>
+              </div>
+            </div>
+          </div>
+        ),
+      },
+      {
+        header: <FilterableHeader>REQUEST TYPE</FilterableHeader>,
+        className: "w-[25%]",
+        render: (customer) => (
+          <span className="text-sm text-[#2F3140] font-bold">
+            {customer.requestType || "Customer Creation"}
+          </span>
+        ),
+      },
+      {
+        header: <FilterableHeader>STATUS</FilterableHeader>,
+        className: "w-[15%]",
+        render: (customer) => <StatusBadge status={customer.status} />,
+      },
+      {
+        header: <FilterableHeader>LAST UPDATED ON</FilterableHeader>,
+        className: "w-[20%]",
+        render: (customer) => (
+          <span className="text-sm text-[#2F3140] font-medium">
+            {customer.updated}
+          </span>
+        ),
+      },
+      {
+        header: (
+          <div className="flex items-center gap-1">
+            <span className="uppercase">ACTION</span>
+          </div>
+        ),
+        className: "w-[15%]",
+        render: (customer) => (
+          <OptionsButton
+            customer={customer}
+            onEditCustomer={onEditCustomer}
+            onViewCustomer={onViewCustomer}
+            isApprover={isApprover}
+          />
+        ),
+      },
+    ];
+  }
+
+  return [
+    ...customerColumns.slice(0, 4),
+    {
+      header: (
+        <div className="flex items-center gap-1">
+          <span className="uppercase">ACTION</span>
+        </div>
+      ),
+      className: "w-[10%]",
+      render: (customer) => (
+        <OptionsButton
+          customer={customer}
+          onEditCustomer={onEditCustomer}
+          onViewCustomer={onViewCustomer}
+        />
+      ),
+    },
+  ];
+};

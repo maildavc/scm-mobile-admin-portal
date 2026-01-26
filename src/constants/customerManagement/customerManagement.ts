@@ -24,6 +24,7 @@ export const CUSTOMERS = [
     status: "Active" as const,
     kycStatus: "Awaiting Approval" as const,
     updated: "28/12/2025 13:32",
+    requestType: "Customer Creation",
   },
   {
     id: "CUS-00002",
@@ -32,6 +33,7 @@ export const CUSTOMERS = [
     status: "Awaiting Approval" as const,
     kycStatus: "Completed" as const,
     updated: "28/12/2025 13:32",
+    requestType: "KYC Validation Request",
   },
   {
     id: "CUS-00003",
@@ -40,6 +42,7 @@ export const CUSTOMERS = [
     status: "Deactivated" as const,
     kycStatus: "Awaiting Approval" as const,
     updated: "28/12/2025 13:32",
+    requestType: "Customer Creation",
   },
   {
     id: "CUS-00004",
@@ -48,6 +51,7 @@ export const CUSTOMERS = [
     status: "Active" as const,
     kycStatus: "Completed" as const,
     updated: "28/12/2025 13:32",
+    requestType: "Email Password Reset",
   },
   {
     id: "CUS-00005",
@@ -56,6 +60,7 @@ export const CUSTOMERS = [
     status: "Awaiting Approval" as const,
     kycStatus: "Completed" as const,
     updated: "28/12/2025 13:32",
+    requestType: "Customer Creation",
   },
   {
     id: "CUS-00006",
@@ -64,6 +69,7 @@ export const CUSTOMERS = [
     status: "Active" as const,
     kycStatus: "Completed" as const,
     updated: "28/12/2025 13:32",
+    requestType: "KYC Validation Request",
   },
   {
     id: "CUS-00007",
@@ -72,6 +78,7 @@ export const CUSTOMERS = [
     status: "Awaiting Approval" as const,
     kycStatus: "Awaiting Approval" as const,
     updated: "28/12/2025 13:32",
+    requestType: "KYC Validation Request",
   },
   {
     id: "CUS-00008",
@@ -80,6 +87,7 @@ export const CUSTOMERS = [
     status: "Active" as const,
     kycStatus: "Completed" as const,
     updated: "28/12/2025 13:32",
+    requestType: "Email Password Reset",
   },
   {
     id: "CUS-00009",
@@ -88,6 +96,7 @@ export const CUSTOMERS = [
     status: "Deactivated" as const,
     kycStatus: "Completed" as const,
     updated: "28/12/2025 13:32",
+    requestType: "Customer Creation",
   },
   {
     id: "CUS-00010",
@@ -96,6 +105,7 @@ export const CUSTOMERS = [
     status: "Awaiting Approval" as const,
     kycStatus: "Awaiting Approval" as const,
     updated: "28/12/2025 13:32",
+    requestType: "KYC Validation Request",
   },
   {
     id: "CUS-00011",
@@ -104,6 +114,7 @@ export const CUSTOMERS = [
     status: "Active" as const,
     kycStatus: "Completed" as const,
     updated: "28/12/2025 13:32",
+    requestType: "Customer Creation",
   },
   {
     id: "CUS-00012",
@@ -112,6 +123,7 @@ export const CUSTOMERS = [
     status: "Deactivated" as const,
     kycStatus: "Awaiting Approval" as const,
     updated: "28/12/2025 13:32",
+    requestType: "Customer Creation",
   },
   {
     id: "CUS-00013",
@@ -120,6 +132,7 @@ export const CUSTOMERS = [
     status: "Active" as const,
     kycStatus: "Completed" as const,
     updated: "28/12/2025 13:32",
+    requestType: "Customer Creation",
   },
   {
     id: "CUS-00014",
@@ -128,6 +141,7 @@ export const CUSTOMERS = [
     status: "Awaiting Approval" as const,
     kycStatus: "Completed" as const,
     updated: "28/12/2025 13:32",
+    requestType: "Customer Creation",
   },
   {
     id: "CUS-00015",
@@ -136,6 +150,7 @@ export const CUSTOMERS = [
     status: "Active" as const,
     kycStatus: "Awaiting Approval" as const,
     updated: "28/12/2025 13:32",
+    requestType: "Customer Creation",
   },
   {
     id: "CUS-00016",
@@ -144,6 +159,7 @@ export const CUSTOMERS = [
     status: "Deactivated" as const,
     kycStatus: "Completed" as const,
     updated: "28/12/2025 13:32",
+    requestType: "Customer Creation",
   },
   {
     id: "CUS-00017",
@@ -152,6 +168,7 @@ export const CUSTOMERS = [
     status: "Active" as const,
     kycStatus: "Completed" as const,
     updated: "28/12/2025 13:32",
+    requestType: "Customer Creation",
   },
   {
     id: "CUS-00018",
@@ -160,6 +177,7 @@ export const CUSTOMERS = [
     status: "Awaiting Approval" as const,
     kycStatus: "Awaiting Approval" as const,
     updated: "28/12/2025 13:32",
+    requestType: "Customer Creation",
   },
   {
     id: "CUS-00019",
@@ -168,6 +186,7 @@ export const CUSTOMERS = [
     status: "Active" as const,
     kycStatus: "Completed" as const,
     updated: "28/12/2025 13:32",
+    requestType: "Customer Creation",
   },
   {
     id: "CUS-00020",
@@ -176,6 +195,7 @@ export const CUSTOMERS = [
     status: "Deactivated" as const,
     kycStatus: "Awaiting Approval" as const,
     updated: "28/12/2025 13:32",
+    requestType: "Customer Creation",
   },
 ];
 

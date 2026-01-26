@@ -15,6 +15,7 @@ import {
   getBreadcrumbs,
 } from "@/constants/customerManagement/customerManagement";
 import { createCustomerColumns } from "./columns";
+import { useRole } from "@/context/RoleContext";
 
 type Customer = {
   id: string;
@@ -23,19 +24,26 @@ type Customer = {
   status: "Active" | "Deactivated" | "Awaiting Approval";
   kycStatus: "Awaiting Approval" | "Completed";
   updated: string;
+  requestType?: string;
 };
 
 export default function CustomerManagement() {
   const [currentView, setCurrentView] = useState("Overview");
   const [editCustomer, setEditCustomer] = useState<Customer | null>(null);
   const [viewCustomer, setViewCustomer] = useState<Customer | null>(null);
+  const { isApprover } = useRole();
 
-  const sidebarItems = CUSTOMER_MANAGEMENT_SIDEBAR_ITEMS.map((item) => ({
+  // Sidebar Logic
+  const allSidebarItems = CUSTOMER_MANAGEMENT_SIDEBAR_ITEMS.map((item) => ({
     ...item,
     isActive: viewCustomer
       ? item.label === "Overview"
       : item.label === currentView,
   }));
+
+  const sidebarItems = isApprover
+    ? allSidebarItems.filter((item) => item.label === "Overview")
+    : allSidebarItems;
 
   const handleSidebarClick = (label: string) => {
     setCurrentView(label);
@@ -55,7 +63,11 @@ export default function CustomerManagement() {
     setCurrentView(customer.name);
   };
 
-  const columns = createCustomerColumns(handleEditCustomer, handleViewCustomer);
+  const columns = createCustomerColumns(
+    handleEditCustomer,
+    handleViewCustomer,
+    isApprover,
+  );
 
   const resetView = () => {
     setCurrentView("Overview");
