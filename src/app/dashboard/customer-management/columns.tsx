@@ -102,7 +102,9 @@ const OptionsButton = ({
                     onEditCustomer(customer);
                   } else if (
                     (item.label === "View Customer" ||
-                      item.label === "View Request") &&
+                      item.label === "View Request" ||
+                      item.label === "Approve Request" ||
+                      item.label === "Reject Request") &&
                     onViewCustomer
                   ) {
                     onViewCustomer(customer);

@@ -7,8 +7,8 @@ import {
   FINANCIAL_DETAILS,
 } from "@/constants/productOffering/productOffering";
 import { DetailCard, DetailRow } from "@/components/Dashboard/SharedDetails";
-import ApproveModal from "./ApproveModal";
-import RejectModal from "./RejectModal";
+import ApproveModal from "@/components/Dashboard/Shared/ApproveModal";
+import RejectModal from "@/components/Dashboard/Shared/RejectModal";
 
 type Product = {
   id: string;

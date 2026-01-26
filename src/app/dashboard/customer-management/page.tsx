@@ -16,6 +16,7 @@ import {
 } from "@/constants/customerManagement/customerManagement";
 import { createCustomerColumns } from "./columns";
 import { useRole } from "@/context/RoleContext";
+import ViewCustomerRequest from "@/components/Dashboard/CustomerManagement/ViewCustomerRequest";
 
 type Customer = {
   id: string;
@@ -125,15 +126,29 @@ export default function CustomerManagement() {
                 }}
               />
             ) : viewCustomer ? (
-              <ViewCustomer
-                customer={viewCustomer}
-                onEdit={() => handleEditCustomer(viewCustomer)}
-                onDeactivate={() => {
-                  // Handle deactivation
-                  setCurrentView("Overview");
-                  setViewCustomer(null);
-                }}
-              />
+              isApprover ? (
+                <ViewCustomerRequest
+                  customer={viewCustomer}
+                  onApprove={() => {
+                    setCurrentView("Overview");
+                    setViewCustomer(null);
+                  }}
+                  onReject={() => {
+                    setCurrentView("Overview");
+                    setViewCustomer(null);
+                  }}
+                />
+              ) : (
+                <ViewCustomer
+                  customer={viewCustomer}
+                  onEdit={() => handleEditCustomer(viewCustomer)}
+                  onDeactivate={() => {
+                    // Handle deactivation
+                    setCurrentView("Overview");
+                    setViewCustomer(null);
+                  }}
+                />
+              )
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
                 {currentView} view coming soon
