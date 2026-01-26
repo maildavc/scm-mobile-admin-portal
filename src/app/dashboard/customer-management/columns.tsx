@@ -228,7 +228,12 @@ export const createCustomerColumns = (
       {
         header: <FilterableHeader>STATUS</FilterableHeader>,
         className: "w-[15%]",
-        render: (customer) => <StatusBadge status={customer.status} />,
+        render: (customer) => (
+          <StatusBadge
+            status={customer.status}
+            displayLabel={customer.status === "Active" ? "Approved" : undefined}
+          />
+        ),
       },
       {
         header: <FilterableHeader>LAST UPDATED ON</FilterableHeader>,
