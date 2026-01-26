@@ -28,6 +28,7 @@ export const DASHBOARD_CARDS = [
     title: "User & Role Management",
     description:
       "Manage customer profiles, update KYC, view customer details and many more in this module",
+    path: "/dashboard/user-role-management",
   },
   {
     icon: FiFile,
