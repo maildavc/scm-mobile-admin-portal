@@ -5,94 +5,12 @@ import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Image from "next/image";
 
+import { CREATE_USER_FORM_SECTIONS } from "@/constants/userRoleManagement/createUser";
+
 interface CreateUserFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
 }
-
-const FORM_SECTIONS = [
-  {
-    title: "Basic Information",
-    description: "Tell us about user",
-    fields: [
-      {
-        label: "First Name",
-        placeholder: "Enter name",
-        type: "text",
-        required: true,
-      },
-      {
-        label: "Middle Name",
-        placeholder: "Enter name",
-        type: "text",
-        required: false,
-      },
-      {
-        label: "Last Name",
-        placeholder: "Enter name",
-        type: "text",
-        required: true,
-      },
-      {
-        label: "Email Address",
-        placeholder: "Enter email address",
-        type: "email",
-        required: true,
-      },
-      {
-        label: "Phone Number",
-        placeholder: "+234 800 000 0000",
-        type: "text",
-        required: true,
-      },
-      {
-        label: "Department",
-        placeholder: "Select Option",
-        type: "select",
-        required: true,
-        options: [
-          { label: "Technology Team", value: "Technology Team" },
-          { label: "Human Resources", value: "Human Resources" },
-          { label: "Finance", value: "Finance" },
-        ],
-      },
-    ],
-  },
-  {
-    title: "Assign Role",
-    description: "Assign a role to this user",
-    fields: [
-      {
-        label: "Assign Role",
-        placeholder: "Select Option",
-        type: "select",
-        required: true,
-        options: [
-          { label: "Approver", value: "Approver" },
-          { label: "User", value: "User" },
-          { label: "Viewer", value: "Viewer" },
-          { label: "Auditor", value: "Auditor" },
-        ],
-      },
-      {
-        label: "Expiry Status",
-        placeholder: "Select Option",
-        type: "select",
-        required: true,
-        options: [
-          { label: "Permanent", value: "Permanent" },
-          { label: "Temporary", value: "Temporary" },
-        ],
-      },
-      {
-        label: "Expires",
-        placeholder: "DD/MM/YYYY",
-        type: "date",
-        required: true,
-      },
-    ],
-  },
-];
 
 const CreateUserForm: React.FC<CreateUserFormProps> = ({
   onSuccess,
@@ -103,7 +21,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
 
   const requiredFields = useMemo(
     () =>
-      FORM_SECTIONS.flatMap((section) =>
+      CREATE_USER_FORM_SECTIONS.flatMap((section) =>
         section.fields
           .filter((field) => field.required)
           .map((field) => field.label),
@@ -169,7 +87,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
 
   return (
     <div className="flex flex-col gap-8 pb-8">
-      {FORM_SECTIONS.map((section, index) => (
+      {CREATE_USER_FORM_SECTIONS.map((section, index) => (
         <section key={index}>
           <h3 className="text-sm font-bold text-[#2F3140] mb-1">
             {section.title}

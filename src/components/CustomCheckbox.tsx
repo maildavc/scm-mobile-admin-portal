@@ -16,7 +16,7 @@ const CustomCheckbox = ({ checked, onChange, label }: { checked: boolean; onChan
         </div>
       )}
     </div>
-    <span className="text-base font-medium text-[#121212]">{label}</span>
+    <span className="text-sm font-medium text-[#17181A]">{label}</span>
   </div>
 );
 
