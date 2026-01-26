@@ -94,10 +94,12 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
         <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
-          Customer Creation Request Approved Successfully
+          {customer.requestType || "Customer Creation"} Request Approved
+          Successfully
         </h2>
         <p className="text-sm text-[#707781] mb-8 text-center">
-          Customer creation request was successfully approved.
+          {customer.requestType || "Customer Creation"} request was successfully
+          approved.
         </p>
         <div className="w-32">
           <Button
@@ -118,10 +120,11 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
         <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
-          Customer Creation Request Rejected
+          {customer.requestType || "Customer Creation"} Request Rejected
         </h2>
         <p className="text-sm text-[#707781] mb-8 text-center">
-          Customer creation request was successfully rejected.
+          {customer.requestType || "Customer Creation"} request was successfully
+          rejected.
         </p>
         <div className="w-32">
           <Button
