@@ -51,7 +51,9 @@ const ViewUser: React.FC<ViewUserProps> = ({
 
         {activeTab === "Activity Log" && <ActivityLogTab />}
 
-        {activeTab === "Configuration" && <ConfigurationTab />}
+        {activeTab === "Configuration" && (
+          <ConfigurationTab onDeactivate={() => onDeactivate?.(user)} />
+        )}
       </div>
     </div>
   );

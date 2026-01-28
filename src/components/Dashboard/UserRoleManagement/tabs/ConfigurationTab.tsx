@@ -2,12 +2,86 @@
 
 import React from "react";
 
-const ConfigurationTab: React.FC = () => {
+interface ConfigurationTabProps {
+  onDeactivate?: () => void;
+}
+
+const ConfigurationTab: React.FC<ConfigurationTabProps> = ({
+  onDeactivate,
+}) => {
+  const configOptions = [
+    {
+      title: "Email address",
+      description: "Initiate a change or reset users email address",
+      buttonText: "Resend email Verification",
+      onClick: () => console.log("Resend email verification"),
+    },
+    {
+      title: "Password",
+      description: "Initiate a change or reset users password",
+      buttonText: "Resend Password",
+      onClick: () => console.log("Resend password"),
+    },
+    {
+      title: "Profile Deactivation",
+      description: "Delete or deactivate users profile",
+      buttonText: "Deactivate User",
+      onClick: onDeactivate,
+    },
+  ];
+
   return (
-    <div className="flex items-center justify-center h-64 text-gray-500">
-      Configuration coming soon
+    <div className="mt-4">
+      <div className="border border-gray-200 rounded-xl p-6 max-w-2xl min-h-112.5 flex flex-col">
+        <h3 className="text-sm font-semibold text-[#2F3140] mb-6">Reset</h3>
+
+        <div className="space-y-6 grow">
+          {configOptions.map((option, index) => (
+            <ConfigRow
+              key={option.title}
+              title={option.title}
+              description={option.description}
+              buttonText={option.buttonText}
+              onClick={option.onClick}
+              showBorder={index < configOptions.length - 1}
+            />
+          ))}
+
+          {/* Spacer to push border down */}
+          <div className="grow border-b border-gray-100"></div>
+        </div>
+      </div>
     </div>
   );
 };
+
+const ConfigRow = ({
+  title,
+  description,
+  buttonText,
+  onClick,
+  showBorder,
+}: {
+  title: string;
+  description: string;
+  buttonText: string;
+  onClick?: () => void;
+  showBorder: boolean;
+}) => (
+  <div
+    className={`flex items-center justify-between ${showBorder ? "pb-6 border-b border-gray-100" : ""}`}
+  >
+    <div>
+      <h4 className="text-sm font-semibold text-[#2F3140] mb-1">{title}</h4>
+      <p className="text-xs text-[#707781]">{description}</p>
+    </div>
+    <button
+      className="px-6 py-2 bg-[#F4F4F5] text-[#2F3140] text-xs font-bold rounded-xl hover:bg-gray-200 transition-colors whitespace-nowrap"
+      onClick={onClick}
+    >
+      {buttonText}
+    </button>
+  </div>
+);
 
 export default ConfigurationTab;
