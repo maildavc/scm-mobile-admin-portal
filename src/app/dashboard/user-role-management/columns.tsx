@@ -29,11 +29,13 @@ const OptionsButton = ({
   user,
   onEditUser,
   onViewUser,
+  onDeactivateUser,
   isApprover,
 }: {
   user: User;
   onEditUser?: (user: User) => void;
   onViewUser?: (user: User) => void;
+  onDeactivateUser?: (user: User) => void;
   isApprover?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -93,6 +95,11 @@ const OptionsButton = ({
                 onClick={() => {
                   if (item.label === "Edit User" && onEditUser) {
                     onEditUser(user);
+                  } else if (
+                    item.label === "Deactivate User" &&
+                    onDeactivateUser
+                  ) {
+                    onDeactivateUser(user);
                   } else if (
                     (item.label === "View User" ||
                       item.label === "View Request" ||
@@ -193,6 +200,7 @@ export const userColumns: Column<User>[] = [
 export const createUserColumns = (
   onEditUser?: (user: User) => void,
   onViewUser?: (user: User) => void,
+  onDeactivateUser?: (user: User) => void,
   isApprover?: boolean,
 ): Column<User>[] => [
   ...userColumns.slice(0, 5),
@@ -208,6 +216,7 @@ export const createUserColumns = (
         user={user}
         onEditUser={onEditUser}
         onViewUser={onViewUser}
+        onDeactivateUser={onDeactivateUser}
         isApprover={isApprover}
       />
     ),

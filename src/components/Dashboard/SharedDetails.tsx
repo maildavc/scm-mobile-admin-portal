@@ -30,3 +30,7 @@ export const DetailRow = ({
     <span className="text-sm text-[#707781]">{value}</span>
   </div>
 );
+
+export const DetailSubheading = ({ title }: { title: string }) => (
+  <h4 className="text-sm font-semibold text-[#2F3140] mt-14 mb-4">{title}</h4>
+);

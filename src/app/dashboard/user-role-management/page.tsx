@@ -23,6 +23,8 @@ import CreateUserForm from "@/components/Dashboard/UserRoleManagement/CreateUser
 import CreateRoleForm from "@/components/Dashboard/UserRoleManagement/CreateRoleForm";
 import CreateDepartmentForm from "@/components/Dashboard/UserRoleManagement/CreateDepartmentForm";
 import ViewUser from "@/components/Dashboard/UserRoleManagement/ViewUser";
+import ApproveUserRequest from "@/components/Dashboard/UserRoleManagement/ApproveUserRequest";
+import ViewRole from "@/components/Dashboard/UserRoleManagement/ViewRole";
 import ActionButton from "@/components/Dashboard/ActionButton";
 
 type User = {
@@ -37,11 +39,20 @@ type User = {
   updated: string;
 };
 
+type Role = {
+  id: string;
+  name: string;
+  description: string;
+  status: "Active" | "Deactivated" | "Awaiting Approval";
+  updated: string;
+};
+
 export default function UserRoleManagement() {
   const [currentView, setCurrentView] = useState("Overview");
   const [activeTab, setActiveTab] = useState("Users");
   const [editUser, setEditUser] = useState<User | null>(null);
   const [viewUser, setViewUser] = useState<User | null>(null);
+  const [viewRole, setViewRole] = useState<Role | null>(null);
   const { isApprover } = useRole();
 
   const allSidebarItems = USER_ROLE_SIDEBAR_ITEMS.map((item) => ({
@@ -61,16 +72,43 @@ export default function UserRoleManagement() {
 
   const handleEditUser = (user: User) => {
     setEditUser(user);
-    // Navigate/Set view logic if editable
+    setCurrentView("Create New User");
+    setViewUser(null);
   };
 
   const handleViewUser = (user: User) => {
     setViewUser(user);
-    // Navigate/Set view logic if viewable
   };
 
-  const columns = createUserColumns(handleEditUser, handleViewUser, isApprover);
-  const roleColumns = createRoleColumns(undefined, undefined, isApprover);
+  const handleDeactivateUser = (user: User) => {
+    setViewUser(user);
+  };
+
+  const handleViewRole = (role: Role) => {
+    setViewRole(role);
+  };
+
+  const handleEditRole = (role: Role) => {
+    console.log("Edit role:", role);
+    // TODO: Implement edit role functionality
+  };
+
+  const handleDeactivateRole = (role: Role) => {
+    console.log("Deactivate role:", role);
+    // TODO: Implement deactivate role functionality
+  };
+
+  const columns = createUserColumns(
+    handleEditUser,
+    handleViewUser,
+    handleDeactivateUser,
+    isApprover,
+  );
+  const roleColumns = createRoleColumns(
+    handleEditRole,
+    handleViewRole,
+    isApprover,
+  );
   const departmentColumns = createDepartmentColumns(
     undefined,
     undefined,
@@ -90,19 +128,41 @@ export default function UserRoleManagement() {
           <Sidebar menuItems={sidebarItems} onItemClick={handleSidebarClick} />
 
           <main className="flex-1 p-8 bg-white overflow-hidden pt-4 overflow-y-auto">
-            {viewUser ? (
-              <ViewUser
-                user={viewUser}
-                onBack={() => setViewUser(null)}
-                onEdit={(user) => {
-                  setEditUser(user);
-                  setViewUser(null);
-                }}
-                onDeactivate={(user) => {
-                  console.log("Deactivate user:", user);
-                  // Add deactivation logic here
-                }}
+            {viewRole ? (
+              <ViewRole
+                role={viewRole}
+                onBack={() => setViewRole(null)}
+                onEdit={handleEditRole}
+                onDeactivate={handleDeactivateRole}
               />
+            ) : viewUser ? (
+              isApprover ? (
+                <ApproveUserRequest
+                  user={viewUser}
+                  onBack={() => setViewUser(null)}
+                  onApprove={(user) => {
+                    console.log("Approve user:", user);
+                    // Approval logic handled in component
+                  }}
+                  onReject={(user, reason) => {
+                    console.log("Reject user:", user, "Reason:", reason);
+                    // Rejection logic handled in component
+                  }}
+                />
+              ) : (
+                <ViewUser
+                  user={viewUser}
+                  onBack={() => setViewUser(null)}
+                  onEdit={(user) => {
+                    setEditUser(user);
+                    setViewUser(null);
+                  }}
+                  onDeactivate={(user) => {
+                    console.log("Deactivate user:", user);
+                    // Add deactivation logic here
+                  }}
+                />
+              )
             ) : currentView === "Overview" ? (
               <>
                 <div className="grid grid-cols-2 lg:grid-cols-2 gap-6 mb-10">
@@ -161,8 +221,24 @@ export default function UserRoleManagement() {
               </>
             ) : currentView === "Create New User" ? (
               <CreateUserForm
-                onCancel={() => setCurrentView("Overview")}
-                onSuccess={() => setCurrentView("Overview")}
+                onCancel={() => {
+                  setCurrentView("Overview");
+                  setEditUser(null);
+                }}
+                onSuccess={() => {
+                  setCurrentView("Overview");
+                  setEditUser(null);
+                }}
+                initialData={
+                  editUser
+                    ? {
+                        "Full Name": editUser.name,
+                        "Email Address": editUser.email,
+                        "Role Name": editUser.roleName,
+                        "Role Type": editUser.roleType,
+                      }
+                    : undefined
+                }
               />
             ) : currentView === "Create New Role" ? (
               <CreateRoleForm

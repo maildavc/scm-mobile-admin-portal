@@ -29,8 +29,13 @@ const RejectModal: React.FC<RejectModalProps> = ({
     }
   };
 
+  const handleClose = () => {
+    setReason("");
+    onClose();
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} className="max-w-md">
+    <Modal isOpen={isOpen} onClose={handleClose} className="max-w-md">
       <div className="p-8">
         <h3 className="text-lg font-bold text-[#2F3140] mb-2">{title}</h3>
         <p className="text-sm text-[#707781] mb-6">{description}</p>
@@ -51,7 +56,7 @@ const RejectModal: React.FC<RejectModalProps> = ({
             <Button
               text="Cancel"
               variant="outline"
-              onClick={onClose}
+              onClick={handleClose}
               className="bg-[#F4F4F5] font-bold border-none"
             />
           </div>

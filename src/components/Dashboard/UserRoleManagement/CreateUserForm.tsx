@@ -10,13 +10,17 @@ import { CREATE_USER_FORM_SECTIONS } from "@/constants/userRoleManagement/create
 interface CreateUserFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
+  initialData?: Record<string, string>;
 }
 
 const CreateUserForm: React.FC<CreateUserFormProps> = ({
   onSuccess,
   onCancel,
+  initialData,
 }) => {
-  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [formData, setFormData] = useState<Record<string, string>>(
+    initialData || {},
+  );
   const [showSuccess, setShowSuccess] = useState(false);
 
   const requiredFields = useMemo(
@@ -117,7 +121,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
         </div>
         <div className="w-40">
           <Button
-            text="Create User"
+            text={initialData ? "Update User" : "Create User"}
             variant="primary"
             disabled={!isFormValid}
             onClick={handleCreateUser}
