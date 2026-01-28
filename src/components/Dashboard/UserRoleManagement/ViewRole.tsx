@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import Tabs from "@/components/Dashboard/Tabs";
 import RoleInfoTab from "./tabs/RoleInfoTab";
+import RoleConfigurationTab from "./tabs/RoleConfigurationTab";
+import DeactivateRoleModal from "./DeactivateRoleModal";
 
 interface ViewRoleProps {
   role: {
@@ -24,9 +26,28 @@ const ViewRole: React.FC<ViewRoleProps> = ({
   onDeactivate,
 }) => {
   const [activeTab, setActiveTab] = useState("User Info");
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+
+  const handleDeactivateClick = () => {
+    setShowDeactivateModal(true);
+  };
+
+  const handleDeactivateConfirm = (newRoleId: string) => {
+    console.log("Reassigning users to role:", newRoleId);
+    onDeactivate(role);
+    setShowDeactivateModal(false);
+  };
 
   return (
     <div className="flex flex-col h-full bg-white">
+      {/* Deactivate Role Modal */}
+      <DeactivateRoleModal
+        isOpen={showDeactivateModal}
+        onClose={() => setShowDeactivateModal(false)}
+        onDeactivate={handleDeactivateConfirm}
+        roleName={role.name}
+      />
+
       {/* Header with Tabs */}
       <div className="mb-6">
         <Tabs
@@ -42,12 +63,10 @@ const ViewRole: React.FC<ViewRoleProps> = ({
           <RoleInfoTab
             role={role}
             onEdit={() => onEdit(role)}
-            onDeactivate={() => onDeactivate(role)}
+            onDeactivate={handleDeactivateClick}
           />
         ) : (
-          <div className="flex items-center justify-center h-64 text-gray-500">
-            Configuration tab coming soon
-          </div>
+          <RoleConfigurationTab onDeactivate={handleDeactivateClick} />
         )}
       </div>
     </div>
