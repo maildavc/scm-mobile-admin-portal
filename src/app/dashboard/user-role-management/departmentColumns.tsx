@@ -95,7 +95,8 @@ const OptionsButton = ({
                     (item.label === "View Department" ||
                       item.label === "View Request" ||
                       item.label === "Approve Request" ||
-                      item.label === "Reject Request") &&
+                      item.label === "Reject Request" ||
+                      item.label === "Deactivate Department") &&
                     onViewDepartment
                   ) {
                     onViewDepartment(department);

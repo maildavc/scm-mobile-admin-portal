@@ -26,6 +26,7 @@ import ViewUser from "@/components/Dashboard/UserRoleManagement/ViewUser";
 import ApproveUserRequest from "@/components/Dashboard/UserRoleManagement/ApproveUserRequest";
 import ViewRole from "@/components/Dashboard/UserRoleManagement/ViewRole";
 import ApproveRoleRequest from "@/components/Dashboard/UserRoleManagement/ApproveRoleRequest";
+import ViewDepartment from "@/components/Dashboard/UserRoleManagement/ViewDepartment";
 import ActionButton from "@/components/Dashboard/ActionButton";
 
 type User = {
@@ -48,6 +49,14 @@ type Role = {
   updated: string;
 };
 
+type Department = {
+  id: string;
+  name: string;
+  description: string;
+  status: "Active" | "Deactivated" | "Awaiting Approval";
+  updated: string;
+};
+
 export default function UserRoleManagement() {
   const [currentView, setCurrentView] = useState("Overview");
   const [activeTab, setActiveTab] = useState("Users");
@@ -55,6 +64,7 @@ export default function UserRoleManagement() {
   const [editRole, setEditRole] = useState<Role | null>(null);
   const [viewUser, setViewUser] = useState<User | null>(null);
   const [viewRole, setViewRole] = useState<Role | null>(null);
+  const [viewDepartment, setViewDepartment] = useState<Department | null>(null);
   const { isApprover } = useRole();
 
   const allSidebarItems = USER_ROLE_SIDEBAR_ITEMS.map((item) => ({
@@ -72,6 +82,7 @@ export default function UserRoleManagement() {
     setEditRole(null);
     setViewUser(null);
     setViewRole(null);
+    setViewDepartment(null);
   };
 
   const handleEditUser = (user: User) => {
@@ -102,6 +113,19 @@ export default function UserRoleManagement() {
     setViewRole(role);
   };
 
+  const handleViewDepartment = (department: Department) => {
+    setViewDepartment(department);
+  };
+
+  const handleEditDepartment = (department: Department) => {
+    console.log("Edit department:", department);
+    // TODO: Implement edit department functionality
+  };
+
+  const handleDeactivateDepartment = (department: Department) => {
+    setViewDepartment(department);
+  };
+
   const columns = createUserColumns(
     handleEditUser,
     handleViewUser,
@@ -114,8 +138,8 @@ export default function UserRoleManagement() {
     isApprover,
   );
   const departmentColumns = createDepartmentColumns(
-    undefined,
-    undefined,
+    handleEditDepartment,
+    handleViewDepartment,
     isApprover,
   );
 
@@ -132,7 +156,13 @@ export default function UserRoleManagement() {
           <Sidebar menuItems={sidebarItems} onItemClick={handleSidebarClick} />
 
           <main className="flex-1 p-8 bg-white overflow-hidden pt-4 overflow-y-auto">
-            {viewRole ? (
+            {viewDepartment ? (
+              <ViewDepartment
+                department={viewDepartment}
+                onEdit={handleEditDepartment}
+                onDeactivate={handleDeactivateDepartment}
+              />
+            ) : viewRole ? (
               isApprover ? (
                 <ApproveRoleRequest
                   role={viewRole}
