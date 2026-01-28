@@ -59,7 +59,7 @@ const OptionsButton = ({
 
   const initiatorMenuItems = [
     { icon: FiEye, label: "View User" },
-    { icon: FiEdit3, label: "Edit User" },
+    { icon: FiEdit3, label: "Edit User Details" },
     { icon: FiTrash2, label: "Deactivate User" },
   ];
 

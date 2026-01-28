@@ -54,7 +54,7 @@ const OptionsButton = ({
 
   const initiatorMenuItems = [
     { icon: FiEye, label: "View Role" },
-    { icon: FiEdit3, label: "Edit Role" },
+    { icon: FiEdit3, label: "Edit Role Permissions" },
     { icon: FiTrash2, label: "Deactivate Role" },
   ];
 
@@ -94,7 +94,8 @@ const OptionsButton = ({
                     (item.label === "View Role" ||
                       item.label === "View Request" ||
                       item.label === "Approve Request" ||
-                      item.label === "Reject Request") &&
+                      item.label === "Reject Request" ||
+                      item.label === "Deactivate Role") &&
                     onViewRole
                   ) {
                     onViewRole(role);

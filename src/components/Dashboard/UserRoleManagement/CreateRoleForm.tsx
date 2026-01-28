@@ -9,6 +9,13 @@ import Image from "next/image";
 interface CreateRoleFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
+  editRole?: {
+    id: string;
+    name: string;
+    description: string;
+    status: "Active" | "Deactivated" | "Awaiting Approval";
+    updated: string;
+  } | null;
 }
 
 import { PERMISSION_MODULES } from "@/constants/userRoleManagement/createRole";
@@ -16,9 +23,10 @@ import { PERMISSION_MODULES } from "@/constants/userRoleManagement/createRole";
 const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   onSuccess,
   onCancel,
+  editRole,
 }) => {
-  const [roleName, setRoleName] = useState("");
-  const [description, setDescription] = useState("");
+  const [roleName, setRoleName] = useState(editRole?.name || "");
+  const [description, setDescription] = useState(editRole?.description || "");
   const [selectedPermissions, setSelectedPermissions] = useState<
     Record<string, boolean>
   >({});
@@ -63,10 +71,12 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
         <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
-          Role Creation Successful
+          {editRole ? "Role Update Successful" : "Role Creation Successful"}
         </h2>
         <p className="text-sm text-[#707781] mb-8 text-center">
-          Role creation was successfully sent for approver confirmation.
+          {editRole
+            ? "Role update was successfully sent for approver confirmation."
+            : "Role creation was successfully sent for approver confirmation."}
         </p>
         <div className="flex gap-4">
           <div className="w-56">
@@ -152,7 +162,7 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
         </div>
         <div className="w-40">
           <Button
-            text="Create Role"
+            text={editRole ? "Update Role" : "Create Role"}
             variant="primary"
             disabled={!isFormValid}
             onClick={handleCreateRole}

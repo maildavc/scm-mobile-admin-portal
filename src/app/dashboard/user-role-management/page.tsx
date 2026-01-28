@@ -25,6 +25,7 @@ import CreateDepartmentForm from "@/components/Dashboard/UserRoleManagement/Crea
 import ViewUser from "@/components/Dashboard/UserRoleManagement/ViewUser";
 import ApproveUserRequest from "@/components/Dashboard/UserRoleManagement/ApproveUserRequest";
 import ViewRole from "@/components/Dashboard/UserRoleManagement/ViewRole";
+import ApproveRoleRequest from "@/components/Dashboard/UserRoleManagement/ApproveRoleRequest";
 import ActionButton from "@/components/Dashboard/ActionButton";
 
 type User = {
@@ -51,6 +52,7 @@ export default function UserRoleManagement() {
   const [currentView, setCurrentView] = useState("Overview");
   const [activeTab, setActiveTab] = useState("Users");
   const [editUser, setEditUser] = useState<User | null>(null);
+  const [editRole, setEditRole] = useState<Role | null>(null);
   const [viewUser, setViewUser] = useState<User | null>(null);
   const [viewRole, setViewRole] = useState<Role | null>(null);
   const { isApprover } = useRole();
@@ -67,7 +69,9 @@ export default function UserRoleManagement() {
   const handleSidebarClick = (label: string) => {
     setCurrentView(label);
     setEditUser(null);
+    setEditRole(null);
     setViewUser(null);
+    setViewRole(null);
   };
 
   const handleEditUser = (user: User) => {
@@ -89,13 +93,13 @@ export default function UserRoleManagement() {
   };
 
   const handleEditRole = (role: Role) => {
-    console.log("Edit role:", role);
-    // TODO: Implement edit role functionality
+    setEditRole(role);
+    setCurrentView("Create New Role");
+    setViewRole(null);
   };
 
   const handleDeactivateRole = (role: Role) => {
-    console.log("Deactivate role:", role);
-    // TODO: Implement deactivate role functionality
+    setViewRole(role);
   };
 
   const columns = createUserColumns(
@@ -129,12 +133,27 @@ export default function UserRoleManagement() {
 
           <main className="flex-1 p-8 bg-white overflow-hidden pt-4 overflow-y-auto">
             {viewRole ? (
-              <ViewRole
-                role={viewRole}
-                onBack={() => setViewRole(null)}
-                onEdit={handleEditRole}
-                onDeactivate={handleDeactivateRole}
-              />
+              isApprover ? (
+                <ApproveRoleRequest
+                  role={viewRole}
+                  onBack={() => setViewRole(null)}
+                  onApprove={(role) => {
+                    console.log("Approve role:", role);
+                    // Approval logic handled in component
+                  }}
+                  onReject={(role, reason) => {
+                    console.log("Reject role:", role, "Reason:", reason);
+                    // Rejection logic handled in component
+                  }}
+                />
+              ) : (
+                <ViewRole
+                  role={viewRole}
+                  onBack={() => setViewRole(null)}
+                  onEdit={handleEditRole}
+                  onDeactivate={handleDeactivateRole}
+                />
+              )
             ) : viewUser ? (
               isApprover ? (
                 <ApproveUserRequest
@@ -242,8 +261,15 @@ export default function UserRoleManagement() {
               />
             ) : currentView === "Create New Role" ? (
               <CreateRoleForm
-                onCancel={() => setCurrentView("Overview")}
-                onSuccess={() => setCurrentView("Overview")}
+                editRole={editRole}
+                onCancel={() => {
+                  setCurrentView("Overview");
+                  setEditRole(null);
+                }}
+                onSuccess={() => {
+                  setCurrentView("Overview");
+                  setEditRole(null);
+                }}
               />
             ) : currentView === "Create Department" ? (
               <CreateDepartmentForm

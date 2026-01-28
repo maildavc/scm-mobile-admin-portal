@@ -55,7 +55,7 @@ const OptionsButton = ({
 
   const initiatorMenuItems = [
     { icon: FiEye, label: "View Department" },
-    { icon: FiEdit3, label: "Edit Department" },
+    { icon: FiEdit3, label: "Edit Department Details" },
     { icon: FiTrash2, label: "Deactivate Department" },
   ];
 
