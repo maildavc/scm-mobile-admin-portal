@@ -27,6 +27,7 @@ import ApproveUserRequest from "@/components/Dashboard/UserRoleManagement/Approv
 import ViewRole from "@/components/Dashboard/UserRoleManagement/ViewRole";
 import ApproveRoleRequest from "@/components/Dashboard/UserRoleManagement/ApproveRoleRequest";
 import ViewDepartment from "@/components/Dashboard/UserRoleManagement/ViewDepartment";
+import ApproveDepartmentRequest from "@/components/Dashboard/UserRoleManagement/ApproveDepartmentRequest";
 import ActionButton from "@/components/Dashboard/ActionButton";
 
 type User = {
@@ -157,11 +158,18 @@ export default function UserRoleManagement() {
 
           <main className="flex-1 p-8 bg-white overflow-hidden pt-4 overflow-y-auto">
             {viewDepartment ? (
-              <ViewDepartment
-                department={viewDepartment}
-                onEdit={handleEditDepartment}
-                onDeactivate={handleDeactivateDepartment}
-              />
+              isApprover ? (
+                <ApproveDepartmentRequest
+                  department={viewDepartment}
+                  onBack={() => setViewDepartment(null)}
+                />
+              ) : (
+                <ViewDepartment
+                  department={viewDepartment}
+                  onEdit={handleEditDepartment}
+                  onDeactivate={handleDeactivateDepartment}
+                />
+              )
             ) : viewRole ? (
               isApprover ? (
                 <ApproveRoleRequest
