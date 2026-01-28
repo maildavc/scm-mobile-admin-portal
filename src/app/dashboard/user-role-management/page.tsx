@@ -22,6 +22,7 @@ import { createDepartmentColumns } from "./departmentColumns";
 import CreateUserForm from "@/components/Dashboard/UserRoleManagement/CreateUserForm";
 import CreateRoleForm from "@/components/Dashboard/UserRoleManagement/CreateRoleForm";
 import CreateDepartmentForm from "@/components/Dashboard/UserRoleManagement/CreateDepartmentForm";
+import ActionButton from "@/components/Dashboard/ActionButton";
 
 type User = {
   // ... User type stays same
@@ -100,12 +101,24 @@ export default function UserRoleManagement() {
                   ))}
                 </div>
 
-                <div className="mb-6">
+                <div className="mb-6 flex items-center justify-between">
                   <Tabs
                     tabs={["Users", "Roles", "Department"]}
                     activeTab={activeTab}
                     onTabChange={setActiveTab}
                   />
+                  <div className="flex gap-3">
+                    <ActionButton
+                      onClick={() => console.log("Download clicked")}
+                      label="Download Table as PDF"
+                      actionText="Download"
+                    />
+                    <ActionButton
+                      onClick={() => console.log("Export clicked")}
+                      label="Export Table as CSV"
+                      actionText="Export"
+                    />
+                  </div>
                 </div>
 
                 {activeTab === "Users" ? (
