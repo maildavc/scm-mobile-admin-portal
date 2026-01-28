@@ -8,15 +8,19 @@ interface ActionButtonProps {
   onClick?: () => void;
   label: string;
   actionText: string;
+  fullWidth?: boolean;
 }
 
 const ActionButton: React.FC<ActionButtonProps> = ({
   onClick,
   label,
   actionText,
+  fullWidth = false,
 }) => {
   return (
-    <div className="flex items-center gap-4 px-3 py-4 bg-white border border-gray-100 rounded-2xl">
+    <div
+      className={`flex items-center gap-4 px-3 py-4 bg-white border border-gray-100 rounded-2xl ${fullWidth ? "flex-1" : ""}`}
+    >
       <div className="flex items-center justify-center w-12 h-12 bg-[#F4F4F5] rounded-full">
         <FiFile size={20} color="#2F3140" />
       </div>

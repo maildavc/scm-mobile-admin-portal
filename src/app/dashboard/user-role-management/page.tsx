@@ -22,6 +22,7 @@ import { createDepartmentColumns } from "./departmentColumns";
 import CreateUserForm from "@/components/Dashboard/UserRoleManagement/CreateUserForm";
 import CreateRoleForm from "@/components/Dashboard/UserRoleManagement/CreateRoleForm";
 import CreateDepartmentForm from "@/components/Dashboard/UserRoleManagement/CreateDepartmentForm";
+import ViewUser from "@/components/Dashboard/UserRoleManagement/ViewUser";
 import ActionButton from "@/components/Dashboard/ActionButton";
 
 type User = {
@@ -89,7 +90,20 @@ export default function UserRoleManagement() {
           <Sidebar menuItems={sidebarItems} onItemClick={handleSidebarClick} />
 
           <main className="flex-1 p-8 bg-white overflow-hidden pt-4 overflow-y-auto">
-            {currentView === "Overview" ? (
+            {viewUser ? (
+              <ViewUser
+                user={viewUser}
+                onBack={() => setViewUser(null)}
+                onEdit={(user) => {
+                  setEditUser(user);
+                  setViewUser(null);
+                }}
+                onDeactivate={(user) => {
+                  console.log("Deactivate user:", user);
+                  // Add deactivation logic here
+                }}
+              />
+            ) : currentView === "Overview" ? (
               <>
                 <div className="grid grid-cols-2 lg:grid-cols-2 gap-6 mb-10">
                   {STATS_CONFIG.map((stat) => (

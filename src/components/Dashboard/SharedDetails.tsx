@@ -3,12 +3,17 @@ import React from "react";
 export const DetailCard = ({
   title,
   children,
+  headerContent,
 }: {
   title: string;
   children: React.ReactNode;
+  headerContent?: React.ReactNode;
 }) => (
   <div className="border rounded-xl p-4 border-[#F4F4F5]">
     <h3 className="text-sm font-semibold text-[#2F3140] mb-6">{title}</h3>
+    {headerContent && (
+      <div className="flex justify-center mb-6">{headerContent}</div>
+    )}
     <div className="space-y-4">{children}</div>
   </div>
 );
