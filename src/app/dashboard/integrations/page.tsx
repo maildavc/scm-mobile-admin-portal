@@ -12,9 +12,38 @@ import {
   getBreadcrumbs,
 } from "@/constants/integrations/integrations";
 import { columns } from "./columns";
+import ConnectNewIntegration from "@/components/Dashboard/Integrations/ConnectNewIntegration";
 
 const IntegrationsPage = () => {
-  const breadcrumbs = getBreadcrumbs();
+  const [view, setView] = React.useState<"overview" | "connect-new">(
+    "overview",
+  );
+  // Create a mutable copy with proper types
+  const breadcrumbs: {
+    label: string;
+    href?: string;
+    onClick?: () => void;
+    active?: boolean;
+  }[] = [...getBreadcrumbs()];
+
+  if (view === "connect-new") {
+    breadcrumbs.push({ label: "Connect New", active: true });
+    // Make Integrations link active/clickable to go back
+    breadcrumbs[1] = {
+      ...breadcrumbs[1],
+      active: false,
+      onClick: () => setView("overview"),
+      href: undefined,
+    };
+  }
+
+  const handleSidebarClick = (label: string) => {
+    if (label === "Connect New") {
+      setView("connect-new");
+    } else if (label === "Overview") {
+      setView("overview");
+    }
+  };
 
   return (
     <SidebarProvider>
@@ -24,37 +53,51 @@ const IntegrationsPage = () => {
         </div>
         <div className="flex-1 flex h-full">
           <Sidebar
-            menuItems={INTEGRATIONS_SIDEBAR_ITEMS}
-            onItemClick={(label) => console.log(label)}
+            menuItems={INTEGRATIONS_SIDEBAR_ITEMS.map((item) => ({
+              ...item,
+              isActive:
+                (view === "overview" && item.label === "Overview") ||
+                (view === "connect-new" && item.label === "Connect New"),
+            }))}
+            onItemClick={handleSidebarClick}
           />
 
           <main className="flex-1 p-8 bg-white overflow-hidden pt-4 overflow-y-auto">
-            <div className="flex flex-col gap-6">
-              {/* Action Buttons */}
-              <div className="flex flex-col md:flex-row gap-4">
-                <ActionButton
-                  label="Download Table as PDF"
-                  actionText="Download"
-                  onClick={() => console.log("Download PDF")}
-                  fullWidth
-                />
-                <ActionButton
-                  label="Export Table as CSV"
-                  actionText="Export"
-                  onClick={() => console.log("Export CSV")}
-                  fullWidth
-                />
-              </div>
+            {view === "connect-new" ? (
+              <ConnectNewIntegration
+                onCancel={() => setView("overview")}
+                onTestConnection={(data) =>
+                  console.log("Test Connection", data)
+                }
+              />
+            ) : (
+              <div className="flex flex-col gap-6">
+                {/* Action Buttons */}
+                <div className="flex flex-col md:flex-row gap-4">
+                  <ActionButton
+                    label="Download Table as PDF"
+                    actionText="Download"
+                    onClick={() => console.log("Download PDF")}
+                    fullWidth
+                  />
+                  <ActionButton
+                    label="Export Table as CSV"
+                    actionText="Export"
+                    onClick={() => console.log("Export CSV")}
+                    fullWidth
+                  />
+                </div>
 
-              {/* Table */}
-              <div>
-                <Table
-                  data={MOCK_DATA}
-                  columns={columns}
-                  itemsPerPage={PAGE_CONFIG.itemsPerPage}
-                />
+                {/* Table */}
+                <div>
+                  <Table
+                    data={MOCK_DATA}
+                    columns={columns}
+                    itemsPerPage={PAGE_CONFIG.itemsPerPage}
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </main>
         </div>
       </div>

@@ -3,10 +3,8 @@
 import { Integration } from "@/constants/integrations/integrations";
 import { Column } from "@/components/Dashboard/Table";
 import { StatusBadge } from "@/components/Dashboard/StatusBadge";
-import Button from "@/components/Button";
 import { HiMenu } from "react-icons/hi";
 import { TbFilterEdit } from "react-icons/tb";
-import { RiApps2Line } from "react-icons/ri";
 import Image from "next/image";
 
 const FilterableHeader = ({ children }: { children: string }) => (

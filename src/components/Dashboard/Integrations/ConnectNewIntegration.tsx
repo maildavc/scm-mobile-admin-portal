@@ -1,0 +1,149 @@
+"use client";
+
+import React, { useState } from "react";
+import Button from "@/components/Button";
+import Input from "@/components/Input";
+import { FiImage } from "react-icons/fi";
+
+export interface ConnectNewIntegrationData {
+  name: string;
+  description: string;
+  clientUrl: string;
+  clientSecretKey: string;
+  username: string;
+  password: string;
+}
+
+interface ConnectNewIntegrationProps {
+  onCancel: () => void;
+  onTestConnection: (data: ConnectNewIntegrationData) => void;
+}
+
+const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
+  onCancel,
+  onTestConnection,
+}) => {
+  const [formData, setFormData] = useState<ConnectNewIntegrationData>({
+    name: "",
+    description: "",
+    clientUrl: "",
+    clientSecretKey: "",
+    username: "",
+    password: "",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  return (
+    <div className="bg-white rounded-lg p-8 flex flex-col">
+      <div className="mb-8">
+        <h2 className="text-xl font-bold text-[#2F3140]">
+          Audience / Targeting
+        </h2>
+        <p className="text-sm text-[#707781] mt-1">
+          Tell us who this notification is intended for
+        </p>
+      </div>
+
+      <div className="flex-1 flex flex-col items-center">
+        {/* Image Upload Placeholder */}
+        <div className="w-24 h-24 rounded-full bg-[#1A1C29] flex items-center justify-center mb-12">
+          <FiImage size={32} className="text-white" />
+        </div>
+
+        {/* Form Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 w-full">
+          <Input
+            label="Integration name"
+            placeholder="Enter"
+            required
+            theme="light"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            type="text"
+            className="w-full"
+          />
+          <Input
+            label="Description"
+            placeholder="Enter"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            theme="light"
+            type="text"
+            className="w-full"
+          />
+          <Input
+            label="Client URL"
+            placeholder="Input URL"
+            required
+            name="clientUrl"
+            value={formData.clientUrl}
+            onChange={handleChange}
+            theme="light"
+            type="url"
+            className="w-full"
+          />
+          <Input
+            label="Client Secret Key"
+            placeholder="Input number"
+            required
+            name="clientSecretKey"
+            value={formData.clientSecretKey}
+            onChange={handleChange}
+            theme="light"
+            type="text"
+            className="w-full"
+          />
+          <Input
+            label="Username"
+            placeholder="Enter username"
+            required
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            theme="light"
+            type="text"
+            className="w-full"
+          />
+          <Input
+            label="Password"
+            placeholder="Enter password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            theme="light"
+            type="password"
+            isPassword={true}
+            className="w-full"
+          />
+        </div>
+      </div>
+
+      {/* Footer Buttons */}
+      <div className="mt-12 flex justify-end gap-3">
+        <div className="w-32">
+          <Button
+            text="Cancel"
+            variant="primary"
+            onClick={onCancel}
+            className="bg-[#F4F4F5]! text-[#2F3140]! border-none! font-bold"
+          />
+        </div>
+        <div className="w-40">
+          <Button
+            text="Test Connection"
+            variant="primary"
+            onClick={() => onTestConnection(formData)}
+            className="bg-[#F2D4D7]! text-white! border-none! font-bold" // Disabled-ish look but text might need to be darker if disabled? Screenshot shows white text on pink bg.
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ConnectNewIntegration;
