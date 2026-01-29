@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Sidebar, { SidebarProvider } from "@/components/Dashboard/Sidebar";
 import PageHeader from "@/components/Dashboard/PageHeader";
-import StatsCard from "@/components/Dashboard/ProductOffering/StatsCard";
+import StatsCard from "@/components/Dashboard/StatsCard";
 import Table from "@/components/Dashboard/Table";
 import Tabs from "@/components/Dashboard/Tabs";
 import {

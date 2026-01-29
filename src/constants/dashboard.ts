@@ -35,6 +35,7 @@ export const DASHBOARD_CARDS = [
     title: "Audit Log",
     description:
       "Manage customer profiles, update KYC, view customer details and many more in this module",
+    path: "/dashboard/audit-log",
   },
   {
     icon: FiCheckCircle,

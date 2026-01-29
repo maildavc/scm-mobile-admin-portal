@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Sidebar, { SidebarProvider } from "@/components/Dashboard/Sidebar";
 import PageHeader from "@/components/Dashboard/PageHeader";
-import StatsCard from "@/components/Dashboard/ProductOffering/StatsCard";
+import StatsCard from "@/components/Dashboard/StatsCard";
 import Table from "@/components/Dashboard/Table";
 import CreateProductForm from "@/components/Dashboard/ProductOffering/CreateProductForm";
 import ViewProduct from "@/components/Dashboard/ProductOffering/ViewProduct";
@@ -14,8 +14,8 @@ import {
   STATS_CONFIG,
   PAGE_CONFIG,
   getBreadcrumbs,
-} from "@/constants/productOffering/productOffering"
-import ActionButton from "@/components/Dashboard/ActionButton";;
+} from "@/constants/productOffering/productOffering";
+import ActionButton from "@/components/Dashboard/ActionButton";
 import { createProductColumns } from "./columns";
 import { useRole } from "@/context/RoleContext";
 

@@ -9,6 +9,7 @@ interface PageHeaderProps {
     label: string;
     href?: string;
     onClick?: () => void;
+    active?: boolean;
   }[];
 }
 
