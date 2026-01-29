@@ -14,6 +14,7 @@ import {
   PAGE_CONFIG,
   getBreadcrumbs,
 } from "@/constants/customerManagement/customerManagement";
+import ActionButton from "@/components/Dashboard/ActionButton";
 import { createCustomerColumns } from "./columns";
 import { useRole } from "@/context/RoleContext";
 import ViewCustomerRequest from "@/components/Dashboard/CustomerManagement/ViewCustomerRequest";
@@ -105,6 +106,21 @@ export default function CustomerManagement() {
                       value={stat.value}
                     />
                   ))}
+                </div>
+
+                <div className="flex justify-between items-center gap-3 mb-6">
+                  <ActionButton
+                    onClick={() => console.log("Download clicked")}
+                    label="Download Table as PDF"
+                    actionText="Download"
+                    fullWidth
+                  />
+                  <ActionButton
+                    onClick={() => console.log("Export clicked")}
+                    label="Export Table as CSV"
+                    actionText="Export"
+                    fullWidth
+                  />
                 </div>
 
                 <Table

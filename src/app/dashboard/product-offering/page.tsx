@@ -14,7 +14,8 @@ import {
   STATS_CONFIG,
   PAGE_CONFIG,
   getBreadcrumbs,
-} from "@/constants/productOffering/productOffering";
+} from "@/constants/productOffering/productOffering"
+import ActionButton from "@/components/Dashboard/ActionButton";;
 import { createProductColumns } from "./columns";
 import { useRole } from "@/context/RoleContext";
 
@@ -109,6 +110,21 @@ export default function ProductOffering() {
                       }
                     />
                   ))}
+                </div>
+
+                <div className="flex justify-between items-center gap-3 mb-6">
+                  <ActionButton
+                    onClick={() => console.log("Download clicked")}
+                    label="Download Table as PDF"
+                    actionText="Download"
+                    fullWidth
+                  />
+                  <ActionButton
+                    onClick={() => console.log("Export clicked")}
+                    label="Export Table as CSV"
+                    actionText="Export"
+                    fullWidth
+                  />
                 </div>
 
                 <Table
