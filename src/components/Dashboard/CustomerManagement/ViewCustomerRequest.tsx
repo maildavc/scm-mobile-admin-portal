@@ -5,6 +5,10 @@ import Image from "next/image";
 import ApproveModal from "@/components/Dashboard/Shared/ApproveModal";
 import RejectModal from "@/components/Dashboard/Shared/RejectModal";
 import { StatusBadge } from "@/components/Dashboard/StatusBadge";
+import Tabs from "@/components/Dashboard/Tabs";
+import ActiveProductsTab from "./ActiveProductsTab";
+import PaymentsAndCardsTab from "./PaymentsAndCardsTab";
+import DocumentsTab from "./DocumentsTab";
 
 type Customer = {
   id: string;
@@ -70,6 +74,7 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
   onApprove,
   onReject,
 }) => {
+  const [activeTab, setActiveTab] = useState("Customer Info");
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [viewStatus, setViewStatus] = useState<
@@ -167,79 +172,99 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
         </div>
       </div>
 
-      {/* Customer Details Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Customer Information */}
-        <div className="border rounded-xl p-6 border-[#F4F4F5]">
-          <h3 className="text-sm font-semibold text-[#2F3140] mb-6">
-            Customer Information
-          </h3>
+      <div className="mb-6">
+        <Tabs
+          tabs={["Customer Info", "Active Products", "Cards", "Documents"]}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+      </div>
 
-          {/* Avatar */}
-          <div className="flex justify-center mb-6">
-            <div className="w-24 h-24 rounded-full bg-[#2F3140] flex items-center justify-center text-white">
-              <BiUser size={48} />
+      <div className="flex-1 overflow-auto">
+        {activeTab === "Customer Info" && (
+          /* Customer Details Grid */
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            {/* Customer Information */}
+            <div className="border rounded-xl p-6 border-[#F4F4F5]">
+              <h3 className="text-sm font-semibold text-[#2F3140] mb-6">
+                Customer Information
+              </h3>
+
+              {/* Avatar */}
+              <div className="flex justify-center mb-6">
+                <div className="w-24 h-24 rounded-full bg-[#2F3140] flex items-center justify-center text-white">
+                  <BiUser size={48} />
+                </div>
+              </div>
+
+              {/* Customer Info */}
+              <div className="space-y-4">
+                {CUSTOMER_INFO.map((info) => (
+                  <DetailRow
+                    key={info.label}
+                    label={info.label}
+                    value={info.value}
+                    isLast={false}
+                  />
+                ))}
+                <div className="flex justify-between items-center py-2 border-b border-[#F4F4F5]">
+                  <span className="text-sm text-[#2F3140]">Account Status</span>
+                  <StatusBadge status={customer.status} />
+                </div>
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-sm text-[#2F3140]">KYC Status</span>
+                  <StatusBadge status={customer.kycStatus} />
+                </div>
+              </div>
+            </div>
+
+            {/* Profile Information */}
+            <div className="border rounded-xl p-6 border-[#F4F4F5]">
+              <h3 className="text-sm font-semibold text-[#2F3140] mb-6">
+                Profile Information
+              </h3>
+              <div className="space-y-4">
+                {PROFILE_INFO.map((info, index) => (
+                  <DetailRow
+                    key={info.label}
+                    label={info.label}
+                    value={info.value}
+                    isLast={index === PROFILE_INFO.length - 1}
+                  />
+                ))}
+              </div>
             </div>
           </div>
+        )}
 
-          {/* Customer Info */}
-          <div className="space-y-4">
-            {CUSTOMER_INFO.map((info) => (
-              <DetailRow
-                key={info.label}
-                label={info.label}
-                value={info.value}
-                isLast={false}
-              />
-            ))}
-            <div className="flex justify-between items-center py-2 border-b border-[#F4F4F5]">
-              <span className="text-sm text-[#2F3140]">Account Status</span>
-              <StatusBadge status={customer.status} />
-            </div>
-            <div className="flex justify-between items-center py-2">
-              <span className="text-sm text-[#2F3140]">KYC Status</span>
-              <StatusBadge status={customer.kycStatus} />
-            </div>
-          </div>
-        </div>
-
-        {/* Profile Information */}
-        <div className="border rounded-xl p-6 border-[#F4F4F5]">
-          <h3 className="text-sm font-semibold text-[#2F3140] mb-6">
-            Profile Information
-          </h3>
-          <div className="space-y-4">
-            {PROFILE_INFO.map((info, index) => (
-              <DetailRow
-                key={info.label}
-                label={info.label}
-                value={info.value}
-                isLast={index === PROFILE_INFO.length - 1}
-              />
-            ))}
-          </div>
-        </div>
+        {activeTab === "Active Products" && (
+          <ActiveProductsTab mode="approval" />
+        )}
+        {activeTab === "Cards" && <PaymentsAndCardsTab mode="approval" />}
+        {activeTab === "Documents" && <DocumentsTab mode="approval" />}
       </div>
 
       {/* Footer Actions */}
-      <div className="mt-auto pt-6 flex justify-end gap-3 border-t border-transparent">
-        <div className="w-32">
-          <Button
-            text="Reject Request"
-            variant="outline"
-            onClick={() => setIsRejectModalOpen(true)}
-            className="text-[#B2171E]! text-xs md:text-sm"
-          />
+      {activeTab !== "Active Products" && (
+        <div className="mt-auto pt-6 flex justify-end gap-3 border-t border-transparent">
+          <div className="w-32">
+            <Button
+              text="Reject Request"
+              variant="outline"
+              onClick={() => setIsRejectModalOpen(true)}
+              className="text-[#B2171E]! text-xs md:text-sm"
+            />
+          </div>
+          <div className="w-40">
+            <Button
+              text="Approve Request"
+              variant="primary"
+              onClick={() => setIsApproveModalOpen(true)}
+              className="text-xs md:text-sm"
+            />
+          </div>
         </div>
-        <div className="w-40">
-          <Button
-            text="Approve Request"
-            variant="primary"
-            onClick={() => setIsApproveModalOpen(true)}
-            className="text-xs md:text-sm"
-          />
-        </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -6,6 +6,7 @@ export type Product = {
   portfolioSize: string;
   status: "Active" | "Deactivated" | "Awaiting Approval";
   lastUpdated: string;
+  changes?: "Reactivated" | "Assigned" | "Deactivated";
 };
 
 export const ACTIVE_PRODUCTS: Product[] = [
@@ -17,6 +18,7 @@ export const ACTIVE_PRODUCTS: Product[] = [
     portfolioSize: "NGN200M",
     status: "Deactivated",
     lastUpdated: "28/12/2025 13:32",
+    changes: "Reactivated",
   },
   {
     id: "2",
@@ -26,6 +28,7 @@ export const ACTIVE_PRODUCTS: Product[] = [
     portfolioSize: "NGN200M",
     status: "Awaiting Approval",
     lastUpdated: "28/12/2025 13:32",
+    changes: "Assigned",
   },
   {
     id: "3",
@@ -35,6 +38,7 @@ export const ACTIVE_PRODUCTS: Product[] = [
     portfolioSize: "NGN200M",
     status: "Active",
     lastUpdated: "28/12/2025 13:32",
+    changes: "Deactivated",
   },
   {
     id: "4",
@@ -53,6 +57,7 @@ export const ACTIVE_PRODUCTS: Product[] = [
     portfolioSize: "NGN200M",
     status: "Active",
     lastUpdated: "28/12/2025 13:32",
+    changes: "Reactivated",
   },
   {
     id: "6",
@@ -71,6 +76,7 @@ export const ACTIVE_PRODUCTS: Product[] = [
     portfolioSize: "NGN200M",
     status: "Awaiting Approval",
     lastUpdated: "28/12/2025 13:32",
+    changes: "Assigned",
   },
   {
     id: "8",
