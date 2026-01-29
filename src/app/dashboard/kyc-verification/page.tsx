@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Sidebar, { SidebarProvider } from "@/components/Dashboard/Sidebar";
 import PageHeader from "@/components/Dashboard/PageHeader";
 import Table from "@/components/Dashboard/Table";
@@ -12,15 +12,52 @@ import {
   PAGE_CONFIG,
   MOCK_DATA,
   getBreadcrumbs,
+  KYCRequest,
 } from "@/constants/kycVerification/kycVerification";
 import { createColumns } from "./columns";
 import { useRole } from "@/context/RoleContext";
+import ViewKYCRequest from "@/components/Dashboard/KYCVerification/ViewKYCRequest";
 
 const KYCVerificationPage = () => {
-  const breadcrumbs = getBreadcrumbs();
+  const [viewRequest, setViewRequest] = useState<KYCRequest | null>(null);
   const { isApprover } = useRole();
 
-  const columns = createColumns(isApprover);
+  const handleViewRequest = (request: KYCRequest) => {
+    setViewRequest(request);
+  };
+
+  const handleBack = () => {
+    setViewRequest(null);
+  };
+
+  const columns = createColumns(isApprover, handleViewRequest);
+
+  // Create a mutable copy of breadcrumbs with proper type
+  const breadcrumbs: {
+    label: string;
+    href?: string;
+    active?: boolean;
+    onClick?: () => void;
+  }[] = [...getBreadcrumbs()];
+
+  if (viewRequest) {
+    const kycCrumbIndex = breadcrumbs.findIndex(
+      (b) => b.label === "KYC Verification",
+    );
+    if (kycCrumbIndex !== -1) {
+      // Remove href and add onClick
+      breadcrumbs[kycCrumbIndex] = {
+        ...breadcrumbs[kycCrumbIndex],
+        href: undefined,
+        onClick: handleBack,
+      };
+    }
+
+    breadcrumbs.push({
+      label: viewRequest.customer.name,
+      active: true,
+    });
+  }
 
   return (
     <SidebarProvider>
@@ -31,47 +68,58 @@ const KYCVerificationPage = () => {
         <div className="flex-1 flex h-full">
           <Sidebar
             menuItems={KYC_SIDEBAR_ITEMS}
-            onItemClick={(label) => console.log(label)}
+            onItemClick={(label) => {
+              if (label === "Overview") handleBack();
+            }}
           />
 
           <main className="flex-1 p-8 bg-white overflow-hidden pt-4 overflow-y-auto">
-            <div className="flex flex-col gap-6">
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {STATS_CONFIG.map((stat) => (
-                  <StatsCard
-                    key={stat.label}
-                    label={stat.label}
-                    value={stat.value}
+            {viewRequest ? (
+              <ViewKYCRequest
+                request={viewRequest}
+                onApprove={() => setViewRequest(null)}
+                onReject={() => setViewRequest(null)}
+                onBack={handleBack}
+              />
+            ) : (
+              <div className="flex flex-col gap-6">
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {STATS_CONFIG.map((stat) => (
+                    <StatsCard
+                      key={stat.label}
+                      label={stat.label}
+                      value={stat.value}
+                    />
+                  ))}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col md:flex-row gap-4">
+                  <ActionButton
+                    label="Download Table as PDF"
+                    actionText="Download"
+                    onClick={() => console.log("Download PDF")}
+                    fullWidth
                   />
-                ))}
-              </div>
+                  <ActionButton
+                    label="Export Table as CSV"
+                    actionText="Export"
+                    onClick={() => console.log("Export CSV")}
+                    fullWidth
+                  />
+                </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col md:flex-row gap-4">
-                <ActionButton
-                  label="Download Table as PDF"
-                  actionText="Download"
-                  onClick={() => console.log("Download PDF")}
-                  fullWidth
-                />
-                <ActionButton
-                  label="Export Table as CSV"
-                  actionText="Export"
-                  onClick={() => console.log("Export CSV")}
-                  fullWidth
-                />
+                {/* Table */}
+                <div>
+                  <Table
+                    data={MOCK_DATA}
+                    columns={columns}
+                    itemsPerPage={PAGE_CONFIG.itemsPerPage}
+                  />
+                </div>
               </div>
-
-              {/* Table */}
-              <div>
-                <Table
-                  data={MOCK_DATA}
-                  columns={columns}
-                  itemsPerPage={PAGE_CONFIG.itemsPerPage}
-                />
-              </div>
-            </div>
+            )}
           </main>
         </div>
       </div>

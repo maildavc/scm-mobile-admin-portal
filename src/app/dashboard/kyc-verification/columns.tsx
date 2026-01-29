@@ -14,7 +14,13 @@ const FilterableHeader = ({ children }: { children: string }) => (
   </div>
 );
 
-const OptionsButton = ({ requestId }: { requestId: string }) => {
+const OptionsButton = ({
+  request,
+  onViewRequest,
+}: {
+  request: KYCRequest;
+  onViewRequest: (request: KYCRequest) => void;
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -62,8 +68,8 @@ const OptionsButton = ({ requestId }: { requestId: string }) => {
               <button
                 key={index}
                 onClick={() => {
-                  console.log(`${item.label} clicked for ${requestId}`);
                   setIsOpen(false);
+                  onViewRequest(request);
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
               >
@@ -80,7 +86,10 @@ const OptionsButton = ({ requestId }: { requestId: string }) => {
   );
 };
 
-export const createColumns = (isApprover: boolean): Column<KYCRequest>[] => {
+export const createColumns = (
+  isApprover: boolean,
+  onViewRequest?: (request: KYCRequest) => void,
+): Column<KYCRequest>[] => {
   const baseColumns: Column<KYCRequest>[] = [
     {
       header: (
@@ -161,11 +170,16 @@ export const createColumns = (isApprover: boolean): Column<KYCRequest>[] => {
               text="View"
               variant="outline"
               className="text-[#B2171E]! px-2! text-xs! font-bold"
-              onClick={() => console.log("View clicked", item.id)}
+              onClick={() => onViewRequest && onViewRequest(item)}
             />
           );
         }
-        return <OptionsButton requestId={item.id} />;
+        return (
+          <OptionsButton
+            request={item}
+            onViewRequest={onViewRequest || (() => {})}
+          />
+        );
       },
     });
   }
