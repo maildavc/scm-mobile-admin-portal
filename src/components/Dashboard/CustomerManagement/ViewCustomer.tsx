@@ -7,6 +7,7 @@ import ConfigurationTab from "./ConfigurationTab";
 import DocumentsTab from "./DocumentsTab";
 import PaymentsAndCardsTab from "./PaymentsAndCardsTab";
 import ActiveProductsTab from "./ActiveProductsTab";
+import ActivityLogTab from "./ActivityLogTab";
 
 type Customer = {
   id: string;
@@ -58,6 +59,8 @@ const ViewCustomer: React.FC<ViewCustomerProps> = ({
         <DocumentsTab />
       ) : activeTab === "Payments & Cards" ? (
         <PaymentsAndCardsTab />
+      ) : activeTab === "Activity Log" ? (
+        <ActivityLogTab />
       ) : (
         <div className="flex items-center justify-center h-64 text-gray-500">
           {activeTab} view coming soon
