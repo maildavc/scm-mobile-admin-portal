@@ -2,7 +2,13 @@ import React from "react";
 import { BsFillExclamationCircleFill, BsPauseCircleFill } from "react-icons/bs";
 import { GoCheckCircleFill } from "react-icons/go";
 
-type StatusType = "Active" | "Deactivated" | "Awaiting Approval" | "Completed";
+type StatusType =
+  | "Active"
+  | "Deactivated"
+  | "Awaiting Approval"
+  | "Completed"
+  | "Pending Verification"
+  | "Failed";
 
 interface StatusBadgeProps {
   status: StatusType;
@@ -33,6 +39,16 @@ const statusStyles: Record<
     border: "border-[#036B26]/10",
     text: "text-black",
   },
+  "Pending Verification": {
+    bg: "bg-[#FEF6E7]",
+    border: "border-[#865503]/10",
+    text: "text-black",
+  },
+  Failed: {
+    bg: "bg-[#FDE4E5]",
+    border: "border-[#B2171E]/10",
+    text: "text-black",
+  },
 };
 
 const getStatusIcon = (status: StatusType) => {
@@ -47,6 +63,14 @@ const getStatusIcon = (status: StatusType) => {
       );
     case "Completed":
       return <GoCheckCircleFill className="" size={14} color="#00A85A" />;
+    case "Pending Verification":
+      return (
+        <BsFillExclamationCircleFill className="" size={14} color="#E3A300" />
+      );
+    case "Failed":
+      return (
+        <BsFillExclamationCircleFill className="" size={14} color="#B2171E" />
+      );
   }
 };
 

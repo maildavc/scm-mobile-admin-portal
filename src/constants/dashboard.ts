@@ -42,6 +42,7 @@ export const DASHBOARD_CARDS = [
     title: "KYC Verification",
     description:
       "Manage customer profiles, update KYC, view customer details and many more in this module",
+    path: "/dashboard/kyc-verification",
   },
   {
     icon: RiChat3Line,
