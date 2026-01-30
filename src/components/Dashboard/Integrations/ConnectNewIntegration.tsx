@@ -17,20 +17,34 @@ export interface ConnectNewIntegrationData {
 interface ConnectNewIntegrationProps {
   onCancel: () => void;
   onTestConnection: (data: ConnectNewIntegrationData) => void;
+  initialData?: ConnectNewIntegrationData;
 }
 
 const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
   onCancel,
   onTestConnection,
+  initialData,
 }) => {
-  const [formData, setFormData] = useState<ConnectNewIntegrationData>({
-    name: "",
-    description: "",
-    clientUrl: "",
-    clientSecretKey: "",
-    username: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState<ConnectNewIntegrationData>(
+    initialData || {
+      name: "",
+      description: "",
+      clientUrl: "",
+      clientSecretKey: "",
+      username: "",
+      password: "",
+    },
+  );
+
+  const isValid = React.useMemo(() => {
+    return (
+      formData.name.trim() !== "" &&
+      formData.clientUrl.trim() !== "" &&
+      formData.clientSecretKey.trim() !== "" &&
+      formData.username.trim() !== "" &&
+      formData.password.trim() !== ""
+    );
+  }, [formData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -118,6 +132,7 @@ const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
             theme="light"
             type="password"
             isPassword={true}
+            required
             className="w-full"
           />
         </div>
@@ -135,10 +150,11 @@ const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
         </div>
         <div className="w-40">
           <Button
-            text="Test Connection"
+            text={initialData ? "Save Connection" : "Test Connection"}
             variant="primary"
             onClick={() => onTestConnection(formData)}
-            className="bg-[#F2D4D7]! text-white! border-none! font-bold" // Disabled-ish look but text might need to be darker if disabled? Screenshot shows white text on pink bg.
+            disabled={!isValid}
+            className={`${isValid ? "bg-[#B2171E]! text-white!" : "bg-[#F2D4D7]! text-white!"} border-none! font-bold transition-colors`}
           />
         </div>
       </div>
