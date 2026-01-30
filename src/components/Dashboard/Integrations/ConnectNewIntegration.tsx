@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 import { FiImage } from "react-icons/fi";
+import Image from "next/image";
 
 export interface ConnectNewIntegrationData {
   name: string;
@@ -36,6 +37,9 @@ const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
     },
   );
 
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
   const isValid = React.useMemo(() => {
     return (
       formData.name.trim() !== "" &&
@@ -50,8 +54,23 @@ const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
-    <div className="bg-white rounded-lg p-8 flex flex-col">
+    <div className="bg-white rounded-lg flex flex-col">
       <div className="mb-8">
         <h2 className="text-xl font-bold text-[#2F3140]">
           Audience / Targeting
@@ -63,8 +82,28 @@ const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
 
       <div className="flex-1 flex flex-col items-center">
         {/* Image Upload Placeholder */}
-        <div className="w-24 h-24 rounded-full bg-[#1A1C29] flex items-center justify-center mb-12">
-          <FiImage size={32} className="text-white" />
+        <div
+          onClick={handleImageClick}
+          className="w-24 h-24 rounded-full bg-[#1A1C29] flex items-center justify-center mb-12 cursor-pointer overflow-hidden relative transition-opacity hover:opacity-90"
+        >
+          {imagePreview ? (
+            <Image
+              src={imagePreview}
+              alt="Preview"
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <FiImage size={32} className="text-white" />
+          )}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageChange}
+            className="hidden"
+            accept="image/*"
+            aria-label="Upload integration image"
+          />
         </div>
 
         {/* Form Grid */}

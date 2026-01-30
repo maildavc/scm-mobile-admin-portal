@@ -30,9 +30,9 @@ const IntegrationInfoTab: React.FC<IntegrationInfoTabProps> = ({
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex gap-6">
+      <div className="flex flex-col lg:flex-row gap-6">
         {/* Left Column - Integration Details */}
-        <div className="w-1/2 ">
+        <div className="w-full lg:w-1/2">
           <DetailCard
             title=""
             className="h-full"
@@ -61,7 +61,7 @@ const IntegrationInfoTab: React.FC<IntegrationInfoTabProps> = ({
         </div>
 
         {/* Right Column - Subscribed Products */}
-        <div className="w-1/2">
+        <div className="w-full lg:w-1/2">
           <div className="border rounded-xl p-6 border-[#F4F4F5] h-full">
             <h3 className="text-sm font-bold text-[#2F3140] mb-6">
               All subscribed products
@@ -98,7 +98,7 @@ const IntegrationInfoTab: React.FC<IntegrationInfoTabProps> = ({
             text="Edit Info"
             variant="primary"
             onClick={onEdit}
-            className="text-xs font-bold!"
+            className="font-bold! text-xs"
           />
         </div>
       </div>
