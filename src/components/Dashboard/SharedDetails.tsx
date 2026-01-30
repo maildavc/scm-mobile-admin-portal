@@ -4,12 +4,14 @@ export const DetailCard = ({
   title,
   children,
   headerContent,
+  className = "",
 }: {
   title: string;
   children: React.ReactNode;
   headerContent?: React.ReactNode;
+  className?: string;
 }) => (
-  <div className="border rounded-xl p-4 border-[#F4F4F5]">
+  <div className={`border rounded-xl p-4 border-[#F4F4F5] ${className}`}>
     <h3 className="text-sm font-semibold text-[#2F3140] mb-6">{title}</h3>
     {headerContent && (
       <div className="flex justify-center mb-6">{headerContent}</div>

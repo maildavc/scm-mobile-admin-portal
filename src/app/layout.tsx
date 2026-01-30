@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "SCM Admin",
   description: "SCM Capital Admin Dashboard",
   icons: {
-    icon: "/scmassetLogo.svg",
+    icon: "/scmLogo.svg",
   },
 };
 

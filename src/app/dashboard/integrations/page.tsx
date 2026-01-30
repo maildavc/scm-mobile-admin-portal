@@ -13,11 +13,16 @@ import {
 } from "@/constants/integrations/integrations";
 import { columns } from "./columns";
 import ConnectNewIntegration from "@/components/Dashboard/Integrations/ConnectNewIntegration";
+import ViewIntegration from "@/components/Dashboard/Integrations/ViewIntegration";
+import { Integration } from "@/constants/integrations/integrations";
 
 const IntegrationsPage = () => {
-  const [view, setView] = React.useState<"overview" | "connect-new">(
-    "overview",
-  );
+  const [view, setView] = React.useState<
+    "overview" | "connect-new" | "view-integration"
+  >("overview");
+  const [selectedIntegration, setSelectedIntegration] =
+    React.useState<Integration | null>(null);
+
   // Create a mutable copy with proper types
   const breadcrumbs: {
     label: string;
@@ -35,14 +40,33 @@ const IntegrationsPage = () => {
       onClick: () => setView("overview"),
       href: undefined,
     };
+  } else if (view === "view-integration" && selectedIntegration) {
+    breadcrumbs.push({ label: selectedIntegration.name, active: true });
+    // Make Integrations link active/clickable to go back
+    breadcrumbs[1] = {
+      ...breadcrumbs[1],
+      active: false,
+      onClick: () => {
+        setView("overview");
+        setSelectedIntegration(null);
+      },
+      href: undefined,
+    };
   }
 
   const handleSidebarClick = (label: string) => {
     if (label === "Connect New") {
       setView("connect-new");
+      setSelectedIntegration(null);
     } else if (label === "Overview") {
       setView("overview");
+      setSelectedIntegration(null);
     }
+  };
+
+  const handleViewIntegration = (integration: Integration) => {
+    setSelectedIntegration(integration);
+    setView("view-integration");
   };
 
   return (
@@ -57,7 +81,8 @@ const IntegrationsPage = () => {
               ...item,
               isActive:
                 (view === "overview" && item.label === "Overview") ||
-                (view === "connect-new" && item.label === "Connect New"),
+                (view === "connect-new" && item.label === "Connect New") ||
+                (view === "view-integration" && item.label === "Overview"), // Keep Overview active when viewing integration details
             }))}
             onItemClick={handleSidebarClick}
           />
@@ -69,6 +94,14 @@ const IntegrationsPage = () => {
                 onTestConnection={(data) =>
                   console.log("Test Connection", data)
                 }
+              />
+            ) : view === "view-integration" && selectedIntegration ? (
+              <ViewIntegration
+                integration={selectedIntegration}
+                onRemove={() =>
+                  console.log("Remove Connection", selectedIntegration)
+                }
+                onEdit={() => console.log("Edit Info", selectedIntegration)}
               />
             ) : (
               <div className="flex flex-col gap-6">
@@ -92,7 +125,7 @@ const IntegrationsPage = () => {
                 <div>
                   <Table
                     data={MOCK_DATA}
-                    columns={columns}
+                    columns={columns(handleViewIntegration)}
                     itemsPerPage={PAGE_CONFIG.itemsPerPage}
                   />
                 </div>
