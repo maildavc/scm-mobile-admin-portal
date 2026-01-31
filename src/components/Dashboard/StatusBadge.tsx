@@ -11,7 +11,11 @@ type StatusType =
   | "Pending Verification"
   | "Failed"
   | "Fatal"
-  | "Shortage";
+  | "Shortage"
+  | "Sent"
+  | "Sending"
+  | "Draft"
+  | "Approved";
 
 interface StatusBadgeProps {
   status: StatusType;
@@ -62,6 +66,26 @@ const statusStyles: Record<
     border: "border-[#865503]/10",
     text: "text-black",
   },
+  Sent: {
+    bg: "bg-[#E7F6EC]",
+    border: "border-[#036B26]/10",
+    text: "text-black",
+  },
+  Sending: {
+    bg: "bg-[#FEF6E7]",
+    border: "border-[#865503]/10",
+    text: "text-black",
+  },
+  Draft: {
+    bg: "bg-[#EEEEEE]",
+    border: "border-[#555555]/10",
+    text: "text-black",
+  },
+  Approved: {
+    bg: "bg-[#E7F6EC]",
+    border: "border-[#036B26]/10",
+    text: "text-black",
+  },
 };
 
 const getStatusIcon = (status: StatusType) => {
@@ -81,15 +105,23 @@ const getStatusIcon = (status: StatusType) => {
         <BsFillExclamationCircleFill className="" size={14} color="#E3A300" />
       );
     case "Failed":
-      return (
-        <BsFillExclamationCircleFill className="" size={14} color="#B2171E" />
-      );
+      return <BsFillStopCircleFill className="" size={14} color="#f17a63" />;
     case "Fatal":
       return <BsFillStopCircleFill className="" size={14} color="#F17A63" />;
     case "Shortage":
       return (
         <BsFillExclamationCircleFill className="" size={14} color="#E3A300" />
       );
+    case "Sent":
+      return <GoCheckCircleFill className="" size={14} color="#00A85A" />;
+    case "Sending":
+      return (
+        <BsFillExclamationCircleFill className="" size={14} color="#E3A300" />
+      );
+    case "Draft":
+      return <BsPauseCircleFill className="" size={14} color="#A4A4A4" />;
+    case "Approved":
+      return <GoCheckCircleFill className="" size={14} color="#00A85A" />;
   }
 };
 
