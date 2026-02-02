@@ -22,20 +22,40 @@ import { useRole } from "@/context/RoleContext";
 
 import CreateBlogPostForm from "@/components/Dashboard/BlogAndFaqs/CreateBlogPostForm";
 import CreateFAQForm from "@/components/Dashboard/BlogAndFaqs/CreateFAQForm";
+import ViewBlogRequest from "@/components/Dashboard/BlogAndFaqs/ViewBlogRequest";
+import ViewFAQRequest from "@/components/Dashboard/BlogAndFaqs/ViewFAQRequest";
 
-// Placeholder components if they don't exist yet
-// Ideally these would be separate files in /components/Dashboard/BlogAndFaqs/
-// I will create them inline or separate files shortly after this to avoid errors if I import them.
-// For now, I'll rely on having created them or just creating them next.
-// Wait, I haven't created them yet. Let me create simple placeholders first in this flow.
-// Actually, I can render them inside the page component if needed, but clean code suggests separating.
-// I will assume I will create:
-// src/components/Dashboard/BlogAndFaqs/CreateBlogPostForm.tsx
-// src/components/Dashboard/BlogAndFaqs/CreateFAQForm.tsx
+type BlogPost = {
+  id: string;
+  title: string;
+  description: string;
+  author: string;
+  audience: string;
+  dateCreated: string;
+  lastUpdated: string;
+  lastUpdatedBy: string;
+  status: "Active" | "Deactivated" | "Awaiting Approval";
+  approverStatus: "Approved" | "Awaiting Approval";
+  image: string;
+};
+
+type FAQ = {
+  id: string;
+  title: string;
+  description: string;
+  author: string;
+  dateCreated: string;
+  lastUpdated: string;
+  lastUpdatedBy: string;
+  status: "Active" | "Awaiting Approval";
+  approverStatus: "Approved" | "Awaiting Approval";
+};
 
 export default function BlogAndFaqs() {
   const [currentView, setCurrentView] = useState("Overview");
   const [activeTab, setActiveTab] = useState("Blog");
+  const [viewBlogPost, setViewBlogPost] = useState<BlogPost | null>(null);
+  const [viewFAQ, setViewFAQ] = useState<FAQ | null>(null);
   const { isApprover } = useRole();
 
   const sidebarItems = isApprover
@@ -49,16 +69,18 @@ export default function BlogAndFaqs() {
 
   const handleSidebarClick = (label: string) => {
     setCurrentView(label);
+    setViewBlogPost(null);
+    setViewFAQ(null);
   };
 
   const breadcrumbs = getBreadcrumbs(currentView);
 
   const blogColumns = createBlogPostColumns((post) => {
-    console.log("View post", post);
+    setViewBlogPost(post as BlogPost);
   }, isApprover);
 
   const faqColumns = createFAQColumns((faq) => {
-    console.log("View FAQ", faq);
+    setViewFAQ(faq as FAQ);
   }, isApprover);
 
   const currentStats = activeTab === "Blog" ? BLOG_STATS_CONFIG : FAQ_STATS_CONFIG;
@@ -76,7 +98,31 @@ export default function BlogAndFaqs() {
           />
 
           <main className="flex-1 p-8 bg-white overflow-hidden pt-4 overflow-y-auto">
-            {currentView === "Overview" ? (
+            {viewBlogPost && isApprover ? (
+              <ViewBlogRequest
+                blogPost={viewBlogPost}
+                onApprove={() => {
+                  setCurrentView("Overview");
+                  setViewBlogPost(null);
+                }}
+                onReject={() => {
+                  setCurrentView("Overview");
+                  setViewBlogPost(null);
+                }}
+              />
+            ) : viewFAQ && isApprover ? (
+              <ViewFAQRequest
+                faq={viewFAQ}
+                onApprove={() => {
+                  setCurrentView("Overview");
+                  setViewFAQ(null);
+                }}
+                onReject={() => {
+                  setCurrentView("Overview");
+                  setViewFAQ(null);
+                }}
+              />
+            ) : currentView === "Overview" ? (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-10">
                   {currentStats.map((stat, index) => (
