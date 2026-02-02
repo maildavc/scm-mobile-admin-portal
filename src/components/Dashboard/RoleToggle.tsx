@@ -14,7 +14,7 @@ const RoleToggle: React.FC = () => {
         }`}
       >
         <span className="md:hidden">IA</span>
-        <span className="hidden md:inline">Initiator</span>
+        <span className="hidden md:inline">IA</span>
       </span>
 
       <button
@@ -37,7 +37,7 @@ const RoleToggle: React.FC = () => {
         }`}
       >
         <span className="md:hidden">AP</span>
-        <span className="hidden md:inline">Approver</span>
+        <span className="hidden md:inline">AP</span>
       </span>
     </div>
   );
