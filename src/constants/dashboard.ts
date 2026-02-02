@@ -66,8 +66,9 @@ export const DASHBOARD_CARDS = [
   },
   {
     icon: FiLink2,
-    title: "Blog",
+    title: "Blog & FAQs",
     description:
       "Manage customer profiles, update KYC, view customer details and many more in this module",
+    path: "/dashboard/blog-and-faqs",
   },
 ];
