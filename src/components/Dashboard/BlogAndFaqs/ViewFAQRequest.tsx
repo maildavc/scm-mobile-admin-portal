@@ -6,6 +6,7 @@ import { FAQ_DETAILS, FAQ_ANSWER } from "@/constants/blogAndFaqs/faqDetails";
 import { DetailCard, DetailRow } from "@/components/Dashboard/SharedDetails";
 import ApproveModal from "@/components/Dashboard/Shared/ApproveModal";
 import RejectModal from "@/components/Dashboard/Shared/RejectModal";
+import BlogNFaqContent from "./BlogNFaqContent";
 
 type FAQ = {
   id: string;
@@ -132,16 +133,13 @@ const ViewFAQRequest: React.FC<ViewFAQRequestProps> = ({
       </DetailCard>
 
       {/* FAQ Answer */}
-      <div className="mt-8 mb-8">
-        <div className="bg-gray-50 rounded-2xl p-6">
-          <h3 className="font-bold text-[#2F3140] text-base mb-4">
-            {FAQ_ANSWER.heading}
-          </h3>
-          <p className="text-sm text-[#707781] leading-relaxed">
-            {FAQ_ANSWER.content}
-          </p>
-        </div>
-      </div>
+      <BlogNFaqContent
+        heading={FAQ_ANSWER.heading}
+        paragraph1={FAQ_ANSWER.paragraph1}
+        subheading={FAQ_ANSWER.subheading}
+        paragraph2={FAQ_ANSWER.paragraph2}
+        showImage={true}
+      />
 
       {/* Footer Actions */}
       <div className="mt-auto pt-6 flex justify-end gap-3 border-t border-transparent">
