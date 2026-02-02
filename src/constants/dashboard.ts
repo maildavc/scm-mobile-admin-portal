@@ -49,6 +49,7 @@ export const DASHBOARD_CARDS = [
     title: "Customer Service",
     description:
       "Manage customer profiles, update KYC, view customer details and many more in this module",
+    path: "/dashboard/customer-service",
   },
   {
     icon: FiLink2,
