@@ -3,18 +3,6 @@
 import React, { useState } from "react";
 import { FiEye, FiPaperclip } from "react-icons/fi";
 import {
-  MdFormatBold,
-  MdFormatItalic,
-  MdFormatUnderlined,
-  MdFormatStrikethrough,
-  MdFormatListBulleted,
-  MdFormatListNumbered,
-  MdFormatAlignLeft,
-  MdFormatAlignRight,
-  MdInsertLink,
-  MdImage,
-} from "react-icons/md";
-import {
   RECIPIENT_TYPES,
   AUDIENCE_OPTIONS,
   CHANNEL_OPTIONS,
@@ -22,6 +10,7 @@ import {
   EMAIL_REPLY_OPTIONS,
 } from "@/constants/notificationService/notificationService";
 import Input from "@/components/Input";
+import TextArea from "@/components/TextArea";
 import Button from "@/components/Button";
 
 interface CreateNotificationFormProps {
@@ -138,72 +127,49 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
             Assign a role to this user
           </p>
 
-          <div className="border border-gray-200 rounded-lg overflow-hidden">
-            {/* Toolbar */}
-            <div className="flex items-center gap-4 p-2 border-b border-gray-200 bg-white overflow-x-auto">
-              <div className="flex items-center gap-2 border-r border-gray-200 pr-4">
-                {/* Mock dropdowns for toolbar */}
-                <select className="text-xs border-none focus:ring-0 p-1 text-gray-600 bg-transparent outline-none">
-                  <option>Roboto</option>
-                </select>
-                <select className="text-xs border-none focus:ring-0 p-1 text-gray-600 bg-transparent outline-none">
-                  <option>Normal</option>
-                </select>
-                <select className="text-xs border-none focus:ring-0 p-1 text-gray-600 bg-transparent outline-none">
-                  <option>16</option>
-                </select>
-              </div>
-              <div className="flex items-center gap-3 text-gray-500">
-                <button type="button" className="hover:text-black">
-                  <MdFormatBold size={18} />
-                </button>
-                <button type="button" className="hover:text-black">
-                  <MdFormatItalic size={18} />
-                </button>
-                <button type="button" className="hover:text-black">
-                  <MdFormatUnderlined size={18} />
-                </button>
-                <button type="button" className="hover:text-black">
-                  <MdFormatStrikethrough size={18} />
-                </button>
-                <div className="w-px h-4 bg-gray-200 mx-1"></div>
-                <button type="button" className="hover:text-black">
-                  <MdFormatListBulleted size={18} />
-                </button>
-                <button type="button" className="hover:text-black">
-                  <MdFormatListNumbered size={18} />
-                </button>
-                <button type="button" className="hover:text-black">
-                  <MdFormatAlignLeft size={18} />
-                </button>
-                <button type="button" className="hover:text-black">
-                  <MdFormatAlignRight size={18} />
-                </button>
-                <div className="w-px h-4 bg-gray-200 mx-1"></div>
-                <button type="button" className="hover:text-black">
-                  <MdInsertLink size={18} />
-                </button>
-                <button type="button" className="hover:text-black">
-                  <MdImage size={18} />
-                </button>
-              </div>
-            </div>
-
-            {/* Text Area */}
-            <div className="p-4 min-h-[300px]">
-              <label className="block text-xs font-semibold text-[#707781] mb-1">
-                Notification Body <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                name="body"
-                value={formData.body}
-                onChange={(e) => handleInputChange("body", e.target.value)}
-                placeholder="Enter Text"
-                className="w-full h-full min-h-[250px] resize-none focus:outline-none text-sm text-[#2F3140] placeholder-[#707781] font-medium bg-transparent"
-                required
-              />
-            </div>
+          {/* Rich Text Editor Toolbar */}
+          <div className="mb-4 flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white">
+            <select className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none">
+              <option>Roboto</option>
+            </select>
+            <select className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none">
+              <option>Normal</option>
+            </select>
+            <select className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none">
+              <option>16</option>
+            </select>
+            <div className="h-5 w-px bg-gray-300" />
+            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
+              <strong className="text-sm">B</strong>
+            </button>
+            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
+              <em className="text-sm">I</em>
+            </button>
+            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
+              <u className="text-sm">U</u>
+            </button>
+            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">S</button>
+            <div className="h-5 w-px bg-gray-300" />
+            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">•</button>
+            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">1.</button>
+            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">⇥</button>
+            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">⇤</button>
+            <div className="h-5 w-px bg-gray-300" />
+            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">x₂</button>
+            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">x²</button>
+            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">🔗</button>
+            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">🖼</button>
           </div>
+
+          <TextArea
+            label="Notification Body"
+            theme="light"
+            required
+            placeholder="Enter Text"
+            value={formData.body}
+            onChange={(e) => handleInputChange("body", e.target.value)}
+            rows={12}
+          />
         </section>
 
         {/* Reply Options */}

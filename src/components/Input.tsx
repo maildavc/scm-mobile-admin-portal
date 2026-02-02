@@ -8,6 +8,8 @@ import {
   FiCalendar,
   FiClock,
 } from "react-icons/fi";
+import Calendar from "./Calendar";
+import TimePicker from "./TimePicker";
 
 interface InputProps extends Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
@@ -38,6 +40,8 @@ const Input: React.FC<InputProps> = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
   const [internalValue, setInternalValue] = useState(props.defaultValue || "");
   const [selectedFileName, setSelectedFileName] = useState<string>("");
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -55,6 +59,8 @@ const Input: React.FC<InputProps> = ({
       !dropdownRef.current.contains(event.target as Node)
     ) {
       setIsOpen(false);
+      setIsCalendarOpen(false);
+      setIsTimePickerOpen(false);
     }
   };
 
@@ -101,14 +107,40 @@ const Input: React.FC<InputProps> = ({
   };
 
   const handleDateClick = () => {
-    if (dateInputRef.current) {
-      dateInputRef.current.showPicker();
+    if (!props.disabled) {
+      setIsCalendarOpen(!isCalendarOpen);
     }
   };
 
+  const handleDateSelect = (dateString: string) => {
+    if (props.onChange) {
+      const event = {
+        target: { value: dateString, name: props.name },
+        currentTarget: { value: dateString, name: props.name },
+      } as React.ChangeEvent<HTMLInputElement>;
+      props.onChange(event);
+    }
+  };
+
+  const formatDisplayDate = (dateString: string): string => {
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
+  };
+
   const handleTimeClick = () => {
-    if (timeInputRef.current) {
-      timeInputRef.current.showPicker();
+    if (!props.disabled) {
+      setIsTimePickerOpen(!isTimePickerOpen);
+    }
+  };
+
+  const handleTimeSelect = (timeString: string) => {
+    if (props.onChange) {
+      const event = {
+        target: { value: timeString, name: props.name },
+        currentTarget: { value: timeString, name: props.name },
+      } as React.ChangeEvent<HTMLInputElement>;
+      props.onChange(event);
     }
   };
 
@@ -179,15 +211,16 @@ const Input: React.FC<InputProps> = ({
               onClick={handleDateClick}
             >
               {props.value
-                ? String(props.value)
+                ? formatDisplayDate(String(props.value))
                 : props.placeholder || "DD/MM/YYYY"}
             </div>
-            <input
-              {...props}
-              ref={dateInputRef}
-              type="date"
-              className="absolute inset-0 opacity-0 pointer-events-none w-full h-full"
-            />
+            {isCalendarOpen && !props.disabled && (
+              <Calendar
+                selectedDate={String(props.value || "")}
+                onDateSelect={handleDateSelect}
+                onClose={() => setIsCalendarOpen(false)}
+              />
+            )}
           </>
         ) : type === "time" ? (
           <>
@@ -199,12 +232,13 @@ const Input: React.FC<InputProps> = ({
                 ? String(props.value)
                 : props.placeholder || "00:00 AM"}
             </div>
-            <input
-              {...props}
-              ref={timeInputRef}
-              type="time"
-              className="absolute inset-0 opacity-0 pointer-events-none w-full h-full"
-            />
+            {isTimePickerOpen && !props.disabled && (
+              <TimePicker
+                selectedTime={String(props.value || "")}
+                onTimeSelect={handleTimeSelect}
+                onClose={() => setIsTimePickerOpen(false)}
+              />
+            )}
           </>
         ) : (
           <input

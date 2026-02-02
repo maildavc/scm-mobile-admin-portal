@@ -1,4 +1,4 @@
-import { FiHome, FiEdit, FiHelpCircle } from "react-icons/fi";
+import { FiHome, FiUsers } from "react-icons/fi";
 
 export const BLOG_SIDEBAR_ITEMS = [
   {
@@ -7,12 +7,12 @@ export const BLOG_SIDEBAR_ITEMS = [
     href: "/dashboard/blog-and-faqs",
   },
   {
-    icon: FiEdit,
+    icon: FiUsers,
     label: "Create Blog Post",
     href: "/dashboard/blog-and-faqs/create-blog",
   },
   {
-    icon: FiHelpCircle,
+    icon: FiUsers,
     label: "Create FAQ",
     href: "/dashboard/blog-and-faqs/create-faq",
   },
