@@ -58,14 +58,14 @@ export const DASHBOARD_CARDS = [
     path: "/dashboard/integrations",
   },
   {
-    icon: FiLink2, // Using Link icon as per screenshot for Notifs
+    icon: FiLink2,
     title: "Notifications",
     description:
       "Manage customer profiles, update KYC, view customer details and many more in this module",
     path: "/dashboard/notifications",
   },
   {
-    icon: FiLink2, // Using Link icon as per screenshot for Blog
+    icon: FiLink2,
     title: "Blog",
     description:
       "Manage customer profiles, update KYC, view customer details and many more in this module",
