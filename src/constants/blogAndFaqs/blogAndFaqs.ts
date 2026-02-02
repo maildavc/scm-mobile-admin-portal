@@ -49,7 +49,8 @@ export const BLOG_POSTS = [
     lastUpdated: "28/12/2025 13:32",
     lastUpdatedBy: "Iwinosa Omoregie",
     status: "Active" as const,
-    image: "/scmassetLogo.svg", // Using a placeholder that exists in public
+    approverStatus: "Approved" as const,
+    image: "/scmassetLogo.svg",
   },
   {
     id: "2",
@@ -61,6 +62,7 @@ export const BLOG_POSTS = [
     lastUpdated: "28/12/2025 13:32",
     lastUpdatedBy: "Omotolani Babajide",
     status: "Awaiting Approval" as const,
+    approverStatus: "Awaiting Approval" as const,
     image: "/scmassetLogo.svg",
   },
   {
@@ -73,6 +75,7 @@ export const BLOG_POSTS = [
     lastUpdated: "28/12/2025 13:32",
     lastUpdatedBy: "Omotolani Babajide",
     status: "Active" as const,
+    approverStatus: "Approved" as const,
     image: "/scmassetLogo.svg",
   },
   {
@@ -85,6 +88,7 @@ export const BLOG_POSTS = [
     lastUpdated: "28/12/2025 13:32",
     lastUpdatedBy: "Iwinosa Omoregie",
     status: "Awaiting Approval" as const,
+    approverStatus: "Awaiting Approval" as const,
     image: "/scmassetLogo.svg",
   },
   {
@@ -97,6 +101,7 @@ export const BLOG_POSTS = [
     lastUpdated: "28/12/2025 13:32",
     lastUpdatedBy: "Omotolani Babajide",
     status: "Awaiting Approval" as const,
+    approverStatus: "Awaiting Approval" as const,
     image: "/scmassetLogo.svg",
   },
   {
@@ -109,6 +114,7 @@ export const BLOG_POSTS = [
     lastUpdated: "28/12/2025 13:32",
     lastUpdatedBy: "Iwinosa Omoregie",
     status: "Active" as const,
+    approverStatus: "Approved" as const,
     image: "/scmassetLogo.svg",
   },
   {
@@ -121,6 +127,7 @@ export const BLOG_POSTS = [
     lastUpdated: "28/12/2025 13:32",
     lastUpdatedBy: "Iwinosa Omoregie",
     status: "Active" as const,
+    approverStatus: "Approved" as const,
     image: "/scmassetLogo.svg",
   },
   {
@@ -133,6 +140,7 @@ export const BLOG_POSTS = [
     lastUpdated: "28/12/2025 13:32",
     lastUpdatedBy: "Omotolani Babajide",
     status: "Awaiting Approval" as const,
+    approverStatus: "Awaiting Approval" as const,
     image: "/scmassetLogo.svg",
   },
   {
@@ -145,6 +153,7 @@ export const BLOG_POSTS = [
     lastUpdated: "28/12/2025 13:32",
     lastUpdatedBy: "Iwinosa Omoregie",
     status: "Active" as const,
+    approverStatus: "Approved" as const,
     image: "/scmassetLogo.svg",
   },
   {
@@ -157,6 +166,7 @@ export const BLOG_POSTS = [
     lastUpdated: "28/12/2025 13:32",
     lastUpdatedBy: "Omotolani Babajide",
     status: "Active" as const,
+    approverStatus: "Approved" as const,
     image: "/scmassetLogo.svg",
   },
 ];

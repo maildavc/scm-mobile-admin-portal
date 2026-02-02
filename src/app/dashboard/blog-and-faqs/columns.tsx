@@ -18,6 +18,7 @@ type BlogPost = {
   lastUpdated: string;
   lastUpdatedBy: string;
   status: "Active" | "Deactivated" | "Awaiting Approval";
+  approverStatus: "Approved" | "Awaiting Approval";
   image: string;
 };
 
@@ -32,11 +33,13 @@ const OptionsButton = ({
   blogPost,
   onView,
   onEdit,
+  onDelete,
   isApprover,
 }: {
   blogPost: BlogPost;
   onView?: (post: BlogPost) => void;
   onEdit?: (post: BlogPost) => void;
+  onDelete?: (post: BlogPost) => void;
   isApprover?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -58,18 +61,61 @@ const OptionsButton = ({
     };
   }, [isOpen]);
 
-  // Default menu items
-  const menuItems = [
+  const approverMenuItems = [
     {
       icon: FiEye,
-      label: "View Post",
+      label: "View Request",
       onClick: () => {
         setIsOpen(false);
         onView?.(blogPost);
       },
     },
-    // Add logic for Approver specific actions here if needed
+    {
+      icon: FiCheck,
+      label: "Approve Request",
+      onClick: () => {
+        setIsOpen(false);
+        onView?.(blogPost);
+      },
+    },
+    {
+      icon: FiX,
+      label: "Reject Request",
+      onClick: () => {
+        setIsOpen(false);
+        onView?.(blogPost);
+      },
+    },
   ];
+
+  const initiatorMenuItems = [
+    {
+      icon: FiEye,
+      label: "View Blog",
+      onClick: () => {
+        setIsOpen(false);
+        onView?.(blogPost);
+      },
+    },
+    {
+      icon: FiCheck,
+      label: "Edit Blog",
+      onClick: () => {
+        setIsOpen(false);
+        onEdit?.(blogPost);
+      },
+    },
+    {
+      icon: FiX,
+      label: "Delete Blog Request",
+      onClick: () => {
+        setIsOpen(false);
+        onDelete?.(blogPost);
+      },
+    },
+  ];
+
+  const menuItems = isApprover ? approverMenuItems : initiatorMenuItems;
 
   return (
     <>
@@ -179,13 +225,19 @@ export const createBlogPostColumns = (
   {
     header: <FilterableHeader>STATUS</FilterableHeader>,
     className: "w-[10%]",
-    render: (post) => <StatusBadge status={post.status} />,
+    render: (post) => <StatusBadge status={isApprover ? post.approverStatus : post.status} />,
   },
   {
     header: <div className="text-xs text-[#2F3140] uppercase">ACTION</div>,
     className: "w-[10%]",
     render: (post) => (
-      <OptionsButton blogPost={post} onView={onView} isApprover={isApprover} />
+      <OptionsButton 
+        blogPost={post} 
+        onView={onView}
+        onEdit={onView}
+        onDelete={onView}
+        isApprover={isApprover} 
+      />
     ),
   },
 ];
