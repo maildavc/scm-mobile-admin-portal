@@ -3,14 +3,10 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { MdGridView } from "react-icons/md";
 import { RiChat3Line } from "react-icons/ri";
-import { useRouter } from "next/navigation";
 import CustomerServicePageHeader from "@/components/Dashboard/CustomerService/CustomerServicePageHeader";
 
 export default function CustomerService() {
-  const router = useRouter();
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <CustomerServicePageHeader
