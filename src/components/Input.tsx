@@ -1,31 +1,40 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { FiEye, FiEyeOff, FiChevronDown } from "react-icons/fi";
+import {
+  FiEye,
+  FiEyeOff,
+  FiChevronDown,
+  FiCalendar,
+  FiClock,
+} from "react-icons/fi";
 
-interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
+interface InputProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "type"
+> {
   label: string;
   isPassword?: boolean;
   error?: boolean;
   theme?: "dark" | "light"; // dark for login (default), light for dashboard
   type?: React.HTMLInputTypeAttribute | "select" | "file";
-  options?: { value: string; label: string }[];
+  options?: { value: string; label: string | React.ReactNode }[];
   rightIcon?: React.ReactNode;
   onFileChange?: (file: File | null) => void;
 }
 
-const Input: React.FC<InputProps> = ({ 
-  label, 
-  isPassword, 
-  required, 
-  error, 
-  className, 
+const Input: React.FC<InputProps> = ({
+  label,
+  isPassword,
+  required,
+  error,
+  className,
   theme = "dark",
   type = "text",
   options,
   rightIcon,
   onFileChange,
-  ...props 
+  ...props
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -33,13 +42,18 @@ const Input: React.FC<InputProps> = ({
   const [selectedFileName, setSelectedFileName] = useState<string>("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
+  const timeInputRef = useRef<HTMLInputElement>(null);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
   const handleClickOutside = (event: MouseEvent) => {
-    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target as Node)
+    ) {
       setIsOpen(false);
     }
   };
@@ -52,22 +66,22 @@ const Input: React.FC<InputProps> = ({
   }, []);
 
   const inputType = isPassword ? (showPassword ? "text" : "password") : type;
-  
+
   const isLight = theme === "light";
-  
-  const borderColor = error 
-    ? "border-red-500" 
-    : isLight 
-      ? "border-gray-200" 
+
+  const borderColor = error
+    ? "border-red-500"
+    : isLight
+      ? "border-gray-200"
       : "border-white/10";
-      
+
   const bgColor = isLight ? "bg-white" : "bg-transparent";
   const textColor = isLight ? "text-[#2F3140]" : "text-white";
   const placeholderColor = "placeholder:text-[#707781]";
 
   // Handle select value
   const currentValue = props.value !== undefined ? props.value : internalValue;
-  const selectedOption = options?.find(opt => opt.value === currentValue);
+  const selectedOption = options?.find((opt) => opt.value === props.value);
 
   const handleSelect = (value: string) => {
     setInternalValue(value);
@@ -76,7 +90,7 @@ const Input: React.FC<InputProps> = ({
       // Create synthetic event for compatibility
       const event = {
         target: { value, name: props.name },
-        currentTarget: { value, name: props.name }
+        currentTarget: { value, name: props.name },
       } as React.ChangeEvent<HTMLInputElement>;
       props.onChange(event);
     }
@@ -84,6 +98,18 @@ const Input: React.FC<InputProps> = ({
 
   const handleFileClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleDateClick = () => {
+    if (dateInputRef.current) {
+      dateInputRef.current.showPicker();
+    }
+  };
+
+  const handleTimeClick = () => {
+    if (timeInputRef.current) {
+      timeInputRef.current.showPicker();
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,30 +121,32 @@ const Input: React.FC<InputProps> = ({
   };
 
   return (
-    <div 
+    <div
       className={`relative w-full border rounded-xl px-4 py-3 transition-colors ${bgColor} ${borderColor} ${className}`}
       ref={dropdownRef}
     >
       <div className="flex flex-col gap-0.5 pr-8">
-        <label className="text-xs font-semibold text-[#707781]">
+        <label className="text-xs font-semibold text-[#707781] mb-1">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
-        
+
         {type === "select" ? (
           <>
             <div
               className={`w-full bg-transparent text-sm ${selectedOption ? textColor : "text-[#707781]"} focus:outline-none font-medium cursor-pointer`}
               onClick={() => !props.disabled && setIsOpen(!isOpen)}
             >
-              {selectedOption ? selectedOption.label : props.placeholder || "Select Option"}
+              {selectedOption
+                ? selectedOption.label
+                : props.placeholder || "Select Option"}
             </div>
-            
+
             {isOpen && !props.disabled && (
               <div className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white border border-gray-100 rounded-xl shadow-xl z-50 py-1 max-h-60 overflow-auto">
                 {options?.map((opt) => (
                   <div
                     key={opt.value}
-                    className={`px-4 py-2.5 text-sm hover:bg-gray-50 cursor-pointer text-[#2F3140] transition-colors ${currentValue === opt.value ? 'bg-gray-50 font-medium' : ''}`}
+                    className={`px-4 py-2.5 text-sm hover:bg-gray-50 cursor-pointer text-[#2F3140] transition-colors ${currentValue === opt.value ? "bg-gray-50 font-medium" : ""}`}
                     onClick={() => handleSelect(opt.value)}
                   >
                     {opt.label}
@@ -144,6 +172,40 @@ const Input: React.FC<InputProps> = ({
               aria-label={label}
             />
           </>
+        ) : type === "date" ? (
+          <>
+            <div
+              className={`w-full bg-transparent text-sm ${props.value ? textColor : "text-[#707781]"} focus:outline-none font-medium cursor-pointer`}
+              onClick={handleDateClick}
+            >
+              {props.value
+                ? String(props.value)
+                : props.placeholder || "DD/MM/YYYY"}
+            </div>
+            <input
+              {...props}
+              ref={dateInputRef}
+              type="date"
+              className="absolute inset-0 opacity-0 pointer-events-none w-full h-full"
+            />
+          </>
+        ) : type === "time" ? (
+          <>
+            <div
+              className={`w-full bg-transparent text-sm ${props.value ? textColor : "text-[#707781]"} focus:outline-none font-medium cursor-pointer`}
+              onClick={handleTimeClick}
+            >
+              {props.value
+                ? String(props.value)
+                : props.placeholder || "00:00 AM"}
+            </div>
+            <input
+              {...props}
+              ref={timeInputRef}
+              type="time"
+              className="absolute inset-0 opacity-0 pointer-events-none w-full h-full"
+            />
+          </>
         ) : (
           <input
             {...props}
@@ -152,7 +214,7 @@ const Input: React.FC<InputProps> = ({
           />
         )}
       </div>
-      
+
       {isPassword ? (
         <button
           type="button"
@@ -170,14 +232,32 @@ const Input: React.FC<InputProps> = ({
           {rightIcon}
         </button>
       ) : type === "select" ? (
-         <button
-           type="button"
-           onClick={() => !props.disabled && setIsOpen(!isOpen)}
-           className={`absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none cursor-pointer transition-all duration-200 ${isOpen ? 'rotate-180' : ''}`}
-           aria-label="Toggle dropdown"
-         >
-            <FiChevronDown size={18} />
-         </button>
+        <button
+          type="button"
+          onClick={() => !props.disabled && setIsOpen(!isOpen)}
+          className={`absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none cursor-pointer transition-all duration-200 ${isOpen ? "rotate-180" : ""}`}
+          aria-label="Toggle dropdown"
+        >
+          <FiChevronDown size={18} />
+        </button>
+      ) : type === "date" ? (
+        <button
+          type="button"
+          aria-label="Open date picker"
+          onClick={handleDateClick}
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none cursor-pointer"
+        >
+          <FiCalendar size={18} />
+        </button>
+      ) : type === "time" ? (
+        <button
+          type="button"
+          aria-label="Open time picker"
+          onClick={handleTimeClick}
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none cursor-pointer"
+        >
+          <FiClock size={18} />
+        </button>
       ) : rightIcon ? (
         <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[#707781]">
           {rightIcon}

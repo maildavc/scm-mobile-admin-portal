@@ -166,7 +166,22 @@ export const NOTIFICATIONS = [
   },
 ];
 
+export const RECIPIENT_TYPES = ["All Users", "Specific Users", "Segment"];
+export const AUDIENCE_OPTIONS = ["All Users", "Active Users", "Inactive Users"];
+export const CHANNEL_OPTIONS = ["Email", "In-App", "SMS", "Push Notification"];
+export const SEND_TYPES = ["Now", "Later"];
+export const EMAIL_REPLY_OPTIONS = ["Yes", "No"];
+
+export const EMAIL_BACKGROUND_COLORS = [
+  { value: "#F2F5F8", name: "Default" },
+  { value: "#FFFFFF", name: "White" },
+  { value: "#F0F0F0", name: "Light Gray" },
+  { value: "#E5E7EB", name: "Gray" },
+  { value: "#FEF2F2", name: "Light Red" },
+];
+
 export const getBreadcrumbs = (currentView: string) => [
   { label: "Dashboard", href: "/dashboard" },
-  { label: "Notification Service", href: "/dashboard/notification-service" },
+  { label: "Notification Service", href: "/dashboard/notifications" },
+  ...(currentView !== "Overview" ? [{ label: currentView }] : []),
 ];

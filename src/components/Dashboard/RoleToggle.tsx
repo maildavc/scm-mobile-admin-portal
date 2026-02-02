@@ -19,7 +19,7 @@ const RoleToggle: React.FC = () => {
 
       <button
         onClick={toggleRole}
-        className={`relative w-12 h-6 rounded-full transition-all duration-300 focus:outline-none ${
+        className={`relative cursor-pointer w-12 h-6 rounded-full transition-all duration-300 focus:outline-none ${
           isApprover ? "bg-[#B2171E]" : "bg-[#2A2A2A] border border-gray-600"
         }`}
         aria-label={`Switch to ${isApprover ? "Initiator" : "Approver"} role`}

@@ -17,6 +17,9 @@ import {
 import { createNotificationColumns } from "./columns";
 import { useRole } from "@/context/RoleContext";
 
+import CreateNotificationForm from "@/components/Dashboard/NotificationService/CreateNotificationForm";
+import NotificationSettings from "@/components/Dashboard/NotificationService/NotificationSettings";
+
 export default function NotificationService() {
   const [currentView, setCurrentView] = useState("Overview");
   const { isApprover } = useRole();
@@ -28,7 +31,10 @@ export default function NotificationService() {
   // Set active state
   const activeSidebarItems = sidebarItems.map((item) => ({
     ...item,
-    isActive: item.label === currentView,
+    isActive:
+      item.label === "Create Notification"
+        ? currentView === "Create Notification"
+        : item.label === currentView,
   }));
 
   const handleSidebarClick = (label: string) => {
@@ -95,6 +101,16 @@ export default function NotificationService() {
                   itemsPerPage={PAGE_CONFIG.itemsPerPage}
                 />
               </>
+            ) : currentView === "Create Notification" ? (
+              <CreateNotificationForm
+                onSuccess={() => setCurrentView("Overview")}
+                onCancel={() => setCurrentView("Overview")}
+              />
+            ) : currentView === "Notification Settings" ? (
+              <NotificationSettings
+                onSuccess={() => setCurrentView("Overview")}
+                onCancel={() => setCurrentView("Overview")}
+              />
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
                 {currentView} view coming soon
