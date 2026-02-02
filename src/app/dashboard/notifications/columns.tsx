@@ -42,9 +42,15 @@ const FilterableHeader = ({ children }: { children: string }) => (
 const OptionsButton = ({
   notification,
   isApprover,
+  onViewRequest,
+  onApproveRequest,
+  onRejectRequest,
 }: {
   notification: Notification;
   isApprover?: boolean;
+  onViewRequest?: (notification: Notification) => void;
+  onApproveRequest?: (notification: Notification) => void;
+  onRejectRequest?: (notification: Notification) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -66,9 +72,30 @@ const OptionsButton = ({
   }, [isOpen]);
 
   const approverMenuItems = [
-    { icon: FiEye, label: "View Request" },
-    { icon: FiCheck, label: "Approve Request" },
-    { icon: FiX, label: "Reject Request" },
+    { 
+      icon: FiEye, 
+      label: "View Request",
+      onClick: () => {
+        setIsOpen(false);
+        onViewRequest?.(notification);
+      }
+    },
+    { 
+      icon: FiCheck, 
+      label: "Approve Request",
+      onClick: () => {
+        setIsOpen(false);
+        onApproveRequest?.(notification);
+      }
+    },
+    { 
+      icon: FiX, 
+      label: "Reject Request",
+      onClick: () => {
+        setIsOpen(false);
+        onRejectRequest?.(notification);
+      }
+    },
   ];
 
   const menuItems = isApprover ? approverMenuItems : [];
@@ -96,7 +123,7 @@ const OptionsButton = ({
             {menuItems.map((item, index) => (
               <button
                 key={index}
-                onClick={() => setIsOpen(false)}
+                onClick={item.onClick}
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
               >
                 <item.icon size={18} className="text-[#2F3140]" />
@@ -114,6 +141,7 @@ const OptionsButton = ({
 
 export const createNotificationColumns = (
   isApprover?: boolean,
+  onViewRequest?: (notification: Notification) => void,
 ): Column<Notification>[] => {
   const commonColumns: Column<Notification>[] = [
     {
@@ -184,7 +212,13 @@ export const createNotificationColumns = (
         header: <div className="text-xs text-[#2F3140] uppercase">ACTION</div>,
         className: "w-[10%]",
         render: (notification) => (
-          <OptionsButton notification={notification} isApprover={isApprover} />
+          <OptionsButton 
+            notification={notification} 
+            isApprover={isApprover}
+            onViewRequest={onViewRequest}
+            onApproveRequest={onViewRequest}
+            onRejectRequest={onViewRequest}
+          />
         ),
       },
     ];

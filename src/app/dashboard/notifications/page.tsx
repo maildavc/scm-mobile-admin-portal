@@ -19,9 +19,36 @@ import { useRole } from "@/context/RoleContext";
 
 import CreateNotificationForm from "@/components/Dashboard/NotificationService/CreateNotificationForm";
 import NotificationSettings from "@/components/Dashboard/NotificationService/NotificationSettings";
+import ViewNotificationRequest from "@/components/Dashboard/NotificationService/ViewNotificationRequest";
+
+type Notification = {
+  id: string;
+  name: string;
+  audience: string;
+  channel: string;
+  type: string;
+  status:
+    | "Sent"
+    | "Sending"
+    | "Draft"
+    | "Failed"
+    | "Awaiting Approval"
+    | "Approved";
+  approverStatus:
+    | "Sent"
+    | "Sending"
+    | "Draft"
+    | "Failed"
+    | "Awaiting Approval"
+    | "Approved";
+  sent: number;
+  delivered: number;
+  dateCreated: string;
+};
 
 export default function NotificationService() {
   const [currentView, setCurrentView] = useState("Overview");
+  const [viewNotification, setViewNotification] = useState<Notification | null>(null);
   const { isApprover } = useRole();
 
   const sidebarItems = isApprover
@@ -31,19 +58,31 @@ export default function NotificationService() {
   // Set active state
   const activeSidebarItems = sidebarItems.map((item) => ({
     ...item,
-    isActive:
-      item.label === "Create Notification"
+    isActive: viewNotification
+      ? item.label === "Overview"
+      : item.label === "Create Notification"
         ? currentView === "Create Notification"
         : item.label === currentView,
   }));
 
   const handleSidebarClick = (label: string) => {
     setCurrentView(label);
+    setViewNotification(null);
   };
 
-  const breadcrumbs = getBreadcrumbs(currentView);
+  const handleViewNotification = (notification: Notification) => {
+    setViewNotification(notification);
+    setCurrentView(notification.name);
+  };
+
+  const resetView = () => {
+    setCurrentView("Overview");
+    setViewNotification(null);
+  };
+
+  const breadcrumbs = getBreadcrumbs(viewNotification ? viewNotification.name : currentView);
   const currentStats = isApprover ? APPROVER_STATS_CONFIG : STATS_CONFIG;
-  const columns = createNotificationColumns(isApprover);
+  const columns = createNotificationColumns(isApprover, handleViewNotification);
 
   return (
     <SidebarProvider>
@@ -58,7 +97,13 @@ export default function NotificationService() {
           />
 
           <main className="flex-1 p-8 bg-white overflow-hidden pt-4 overflow-y-auto">
-            {currentView === "Overview" ? (
+            {viewNotification ? (
+              <ViewNotificationRequest
+                notification={viewNotification}
+                onApprove={resetView}
+                onReject={resetView}
+              />
+            ) : currentView === "Overview" ? (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-10">
                   {currentStats.map((stat, index) => (
