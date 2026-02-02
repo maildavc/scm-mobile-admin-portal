@@ -24,7 +24,7 @@ export default function Messages() {
         />
 
         {/* Chat Interface */}
-        <div className="flex-1 flex flex-col overflow-hidden p-6 pt-0">
+        <div className="flex-1 flex flex-col overflow-hidden p-4 md:p-6 pt-0">
           <div className="py-4 max-w-2xl shrink-0">
             <div className="relative">
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -35,9 +35,9 @@ export default function Messages() {
               />
             </div>
           </div>
-          <div className="flex-1 flex gap-6 min-h-0">
+          <div className="flex-1 flex flex-col md:flex-row gap-4 md:gap-6 min-h-0">
             {/* Sidebar List */}
-            <div className="w-120 shrink-0 h-full overflow-hidden">
+            <div className="w-full md:w-120 shrink-0 h-64 md:h-full overflow-hidden">
               <ChatList selectedChatId={selectedChatId} onSelectChat={setSelectedChatId} />
             </div>
 
