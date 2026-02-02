@@ -20,6 +20,13 @@ type Notification = {
     | "Failed"
     | "Awaiting Approval"
     | "Approved";
+  approverStatus:
+    | "Sent"
+    | "Sending"
+    | "Draft"
+    | "Failed"
+    | "Awaiting Approval"
+    | "Approved";
   sent: number;
   delivered: number;
   dateCreated: string;
@@ -171,7 +178,7 @@ export const createNotificationColumns = (
       {
         header: <FilterableHeader>STATUS</FilterableHeader>,
         className: "w-[15%]",
-        render: (notification) => <StatusBadge status={notification.status} />,
+        render: (notification) => <StatusBadge status={notification.approverStatus} />,
       },
       {
         header: <div className="text-xs text-[#2F3140] uppercase">ACTION</div>,
