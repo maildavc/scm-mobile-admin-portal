@@ -33,6 +33,21 @@ export const BLOG_STATS_CONFIG = [
   },
 ];
 
+export const FAQ_STATS_CONFIG = [
+  {
+    label: "All FAQs",
+    value: "20",
+  },
+  {
+    label: "Homepage Blogs",
+    value: "20",
+  },
+  {
+    label: "Product Blogs",
+    value: "20",
+  },
+];
+
 export const PAGE_CONFIG = {
   title: "Blog & FAQs",
   itemsPerPage: 8,
@@ -172,15 +187,116 @@ export const BLOG_POSTS = [
 ];
 
 export const FAQS = [
-    {
-        id: "1",
-        question: "How do I create an account?",
-        answer: "To create an account, click on the Sign Up button...",
-        category: "Account",
-        dateCreated: "28/12/2025 13:32",
-        status: "Active" as const,
-    },
-    // Add more mock data as needed
+  {
+    id: "1",
+    title: "FAQ title here in two lines maximum, if more extend the...",
+    description: "One line description of the faq description",
+    author: "Iwinosa Omoregie",
+    dateCreated: "28/12/2025 13:32",
+    lastUpdated: "28/12/2025 13:32",
+    lastUpdatedBy: "Omotolani Babajide",
+    status: "Active" as const,
+    approverStatus: "Approved" as const,
+  },
+  {
+    id: "2",
+    title: "FAQ title in one line",
+    description: "One line description of the faq description",
+    author: "Iwinosa Omoregie",
+    dateCreated: "28/12/2025 13:32",
+    lastUpdated: "28/12/2025 13:32",
+    lastUpdatedBy: "Omotolani Babajide",
+    status: "Awaiting Approval" as const,
+    approverStatus: "Awaiting Approval" as const,
+  },
+  {
+    id: "3",
+    title: "FAQ title here in two lines maximum, if more extend the...",
+    description: "One line description of the faq description",
+    author: "Iwinosa Omoregie",
+    dateCreated: "28/12/2025 13:32",
+    lastUpdated: "28/12/2025 13:32",
+    lastUpdatedBy: "Iwinosa Omoregie",
+    status: "Active" as const,
+    approverStatus: "Approved" as const,
+  },
+  {
+    id: "4",
+    title: "FAQ title here in two lines maximum, if more extend the...",
+    description: "One line description of the faq description",
+    author: "Iwinosa Omoregie",
+    dateCreated: "28/12/2025 13:32",
+    lastUpdated: "28/12/2025 13:32",
+    lastUpdatedBy: "Iwinosa Omoregie",
+    status: "Awaiting Approval" as const,
+    approverStatus: "Awaiting Approval" as const,
+  },
+  {
+    id: "5",
+    title: "FAQ title in one line",
+    description: "One line description of the faq description",
+    author: "Iwinosa Omoregie",
+    dateCreated: "28/12/2025 13:32",
+    lastUpdated: "28/12/2025 13:32",
+    lastUpdatedBy: "Omotolani Babajide",
+    status: "Awaiting Approval" as const,
+    approverStatus: "Awaiting Approval" as const,
+  },
+  {
+    id: "6",
+    title: "FAQ title in one line",
+    description: "One line description of the faq description",
+    author: "Iwinosa Omoregie",
+    dateCreated: "28/12/2025 13:32",
+    lastUpdated: "28/12/2025 13:32",
+    lastUpdatedBy: "Iwinosa Omoregie",
+    status: "Active" as const,
+    approverStatus: "Approved" as const,
+  },
+  {
+    id: "7",
+    title: "FAQ title here in two lines maximum, if more extend the...",
+    description: "One line description of the faq description",
+    author: "SCM Admin",
+    dateCreated: "28/12/2025 13:32",
+    lastUpdated: "28/12/2025 13:32",
+    lastUpdatedBy: "Iwinosa Omoregie",
+    status: "Active" as const,
+    approverStatus: "Approved" as const,
+  },
+  {
+    id: "8",
+    title: "FAQ title here in two lines maximum, if more extend the...",
+    description: "One line description of the faq description",
+    author: "SCM Admin",
+    dateCreated: "28/12/2025 13:32",
+    lastUpdated: "28/12/2025 13:32",
+    lastUpdatedBy: "Omotolani Babajide",
+    status: "Awaiting Approval" as const,
+    approverStatus: "Awaiting Approval" as const,
+  },
+  {
+    id: "9",
+    title: "FAQ title here in two lines maximum, if more extend the...",
+    description: "One line description of the faq description",
+    author: "Iwinosa Omoregie",
+    dateCreated: "28/12/2025 13:32",
+    lastUpdated: "28/12/2025 13:32",
+    lastUpdatedBy: "Iwinosa Omoregie",
+    status: "Active" as const,
+    approverStatus: "Approved" as const,
+  },
+  {
+    id: "10",
+    title: "FAQ title here in two lines maximum, if more extend the...",
+    description: "One line description of the faq description",
+    author: "Iwinosa Omoregie",
+    dateCreated: "28/12/2025 13:32",
+    lastUpdated: "28/12/2025 13:32",
+    lastUpdatedBy: "Omotolani Babajide",
+    status: "Active" as const,
+    approverStatus: "Approved" as const,
+  },
 ];
 
 export const getBreadcrumbs = (currentView: string) => [

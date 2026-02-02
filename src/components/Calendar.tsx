@@ -80,7 +80,7 @@ const Calendar: React.FC<CalendarProps> = ({
   const renderCalendarDays = () => {
     const daysInMonth = getDaysInMonth(currentMonth);
     const firstDay = getFirstDayOfMonth(currentMonth);
-    const days: JSX.Element[] = [];
+    const days: React.ReactElement[] = [];
 
     // Empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
@@ -139,6 +139,7 @@ const Calendar: React.FC<CalendarProps> = ({
           type="button"
           onClick={handlePrevMonth}
           className="p-1 hover:bg-gray-100 rounded transition-colors"
+          aria-label="Previous month"
         >
           <FiChevronLeft size={20} className="text-[#2F3140]" />
         </button>
@@ -149,6 +150,7 @@ const Calendar: React.FC<CalendarProps> = ({
           type="button"
           onClick={handleNextMonth}
           className="p-1 hover:bg-gray-100 rounded transition-colors"
+          aria-label="Next month"
         >
           <FiChevronRight size={20} className="text-[#2F3140]" />
         </button>

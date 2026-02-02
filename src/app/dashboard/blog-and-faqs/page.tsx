@@ -10,11 +10,14 @@ import ActionButton from "@/components/Dashboard/ActionButton";
 import {
   BLOG_SIDEBAR_ITEMS,
   BLOG_STATS_CONFIG,
+  FAQ_STATS_CONFIG,
   BLOG_POSTS,
+  FAQS,
   PAGE_CONFIG,
   getBreadcrumbs,
 } from "@/constants/blogAndFaqs/blogAndFaqs";
 import { createBlogPostColumns } from "./columns";
+import { createFAQColumns } from "./faqColumns";
 import { useRole } from "@/context/RoleContext";
 
 import CreateBlogPostForm from "@/components/Dashboard/BlogAndFaqs/CreateBlogPostForm";
@@ -50,10 +53,15 @@ export default function BlogAndFaqs() {
 
   const breadcrumbs = getBreadcrumbs(currentView);
 
-  const columns = createBlogPostColumns((post) => {
+  const blogColumns = createBlogPostColumns((post) => {
     console.log("View post", post);
-    // Implement view logic
   }, isApprover);
+
+  const faqColumns = createFAQColumns((faq) => {
+    console.log("View FAQ", faq);
+  }, isApprover);
+
+  const currentStats = activeTab === "Blog" ? BLOG_STATS_CONFIG : FAQ_STATS_CONFIG;
 
   return (
     <SidebarProvider>
@@ -71,13 +79,13 @@ export default function BlogAndFaqs() {
             {currentView === "Overview" ? (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-10">
-                  {BLOG_STATS_CONFIG.map((stat, index) => (
+                  {currentStats.map((stat, index) => (
                     <StatsCard
                       key={stat.label}
                       label={stat.label}
                       value={stat.value}
                       className={
-                        BLOG_STATS_CONFIG.length === 3 && index === 2
+                        currentStats.length === 3 && index === 2
                           ? "col-span-2 md:col-span-1"
                           : ""
                       }
@@ -115,13 +123,15 @@ export default function BlogAndFaqs() {
                 {activeTab === "Blog" ? (
                   <Table
                     data={BLOG_POSTS}
-                    columns={columns}
+                    columns={blogColumns}
                     itemsPerPage={PAGE_CONFIG.itemsPerPage}
                   />
                 ) : (
-                  <div className="flex items-center justify-center p-12 text-gray-500">
-                    FAQ Table Coming Soon
-                  </div>
+                  <Table
+                    data={FAQS}
+                    columns={faqColumns}
+                    itemsPerPage={PAGE_CONFIG.itemsPerPage}
+                  />
                 )}
               </>
             ) : currentView === "Create Blog Post" ? (
