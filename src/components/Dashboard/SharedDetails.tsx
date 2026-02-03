@@ -25,7 +25,7 @@ export const DetailRow = ({
   value,
 }: {
   label: string;
-  value: string;
+  value: React.ReactNode;
 }) => (
   <div className="flex justify-between items-center py-2 border-b border-[#F4F4F5]">
     <span className="text-sm text-[#2F3140]">{label}</span>
