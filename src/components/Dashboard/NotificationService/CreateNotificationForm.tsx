@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { FiEye, FiLink2 } from "react-icons/fi";
 import {
   RECIPIENT_TYPES,
@@ -23,6 +24,7 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
   onSuccess,
   onCancel,
 }) => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     title: "",
     recipientType: "",
@@ -177,7 +179,7 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
 
         {/* Reply Options */}
         <section>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Input
               label="Allow Email Reply"
               type="select"
@@ -188,17 +190,23 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
               onChange={(e) => handleInputChange("allowReply", e.target.value)}
               placeholder="Select Option"
             />
-            <Input
-              label="Where should replies go to?"
-              placeholder="Enter email address"
-              theme="light"
-              required
-              value={formData.replyToEmail}
-              onChange={(e) =>
-                handleInputChange("replyToEmail", e.target.value)
-              }
-              rightIcon={<FiLink2 size={18} />}
-            />
+            <div
+              onClick={() => router.push("/dashboard/user-role-management?view=create-user")}
+              className="cursor-pointer"
+            >
+              <Input
+                label="Where should replies go to?"
+                placeholder="Enter email address"
+                theme="light"
+                required
+                value={formData.replyToEmail}
+                onChange={(e) =>
+                  handleInputChange("replyToEmail", e.target.value)
+                }
+                rightIcon={<FiLink2 size={18} />}
+                readOnly
+              />
+            </div>
           </div>
         </section>
 
