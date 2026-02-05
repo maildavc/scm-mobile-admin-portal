@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import React, { useState } from "react";
 import Sidebar, { SidebarProvider } from "@/components/Dashboard/Sidebar";
 import PageHeader from "@/components/Dashboard/PageHeader";
 import StatsCard from "@/components/Dashboard/StatsCard";
@@ -60,7 +59,6 @@ type Department = {
 };
 
 export default function UserRoleManagement() {
-  const searchParams = useSearchParams();
   const [currentView, setCurrentView] = useState("Overview");
   const [activeTab, setActiveTab] = useState("Users");
   const [editUser, setEditUser] = useState<User | null>(null);
@@ -69,13 +67,6 @@ export default function UserRoleManagement() {
   const [viewRole, setViewRole] = useState<Role | null>(null);
   const [viewDepartment, setViewDepartment] = useState<Department | null>(null);
   const { isApprover } = useRole();
-
-  useEffect(() => {
-    const view = searchParams.get("view");
-    if (view === "create-user") {
-      setCurrentView("Create New User");
-    }
-  }, [searchParams]);
 
   const allSidebarItems = USER_ROLE_SIDEBAR_ITEMS.map((item) => ({
     ...item,
