@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { FiEye, FiPaperclip } from "react-icons/fi";
+import { FiEye, FiLink2 } from "react-icons/fi";
 import {
   RECIPIENT_TYPES,
   AUDIENCE_OPTIONS,
@@ -53,7 +53,7 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
 
   return (
     <div className="bg-white rounded-lg pb-10">
-      <form onSubmit={handleSubmit} className="space-y-8 max-w-5xl">
+      <form onSubmit={handleSubmit} className="space-y-8">
         {/* Audience / Targeting */}
         <section>
           <h3 className="text-sm font-bold text-[#2F3140] mb-1">
@@ -194,7 +194,7 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
               onChange={(e) =>
                 handleInputChange("replyToEmail", e.target.value)
               }
-              rightIcon={<FiPaperclip size={18} />}
+              rightIcon={<FiLink2 size={18} />}
             />
           </div>
         </section>
