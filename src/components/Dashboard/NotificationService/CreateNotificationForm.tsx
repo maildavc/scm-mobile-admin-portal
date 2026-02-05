@@ -12,6 +12,7 @@ import {
 import Input from "@/components/Input";
 import TextArea from "@/components/TextArea";
 import Button from "@/components/Button";
+import EmailPreviewModal from "./EmailPreviewModal";
 
 interface CreateNotificationFormProps {
   onSuccess: () => void;
@@ -34,6 +35,7 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
     date: "",
     time: "",
   });
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -118,7 +120,8 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
             </h3>
             <button
               type="button"
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg text-xs font-medium text-[#2F3140] hover:bg-gray-200"
+              onClick={() => setIsPreviewOpen(true)}
+              className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-gray-100 rounded-lg text-xs font-medium text-[#2F3140] hover:bg-gray-200"
             >
               <FiEye /> View Notification
             </button>
@@ -252,6 +255,13 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
           </div>
         </div>
       </form>
+
+      <EmailPreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        title={formData.title}
+        body={formData.body}
+      />
     </div>
   );
 };
