@@ -130,6 +130,7 @@ export default function BlogAndFaqs() {
                       key={stat.label}
                       label={stat.label}
                       value={stat.value}
+                      showLink={false}
                       className={
                         currentStats.length === 3 && index === 2
                           ? "col-span-2 md:col-span-1"

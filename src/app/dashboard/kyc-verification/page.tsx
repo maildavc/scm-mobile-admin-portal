@@ -90,6 +90,7 @@ const KYCVerificationPage = () => {
                       key={stat.label}
                       label={stat.label}
                       value={stat.value}
+                      showLink={false}
                     />
                   ))}
                 </div>

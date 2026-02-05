@@ -111,6 +111,7 @@ export default function NotificationService() {
                       key={stat.label}
                       label={stat.label}
                       value={stat.value}
+                      showLink={false}
                       // Make the 3rd card span 2 cols on small screens if there are only 3 cards
                       className={
                         currentStats.length === 3 && index === 2
