@@ -98,7 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({ menuItems, onItemClick }) => {
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 item.isActive 
                   ? 'bg-[#2F3140] text-white' 
-                  : 'text-[#2F3140]'
+                  : 'text-[#2F3140] hover:bg-[#E8E8E8]'
               }`}
             >
               <item.icon size={18} />
