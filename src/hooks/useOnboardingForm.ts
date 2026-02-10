@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useLogin, useChangePassword } from "@/hooks/useAuth";
+import { useAuthStore } from "@/stores/authStore";
+import type { ApiError } from "@/types/auth";
+import { AxiosError } from "axios";
 
 export const useOnboardingForm = () => {
-  const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
-  const [hasChangedPassword, setHasChangedPassword] = useState(false);
 
   // Step 1 State
   const [email, setEmail] = useState("");
@@ -20,7 +21,14 @@ export const useOnboardingForm = () => {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
   const [newPasswordTouched, setNewPasswordTouched] = useState(false);
-  const [confirmNewPasswordTouched, setConfirmNewPasswordTouched] = useState(false);
+  const [confirmNewPasswordTouched, setConfirmNewPasswordTouched] =
+    useState(false);
+
+  // API mutations
+  const loginMutation = useLogin();
+  const changePasswordMutation = useChangePassword();
+  const user = useAuthStore((s) => s.user);
+  const requiresPasswordChange = useAuthStore((s) => s.requiresPasswordChange);
 
   // Step 1 Validation
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -60,33 +68,48 @@ export const useOnboardingForm = () => {
 
   const isStep2Valid = isNewPasswordComplexityValid && isConfirmPasswordValid;
 
+  // Derive API error messages
+  const getLoginError = (): string | null => {
+    if (!loginMutation.error) return null;
+    const err = loginMutation.error as AxiosError<ApiError>;
+    return err.response?.data?.message || "Login failed. Please try again.";
+  };
+
+  const getChangePasswordError = (): string | null => {
+    if (!changePasswordMutation.error) return null;
+    const err = changePasswordMutation.error as AxiosError<ApiError>;
+    return (
+      err.response?.data?.message ||
+      "Password change failed. Please try again."
+    );
+  };
+
   const handleLogin = () => {
-    if (isStep1Valid) {
-      if (hasChangedPassword) {
-        router.push("/dashboard");
-      } else {
-        setStep(2);
+    if (!isStep1Valid) return;
+
+    loginMutation.mutate(
+      { email, password, token },
+      {
+        onSuccess: (response) => {
+          if (response.data.requiresPasswordChange) {
+            // Move to step 2 — change password
+            setStep(2);
+          }
+          // If no password change needed, useLogin hook handles redirect
+        },
       }
-    }
+    );
   };
 
   const handleChangePassword = () => {
-    if (isStep2Valid) {
-      // Reset form to initial state and go back to step 1
-      setEmail("");
-      setPassword("");
-      setToken("");
-      setNewPassword("");
-      setConfirmNewPassword("");
-      setEmailTouched(false);
-      setPasswordTouched(false);
-      setTokenTouched(false);
-      setNewPasswordTouched(false);
-      setConfirmNewPasswordTouched(false);
-      
-      setHasChangedPassword(true);
-      setStep(1);
-    }
+    if (!isStep2Valid || !user) return;
+
+    changePasswordMutation.mutate({
+      userId: user.id,
+      currentPassword: password, // password they just logged in with
+      newPassword,
+    });
+    // useChangePassword hook handles logout + redirect on success
   };
 
   return {
@@ -125,5 +148,10 @@ export const useOnboardingForm = () => {
       hasSpecialChar,
       hasMinLength,
     },
+    // API state
+    isLoginLoading: loginMutation.isPending,
+    isChangePasswordLoading: changePasswordMutation.isPending,
+    loginError: getLoginError(),
+    changePasswordError: getChangePasswordError(),
   };
 };

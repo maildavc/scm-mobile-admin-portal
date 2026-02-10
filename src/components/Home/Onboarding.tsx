@@ -35,7 +35,15 @@ export default function Onboarding() {
     confirmPasswordError,
     isStep2Valid,
     passwordCriteria,
+    // API state
+    isLoginLoading,
+    isChangePasswordLoading,
+    loginError,
+    changePasswordError,
   } = useOnboardingForm();
+
+  const isLoading = step === 1 ? isLoginLoading : isChangePasswordLoading;
+  const apiError = step === 1 ? loginError : changePasswordError;
 
   return (
     <div className="min-h-screen w-full flex bg-[#0F0F0F] text-white overflow-hidden">
@@ -56,9 +64,16 @@ export default function Onboarding() {
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold">Welcome to SCM Admin</h1>
             <p className="text-[#6E6D7A] font-bold text-2xl">
-              Enter your credentials
+              {step === 1 ? "Enter your credentials" : "Change your password"}
             </p>
           </div>
+
+          {/* API Error Message */}
+          {apiError && (
+            <div className="w-full mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm text-center">
+              {apiError}
+            </div>
+          )}
 
           <form
             className="w-full flex flex-col gap-6 border-t border-[#2A2C2F] pt-8"
@@ -82,6 +97,7 @@ export default function Onboarding() {
                   onChange={(e) => setEmail(e.target.value)}
                   onBlur={() => setEmailTouched(true)}
                   error={emailError}
+                  disabled={isLoading}
                 />
 
                 <Input
@@ -93,6 +109,7 @@ export default function Onboarding() {
                   onChange={(e) => setPassword(e.target.value)}
                   onBlur={() => setPasswordTouched(true)}
                   error={passwordError}
+                  disabled={isLoading}
                 />
 
                 <Input
@@ -103,6 +120,7 @@ export default function Onboarding() {
                   onChange={(e) => setToken(e.target.value)}
                   onBlur={() => setTokenTouched(true)}
                   error={tokenError}
+                  disabled={isLoading}
                 />
               </>
             ) : (
@@ -115,6 +133,7 @@ export default function Onboarding() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   onBlur={() => setNewPasswordTouched(true)}
+                  disabled={isLoading}
                 />
 
                 <Input
@@ -126,6 +145,7 @@ export default function Onboarding() {
                   onChange={(e) => setConfirmNewPassword(e.target.value)}
                   onBlur={() => setConfirmNewPasswordTouched(true)}
                   error={confirmPasswordError}
+                  disabled={isLoading}
                 />
 
                 <PasswordCriteriaList criteria={passwordCriteria} />
@@ -135,8 +155,18 @@ export default function Onboarding() {
             <div className="pt-2">
               <Button
                 type="submit"
-                text={step === 1 ? "Login" : "Change Password"}
-                disabled={step === 1 ? !isStep1Valid : !isStep2Valid}
+                text={
+                  isLoading
+                    ? step === 1
+                      ? "Logging in..."
+                      : "Changing Password..."
+                    : step === 1
+                    ? "Login"
+                    : "Change Password"
+                }
+                disabled={
+                  isLoading || (step === 1 ? !isStep1Valid : !isStep2Valid)
+                }
               />
             </div>
           </form>
