@@ -38,12 +38,9 @@ export default function Onboarding() {
     // API state
     isLoginLoading,
     isChangePasswordLoading,
-    loginError,
-    changePasswordError,
   } = useOnboardingForm();
 
   const isLoading = step === 1 ? isLoginLoading : isChangePasswordLoading;
-  const apiError = step === 1 ? loginError : changePasswordError;
 
   return (
     <div className="min-h-screen w-full flex bg-[#0F0F0F] text-white overflow-hidden">
@@ -67,13 +64,6 @@ export default function Onboarding() {
               {step === 1 ? "Enter your credentials" : "Change your password"}
             </p>
           </div>
-
-          {/* API Error Message */}
-          {apiError && (
-            <div className="w-full mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm text-center">
-              {apiError}
-            </div>
-          )}
 
           <form
             className="w-full flex flex-col gap-6 border-t border-[#2A2C2F] pt-8"

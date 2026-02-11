@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useLogin, useChangePassword } from "@/hooks/useAuth";
 import { useAuthStore } from "@/stores/authStore";
-import type { ApiError } from "@/types/auth";
-import { AxiosError } from "axios";
 
 export const useOnboardingForm = () => {
   const [step, setStep] = useState<1 | 2>(1);
@@ -67,22 +65,6 @@ export const useOnboardingForm = () => {
     confirmNewPasswordTouched && !isConfirmPasswordValid;
 
   const isStep2Valid = isNewPasswordComplexityValid && isConfirmPasswordValid;
-
-  // Derive API error messages
-  const getLoginError = (): string | null => {
-    if (!loginMutation.error) return null;
-    const err = loginMutation.error as AxiosError<ApiError>;
-    return err.response?.data?.message || "Login failed. Please try again.";
-  };
-
-  const getChangePasswordError = (): string | null => {
-    if (!changePasswordMutation.error) return null;
-    const err = changePasswordMutation.error as AxiosError<ApiError>;
-    return (
-      err.response?.data?.message ||
-      "Password change failed. Please try again."
-    );
-  };
 
   const handleLogin = () => {
     if (!isStep1Valid) return;
@@ -151,7 +133,5 @@ export const useOnboardingForm = () => {
     // API state
     isLoginLoading: loginMutation.isPending,
     isChangePasswordLoading: changePasswordMutation.isPending,
-    loginError: getLoginError(),
-    changePasswordError: getChangePasswordError(),
   };
 };

@@ -23,11 +23,14 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor — handle 401 globally
+// Response interceptor — handle 401 globally (skip auth endpoints)
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const url = error.config?.url || "";
+    const isAuthEndpoint = url.includes("/auth/login") || url.includes("/users/password");
+
+    if (error.response?.status === 401 && !isAuthEndpoint) {
       Cookies.remove("accessToken");
       Cookies.remove("refreshToken");
       if (typeof window !== "undefined") {
