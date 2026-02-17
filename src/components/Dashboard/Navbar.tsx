@@ -6,17 +6,25 @@ import { FiSearch } from "react-icons/fi";
 import { BiUser } from "react-icons/bi";
 import SearchResults from "./SearchResults";
 import { SEARCH_ITEMS } from "@/constants/search";
-import RoleToggle from "./RoleToggle";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
 
+  const user = useAuthStore((s) => s.user);
+  const isApprover = useAuthStore((s) => s.isApprover);
+
   // Filter items based on search query
   const filteredResults = SEARCH_ITEMS.filter((item) =>
     item.title.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+
+  const displayName = user
+    ? `${user.firstName} ${user.lastName}`
+    : "Admin User";
+  const roleName = isApprover ? "Approver" : "Initiator";
 
   return (
     <div className="w-full bg-[#1A1A1A] text-white px-4 py-3 md:px-8 md:py-4">
@@ -32,10 +40,12 @@ export default function Navbar() {
           />
         </div>
 
-        {/* Mobile Right Side - Role Toggle + Search Icon + User Icon */}
+        {/* Mobile Right Side - Search Icon + User Icon */}
         <div className="flex md:hidden items-center gap-3 ml-auto order-2">
-          {/* Role Toggle - Mobile */}
-          <RoleToggle />
+          {/* Role Badge - Mobile */}
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#2A2A2A] border border-gray-600 text-gray-300">
+            {roleName}
+          </span>
 
           {/* Search Icon - Mobile only */}
           <div
@@ -70,7 +80,6 @@ export default function Navbar() {
                 setShowResults(true);
               }}
               onFocus={() => setShowResults(true)}
-              // onBlur={() => setTimeout(() => setShowResults(false), 200)} // Delay to allow clicking items
               className="block w-full pl-10 pr-3 py-2 md:py-2.5 bg-[#202023] border border-transparent rounded-xl text-xs md:text-sm placeholder-white text-white focus:outline-none transition-colors"
               placeholder="Search for customers, product offering, users, role and others"
             />
@@ -93,16 +102,11 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Role Toggle - Desktop */}
-        <div className="hidden md:flex items-center shrink-0 order-3">
-          <RoleToggle />
-        </div>
-
-        {/* User Profile - Desktop shows full info */}
-        <div className="hidden md:flex items-center gap-3 shrink-0 order-4">
+        {/* User Profile - Desktop shows full info with role */}
+        <div className="hidden md:flex items-center gap-3 shrink-0 order-3">
           <div className="text-right">
-            <p className="text-sm font-semibold text-white">Ehizojie Ihayere</p>
-            <p className="text-xs text-gray-400">Initiator Permission Name</p>
+            <p className="text-sm font-semibold text-white">{displayName}</p>
+            <p className="text-xs text-gray-400">{roleName}</p>
           </div>
           <div className="w-10 h-10 rounded-full bg-[#2A2A2A] flex items-center justify-center border border-gray-700">
             <BiUser className="text-gray-300" size={20} />

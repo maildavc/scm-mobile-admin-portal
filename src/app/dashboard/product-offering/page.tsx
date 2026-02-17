@@ -17,7 +17,7 @@ import {
 } from "@/constants/productOffering/productOffering";
 import ActionButton from "@/components/Dashboard/ActionButton";
 import { createProductColumns } from "./columns";
-import { useRole } from "@/context/RoleContext";
+import { useAuthStore } from "@/stores/authStore";
 
 type Product = {
   id: string;
@@ -29,7 +29,7 @@ type Product = {
 };
 
 export default function ProductOffering() {
-  const { isApprover } = useRole();
+  const isApprover = useAuthStore((s) => s.isApprover);
   const [currentView, setCurrentView] = useState("Overview");
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [viewProduct, setViewProduct] = useState<Product | null>(null);

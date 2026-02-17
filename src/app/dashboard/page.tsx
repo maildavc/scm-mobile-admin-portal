@@ -5,23 +5,31 @@ import DashboardCard from "@/components/Dashboard/DashboardCard";
 import ProfileModal from "@/components/Dashboard/ProfileModal";
 import { PiChatCircleBold } from "react-icons/pi";
 import { DASHBOARD_CARDS } from "@/constants/dashboard";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function Dashboard() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const user = useAuthStore((s) => s.user);
+
   const currentDate = new Date().toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
   });
 
+  const displayName = user ? `${user.firstName}` : "Back";
+
   return (
     <>
-      <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
 
       <main className="flex-1 p-8 max-w-400 mx-auto w-full">
         <div className="mb-8">
           <h1 className="text-xl font-bold text-[#2F3140]">Dashboard</h1>
-          <p className="text-[#707781] mt-1">Welcome Back !</p>
+          <p className="text-[#707781] mt-1">Welcome {displayName} !</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
@@ -42,7 +50,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-2 text-sm text-[#707781]">
             <span suppressHydrationWarning>Last Login: {currentDate}</span>
             <span>•</span>
-            <button 
+            <button
               className="text-[#B2171E] font-medium cursor-pointer"
               onClick={() => setIsProfileModalOpen(true)}
             >

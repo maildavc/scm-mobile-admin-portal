@@ -1,7 +1,8 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://167.71.38.134:5001";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://46.101.225.14:5000";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -20,7 +21,7 @@ apiClient.interceptors.request.use(
     config.headers["X-Correlation-ID"] = crypto.randomUUID();
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response interceptor — handle 401 globally (skip auth endpoints)
@@ -28,7 +29,8 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     const url = error.config?.url || "";
-    const isAuthEndpoint = url.includes("/auth/login") || url.includes("/users/password");
+    const isAuthEndpoint =
+      url.includes("/auth/login") || url.includes("/users/password");
 
     if (error.response?.status === 401 && !isAuthEndpoint) {
       Cookies.remove("accessToken");
@@ -38,7 +40,7 @@ apiClient.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

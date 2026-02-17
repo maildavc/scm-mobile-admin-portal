@@ -16,7 +16,7 @@ import {
 } from "@/constants/customerManagement/customerManagement";
 import ActionButton from "@/components/Dashboard/ActionButton";
 import { createCustomerColumns } from "./columns";
-import { useRole } from "@/context/RoleContext";
+import { useAuthStore } from "@/stores/authStore";
 import ViewCustomerRequest from "@/components/Dashboard/CustomerManagement/ViewCustomerRequest";
 
 type Customer = {
@@ -33,7 +33,7 @@ export default function CustomerManagement() {
   const [currentView, setCurrentView] = useState("Overview");
   const [editCustomer, setEditCustomer] = useState<Customer | null>(null);
   const [viewCustomer, setViewCustomer] = useState<Customer | null>(null);
-  const { isApprover } = useRole();
+  const isApprover = useAuthStore((s) => s.isApprover);
 
   // Sidebar Logic
   const allSidebarItems = CUSTOMER_MANAGEMENT_SIDEBAR_ITEMS.map((item) => ({

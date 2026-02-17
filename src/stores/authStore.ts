@@ -9,6 +9,9 @@ interface AuthState {
   isAuthenticated: boolean;
   requiresPasswordChange: boolean;
 
+  // Computed
+  isApprover: boolean;
+
   // Actions
   setAuth: (params: {
     user: User;
@@ -27,17 +30,30 @@ export const useAuthStore = create<AuthState>((set) => ({
   organization: null,
   isAuthenticated: false,
   requiresPasswordChange: false,
+  isApprover: false,
 
-  setAuth: ({ user, organization, accessToken, refreshToken, requiresPasswordChange }) => {
+  setAuth: ({
+    user,
+    organization,
+    accessToken,
+    refreshToken,
+    requiresPasswordChange,
+  }) => {
     // Persist tokens in cookies (httpOnly in prod should be set server-side)
     Cookies.set("accessToken", accessToken, { expires: 1, sameSite: "strict" });
-    Cookies.set("refreshToken", refreshToken, { expires: 7, sameSite: "strict" });
+    Cookies.set("refreshToken", refreshToken, {
+      expires: 7,
+      sameSite: "strict",
+    });
 
     // Persist user & org in localStorage for hydration
     if (typeof window !== "undefined") {
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("organization", JSON.stringify(organization));
-      localStorage.setItem("requiresPasswordChange", JSON.stringify(requiresPasswordChange));
+      localStorage.setItem(
+        "requiresPasswordChange",
+        JSON.stringify(requiresPasswordChange),
+      );
     }
 
     set({
@@ -45,6 +61,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       organization,
       isAuthenticated: true,
       requiresPasswordChange,
+      isApprover: user.role?.toLowerCase() === "approver",
     });
   },
 
@@ -68,6 +85,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       organization: null,
       isAuthenticated: false,
       requiresPasswordChange: false,
+      isApprover: false,
     });
   },
 
@@ -81,11 +99,13 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     if (accessToken && userStr && orgStr) {
       try {
+        const user = JSON.parse(userStr) as User;
         set({
-          user: JSON.parse(userStr),
+          user,
           organization: JSON.parse(orgStr),
           isAuthenticated: true,
           requiresPasswordChange: rpc === "true",
+          isApprover: user.role?.toLowerCase() === "approver",
         });
       } catch {
         // Corrupted data — reset

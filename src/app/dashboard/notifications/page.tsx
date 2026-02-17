@@ -15,7 +15,7 @@ import {
   getBreadcrumbs,
 } from "@/constants/notificationService/notificationService";
 import { createNotificationColumns } from "./columns";
-import { useRole } from "@/context/RoleContext";
+import { useAuthStore } from "@/stores/authStore";
 
 import CreateNotificationForm from "@/components/Dashboard/NotificationService/CreateNotificationForm";
 import NotificationSettings from "@/components/Dashboard/NotificationService/NotificationSettings";
@@ -48,8 +48,10 @@ type Notification = {
 
 export default function NotificationService() {
   const [currentView, setCurrentView] = useState("Overview");
-  const [viewNotification, setViewNotification] = useState<Notification | null>(null);
-  const { isApprover } = useRole();
+  const [viewNotification, setViewNotification] = useState<Notification | null>(
+    null,
+  );
+  const isApprover = useAuthStore((s) => s.isApprover);
 
   const sidebarItems = isApprover
     ? NOTIFICATION_SIDEBAR_ITEMS.filter((item) => item.label === "Overview")
@@ -80,7 +82,9 @@ export default function NotificationService() {
     setViewNotification(null);
   };
 
-  const breadcrumbs = getBreadcrumbs(viewNotification ? viewNotification.name : currentView);
+  const breadcrumbs = getBreadcrumbs(
+    viewNotification ? viewNotification.name : currentView,
+  );
   const currentStats = isApprover ? APPROVER_STATS_CONFIG : STATS_CONFIG;
   const columns = createNotificationColumns(isApprover, handleViewNotification);
 

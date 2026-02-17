@@ -15,7 +15,7 @@ import {
   PAGE_CONFIG,
   getBreadcrumbs,
 } from "@/constants/userRoleManagement/userRoleManagement";
-import { useRole } from "@/context/RoleContext";
+import { useAuthStore } from "@/stores/authStore";
 import { createUserColumns } from "./columns";
 import { createRoleColumns } from "./roleColumns";
 import { createDepartmentColumns } from "./departmentColumns";
@@ -66,7 +66,7 @@ export default function UserRoleManagement() {
   const [viewUser, setViewUser] = useState<User | null>(null);
   const [viewRole, setViewRole] = useState<Role | null>(null);
   const [viewDepartment, setViewDepartment] = useState<Department | null>(null);
-  const { isApprover } = useRole();
+  const isApprover = useAuthStore((s) => s.isApprover);
 
   const allSidebarItems = USER_ROLE_SIDEBAR_ITEMS.map((item) => ({
     ...item,

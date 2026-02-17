@@ -15,12 +15,12 @@ import {
   KYCRequest,
 } from "@/constants/kycVerification/kycVerification";
 import { createColumns } from "./columns";
-import { useRole } from "@/context/RoleContext";
+import { useAuthStore } from "@/stores/authStore";
 import ViewKYCRequest from "@/components/Dashboard/KYCVerification/ViewKYCRequest";
 
 const KYCVerificationPage = () => {
   const [viewRequest, setViewRequest] = useState<KYCRequest | null>(null);
-  const { isApprover } = useRole();
+  const isApprover = useAuthStore((s) => s.isApprover);
 
   const handleViewRequest = (request: KYCRequest) => {
     setViewRequest(request);

@@ -18,7 +18,7 @@ import {
 } from "@/constants/blogAndFaqs/blogAndFaqs";
 import { createBlogPostColumns } from "./columns";
 import { createFAQColumns } from "./faqColumns";
-import { useRole } from "@/context/RoleContext";
+import { useAuthStore } from "@/stores/authStore";
 
 import CreateBlogPostForm from "@/components/Dashboard/BlogAndFaqs/CreateBlogPostForm";
 import CreateFAQForm from "@/components/Dashboard/BlogAndFaqs/CreateFAQForm";
@@ -56,7 +56,7 @@ export default function BlogAndFaqs() {
   const [activeTab, setActiveTab] = useState("Blog");
   const [viewBlogPost, setViewBlogPost] = useState<BlogPost | null>(null);
   const [viewFAQ, setViewFAQ] = useState<FAQ | null>(null);
-  const { isApprover } = useRole();
+  const isApprover = useAuthStore((s) => s.isApprover);
 
   const sidebarItems = isApprover
     ? BLOG_SIDEBAR_ITEMS.filter((item) => item.label === "Overview")
@@ -83,7 +83,8 @@ export default function BlogAndFaqs() {
     setViewFAQ(faq as FAQ);
   }, isApprover);
 
-  const currentStats = activeTab === "Blog" ? BLOG_STATS_CONFIG : FAQ_STATS_CONFIG;
+  const currentStats =
+    activeTab === "Blog" ? BLOG_STATS_CONFIG : FAQ_STATS_CONFIG;
 
   return (
     <SidebarProvider>
@@ -153,7 +154,6 @@ export default function BlogAndFaqs() {
                         onClick={() => console.log("Download clicked")}
                         label="Download Table as PDF"
                         actionText="Download"
-                        
                       />
                     </div>
                     <div className="">
@@ -161,7 +161,6 @@ export default function BlogAndFaqs() {
                         onClick={() => console.log("Export clicked")}
                         label="Export Table as CSV"
                         actionText="Export"
-                        
                       />
                     </div>
                   </div>
