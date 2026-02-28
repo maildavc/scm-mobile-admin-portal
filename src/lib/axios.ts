@@ -1,17 +1,38 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import { encryptPayload, decryptPayload } from "@/lib/encryption";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://46.101.225.14:5000";
-
+// Route all API requests through the Next.js proxy to avoid browser
+// Content-Encoding issues with encrypted responses.
+// The proxy sets Accept-Encoding: identity on the server side.
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: "/api/proxy",
   headers: {
     "Content-Type": "application/json",
   },
+  // Receive responses as raw text so we can decrypt before JSON.parse
+  responseType: "text",
 });
 
-// Request interceptor — attach token + correlation ID
+/**
+ * Recursively convert all object keys from camelCase to PascalCase.
+ * The backend (.NET) expects PascalCase JSON property names.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toPascalCaseKeys(obj: any): any {
+  if (Array.isArray(obj)) return obj.map(toPascalCaseKeys);
+  if (obj !== null && typeof obj === "object") {
+    return Object.fromEntries(
+      Object.entries(obj).map(([key, val]) => [
+        key.charAt(0).toUpperCase() + key.slice(1),
+        toPascalCaseKeys(val),
+      ]),
+    );
+  }
+  return obj;
+}
+
+// Request interceptor — attach token, correlation ID, and encrypt payload
 apiClient.interceptors.request.use(
   (config) => {
     const token = Cookies.get("accessToken");
@@ -19,15 +40,56 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     config.headers["X-Correlation-ID"] = crypto.randomUUID();
+
+    // The backend expects PascalCase JSON keys (e.g. "Email", "Password", "Token").
+    // Convert camelCase keys to PascalCase before encrypting.
+    // Server expects: { "request": "encrypted_base64_string" }
+    if (config.data) {
+      const pascalData = toPascalCaseKeys(config.data);
+      const jsonString = JSON.stringify(pascalData);
+      config.data = { request: encryptPayload(jsonString) };
+    }
+
     return config;
   },
   (error) => Promise.reject(error),
 );
 
-// Response interceptor — handle 401 globally (skip auth endpoints)
+// Response interceptor — decrypt response and handle 401 globally
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // responseType is 'text', so response.data is always a raw string
+    if (response.data && typeof response.data === "string") {
+      try {
+        // Try to decrypt the encrypted response
+        const decrypted = decryptPayload(response.data);
+        response.data = JSON.parse(decrypted);
+      } catch {
+        // If decryption fails, try plain JSON parse (non-encrypted response)
+        try {
+          response.data = JSON.parse(response.data);
+        } catch {
+          // Leave as raw string if nothing works
+        }
+      }
+    }
+    return response;
+  },
   (error) => {
+    // Try to decrypt error response too
+    if (error.response?.data && typeof error.response.data === "string") {
+      try {
+        const decrypted = decryptPayload(error.response.data);
+        error.response.data = JSON.parse(decrypted);
+      } catch {
+        try {
+          error.response.data = JSON.parse(error.response.data);
+        } catch {
+          // Leave as raw string
+        }
+      }
+    }
+
     const url = error.config?.url || "";
     const isAuthEndpoint =
       url.includes("/auth/login") || url.includes("/users/password");

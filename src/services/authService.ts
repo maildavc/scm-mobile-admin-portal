@@ -1,5 +1,4 @@
 import apiClient from "@/lib/axios";
-import { encryptAES } from "@/lib/encryption";
 import type {
   LoginRequest,
   LoginResponse,
@@ -8,13 +7,9 @@ import type {
 
 export const authService = {
   login: async (payload: LoginRequest): Promise<LoginResponse> => {
-    const encryptedPayload = {
-      ...payload,
-      password: encryptAES(payload.password),
-    };
     const { data } = await apiClient.post<LoginResponse>(
       "/api/v1/auth/login",
-      encryptedPayload,
+      payload,
     );
     return data;
   },
@@ -22,14 +17,9 @@ export const authService = {
   changePassword: async (
     payload: ChangePasswordRequest,
   ): Promise<{ message: string }> => {
-    const encryptedPayload = {
-      ...payload,
-      currentPassword: encryptAES(payload.currentPassword),
-      newPassword: encryptAES(payload.newPassword),
-    };
     const { data } = await apiClient.put<{ message: string }>(
       "/api/users/password",
-      encryptedPayload,
+      payload,
     );
     return data;
   },
