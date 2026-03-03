@@ -60,10 +60,15 @@ apiClient.interceptors.request.use(
     }
     config.headers["X-Correlation-ID"] = crypto.randomUUID();
 
+    // The backend throws "The response body is empty" if a GET request has Content-Type
+    if (config.method?.toUpperCase() === "GET") {
+      delete config.headers["Content-Type"];
+    }
+
     // The backend expects PascalCase JSON keys (e.g. "Email", "Password", "Token").
     // Convert camelCase keys to PascalCase before encrypting.
     // Server expects: { "request": "encrypted_base64_string" }
-    if (config.data) {
+    if (config.data && Object.keys(config.data).length > 0) {
       const pascalData = toPascalCaseKeys(config.data);
       const jsonString = JSON.stringify(pascalData);
       config.data = { request: encryptPayload(jsonString) };
@@ -78,16 +83,28 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => {
     // responseType is 'text', so response.data is always a raw string
-    if (response.data != null && typeof response.data === "string" && response.data.length > 0) {
+    if (
+      response.data != null &&
+      typeof response.data === "string" &&
+      response.data.length > 0
+    ) {
       try {
         // Backend wraps encrypted responses as {"response": "<encrypted_base64>"}
         const wrapper = JSON.parse(response.data);
 
-        if (wrapper && typeof wrapper.response === "string" && wrapper.response.length > 0) {
+        if (
+          wrapper &&
+          typeof wrapper.response === "string" &&
+          wrapper.response.length > 0
+        ) {
           const decrypted = decryptPayload(wrapper.response);
           const parsed = JSON.parse(decrypted);
           response.data = toCamelCaseKeys(parsed);
-        } else if (wrapper && typeof wrapper.Response === "string" && wrapper.Response.length > 0) {
+        } else if (
+          wrapper &&
+          typeof wrapper.Response === "string" &&
+          wrapper.Response.length > 0
+        ) {
           const decrypted = decryptPayload(wrapper.Response);
           const parsed = JSON.parse(decrypted);
           response.data = toCamelCaseKeys(parsed);

@@ -1,43 +1,63 @@
 // ─── Dashboard Types ───
 
 export interface DashboardModule {
+  id: string;
   name: string;
-  icon: string;
   description: string;
+  icon: string;
   route: string;
-  count?: number;
-  trend?: string;
+  isEnabled: boolean;
+  order: number;
+  permissions: string[];
+}
+
+export interface DashboardStats {
+  totalUsers: number;
+  totalCustomers: number;
+  totalProducts: number;
+  pendingApprovals: number;
+  activeKYCRequests: number;
+  openSupportTickets: number;
+}
+
+export interface DashboardOverviewData {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    permissions: string[];
+    profileImageUrl: string | null;
+  };
+  modules: DashboardModule[];
+  stats: DashboardStats;
 }
 
 export interface DashboardOverviewResponse {
-  status: string;
-  message: string;
-  data: {
-    modules: DashboardModule[];
-    totalCustomers: number;
-    totalProducts: number;
-    totalUsers: number;
-    pendingApprovals: number;
-    recentActivities: Array<{
-      id: string;
-      action: string;
-      user: string;
-      timestamp: string;
-      module: string;
-    }>;
+  isSuccess: boolean;
+  isFailure: boolean;
+  value: {
+    status: string;
+    data: DashboardOverviewData;
   };
 }
 
 export interface SearchResult {
   id: string;
-  title: string;
-  module: string;
   type: string;
-  url: string;
+  title: string;
+  description: string;
+  route: string;
+  icon: string;
+  metadata: Record<string, unknown>;
 }
 
 export interface SearchResponse {
-  status: string;
-  data: SearchResult[];
-  totalCount: number;
+  isSuccess: boolean;
+  isFailure: boolean;
+  value: {
+    status: string;
+    results: SearchResult[];
+    totalCount: number;
+  };
 }

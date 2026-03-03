@@ -113,6 +113,10 @@ export default function Navbar() {
                 <SearchResults
                   results={filteredResults}
                   searchTerm={searchQuery}
+                  onClose={() => {
+                    setShowResults(false);
+                    setSearchQuery("");
+                  }}
                 />
               </div>
             </>
