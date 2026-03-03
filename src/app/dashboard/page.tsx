@@ -17,7 +17,7 @@ export default function Dashboard() {
     year: "numeric",
   });
 
-  const displayName = user ? `${user.firstName}` : "Back";
+  const displayName = user ? user.name || user.firstName : "Back";
 
   return (
     <>

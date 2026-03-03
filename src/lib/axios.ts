@@ -32,6 +32,25 @@ function toPascalCaseKeys(obj: any): any {
   return obj;
 }
 
+/**
+ * Recursively convert all object keys from PascalCase to camelCase.
+ * The backend (.NET) returns PascalCase JSON property names but
+ * our TypeScript types use camelCase.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toCamelCaseKeys(obj: any): any {
+  if (Array.isArray(obj)) return obj.map(toCamelCaseKeys);
+  if (obj !== null && typeof obj === "object") {
+    return Object.fromEntries(
+      Object.entries(obj).map(([key, val]) => [
+        key.charAt(0).toLowerCase() + key.slice(1),
+        toCamelCaseKeys(val),
+      ]),
+    );
+  }
+  return obj;
+}
+
 // Request interceptor — attach token, correlation ID, and encrypt payload
 apiClient.interceptors.request.use(
   (config) => {
@@ -55,19 +74,33 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Response interceptor — decrypt response and handle 401 globally
+// Response interceptor — decrypt response, convert keys, and handle 401 globally
 apiClient.interceptors.response.use(
   (response) => {
     // responseType is 'text', so response.data is always a raw string
-    if (response.data && typeof response.data === "string") {
+    if (response.data != null && typeof response.data === "string" && response.data.length > 0) {
       try {
-        // Try to decrypt the encrypted response
-        const decrypted = decryptPayload(response.data);
-        response.data = JSON.parse(decrypted);
+        // Backend wraps encrypted responses as {"response": "<encrypted_base64>"}
+        const wrapper = JSON.parse(response.data);
+
+        if (wrapper && typeof wrapper.response === "string" && wrapper.response.length > 0) {
+          const decrypted = decryptPayload(wrapper.response);
+          const parsed = JSON.parse(decrypted);
+          response.data = toCamelCaseKeys(parsed);
+        } else if (wrapper && typeof wrapper.Response === "string" && wrapper.Response.length > 0) {
+          const decrypted = decryptPayload(wrapper.Response);
+          const parsed = JSON.parse(decrypted);
+          response.data = toCamelCaseKeys(parsed);
+        } else {
+          // Non-encrypted JSON response — just convert keys
+          response.data = toCamelCaseKeys(wrapper);
+        }
       } catch {
-        // If decryption fails, try plain JSON parse (non-encrypted response)
+        // If outer JSON parse fails, try decrypting the entire body directly (legacy format)
         try {
-          response.data = JSON.parse(response.data);
+          const decrypted = decryptPayload(response.data);
+          const parsed = JSON.parse(decrypted);
+          response.data = toCamelCaseKeys(parsed);
         } catch {
           // Leave as raw string if nothing works
         }
@@ -76,14 +109,21 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Try to decrypt error response too
+    // Try to decrypt error response too (same {"response":"..."} wrapper)
     if (error.response?.data && typeof error.response.data === "string") {
       try {
-        const decrypted = decryptPayload(error.response.data);
-        error.response.data = JSON.parse(decrypted);
+        const wrapper = JSON.parse(error.response.data);
+        const encrypted = wrapper?.response || wrapper?.Response;
+        if (typeof encrypted === "string" && encrypted.length > 0) {
+          const decrypted = decryptPayload(encrypted);
+          error.response.data = toCamelCaseKeys(JSON.parse(decrypted));
+        } else {
+          error.response.data = toCamelCaseKeys(wrapper);
+        }
       } catch {
         try {
-          error.response.data = JSON.parse(error.response.data);
+          const decrypted = decryptPayload(error.response.data);
+          error.response.data = toCamelCaseKeys(JSON.parse(decrypted));
         } catch {
           // Leave as raw string
         }

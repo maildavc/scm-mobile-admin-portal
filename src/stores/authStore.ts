@@ -2,6 +2,20 @@ import { create } from "zustand";
 import Cookies from "js-cookie";
 import type { User, Organization } from "@/types/auth";
 
+/**
+ * Determine if a user role maps to the "approver" persona.
+ * Backend returns "Admin" or "SystemAdmin" for approvers.
+ */
+const isApproverRole = (role?: string): boolean =>
+  ["admin", "systemadmin", "approver"].includes(role?.toLowerCase() ?? "");
+
+/**
+ * Determine if a user role maps to the "initiator" persona.
+ * Backend returns "Initiator" for initiators/managers.
+ */
+const isInitiatorRole = (role?: string): boolean =>
+  ["initiator", "manager"].includes(role?.toLowerCase() ?? "");
+
 interface AuthState {
   // State
   user: User | null;
@@ -11,6 +25,7 @@ interface AuthState {
 
   // Computed
   isApprover: boolean;
+  isInitiator: boolean;
 
   // Actions
   setAuth: (params: {
@@ -31,6 +46,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   requiresPasswordChange: false,
   isApprover: false,
+  isInitiator: false,
 
   setAuth: ({
     user,
@@ -61,7 +77,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       organization,
       isAuthenticated: true,
       requiresPasswordChange,
-      isApprover: user.role?.toLowerCase() === "approver",
+      isApprover: isApproverRole(user.role),
+      isInitiator: isInitiatorRole(user.role),
     });
   },
 
@@ -86,6 +103,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       isAuthenticated: false,
       requiresPasswordChange: false,
       isApprover: false,
+      isInitiator: false,
     });
   },
 
@@ -105,7 +123,8 @@ export const useAuthStore = create<AuthState>((set) => ({
           organization: JSON.parse(orgStr),
           isAuthenticated: true,
           requiresPasswordChange: rpc === "true",
-          isApprover: user.role?.toLowerCase() === "approver",
+          isApprover: isApproverRole(user.role),
+          isInitiator: isInitiatorRole(user.role),
         });
       } catch {
         // Corrupted data — reset

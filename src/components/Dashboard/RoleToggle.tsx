@@ -1,43 +1,30 @@
 "use client";
 
 import React from "react";
-import { useRole } from "@/context/RoleContext";
+import { useAuthStore } from "@/stores/authStore";
 
+/**
+ * Displays the current user role as a read-only badge.
+ * The role is determined by the backend login response:
+ *   Admin → Approver (AP)
+ *   Initiator/Manager → Initiator (IA)
+ */
 const RoleToggle: React.FC = () => {
-  const { isApprover, toggleRole } = useRole();
+  const isApprover = useAuthStore((s) => s.isApprover);
+  const label = isApprover ? "Approver" : "Initiator";
+  const shortLabel = isApprover ? "AP" : "IA";
 
   return (
     <div className="flex items-center gap-2 md:gap-3">
       <span
-        className={`text-xs font-medium transition-colors ${
-          !isApprover ? "text-white" : "text-gray-500"
+        className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+          isApprover
+            ? "bg-[#B2171E]/20 text-[#B2171E] border border-[#B2171E]/30"
+            : "bg-[#2A2A2A] text-gray-300 border border-gray-600"
         }`}
       >
-        <span className="md:hidden">IA</span>
-        <span className="hidden md:inline">IA</span>
-      </span>
-
-      <button
-        onClick={toggleRole}
-        className={`relative cursor-pointer w-12 h-6 rounded-full transition-all duration-300 focus:outline-none ${
-          isApprover ? "bg-[#B2171E]" : "bg-[#2A2A2A] border border-gray-600"
-        }`}
-        aria-label={`Switch to ${isApprover ? "Initiator" : "Approver"} role`}
-      >
-        <span
-          className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-md transition-all duration-300 ${
-            isApprover ? "left-7" : "left-1"
-          }`}
-        />
-      </button>
-
-      <span
-        className={`text-xs font-medium transition-colors ${
-          isApprover ? "text-white" : "text-gray-500"
-        }`}
-      >
-        <span className="md:hidden">AP</span>
-        <span className="hidden md:inline">AP</span>
+        <span className="md:hidden">{shortLabel}</span>
+        <span className="hidden md:inline">{label}</span>
       </span>
     </div>
   );

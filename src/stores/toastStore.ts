@@ -23,8 +23,8 @@ export const useToastStore = create<ToastState>((set) => ({
       toasts: [...state.toasts, { id, message, type }],
     }));
 
-    // Auto-dismiss: error toasts last 15 seconds, others 9 seconds
-    const duration = type === "error" ? 15000 : 9000;
+    // Auto-dismiss: error toasts last 2 seconds, others 9 seconds
+    const duration = type === "error" ? 2000 : 9000;
     setTimeout(() => {
       set((state) => ({
         toasts: state.toasts.filter((t) => t.id !== id),

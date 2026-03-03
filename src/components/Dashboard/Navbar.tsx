@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { FiSearch } from "react-icons/fi";
+import { FiSearch, FiLogOut } from "react-icons/fi";
 import { BiUser } from "react-icons/bi";
+import { useRouter } from "next/navigation";
 import SearchResults from "./SearchResults";
 import { SEARCH_ITEMS } from "@/constants/search";
 import { useAuthStore } from "@/stores/authStore";
@@ -15,6 +16,13 @@ export default function Navbar() {
 
   const user = useAuthStore((s) => s.user);
   const isApprover = useAuthStore((s) => s.isApprover);
+  const logout = useAuthStore((s) => s.logout);
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+  };
 
   // Filter items based on search query
   const filteredResults = SEARCH_ITEMS.filter((item) =>
@@ -22,7 +30,7 @@ export default function Navbar() {
   );
 
   const displayName = user
-    ? `${user.firstName} ${user.lastName}`
+    ? user.name || `${user.firstName || ""} ${user.lastName || ""}`.trim()
     : "Admin User";
   const roleName = isApprover ? "Approver" : "Initiator";
 
@@ -59,6 +67,15 @@ export default function Navbar() {
           <div className="w-8 h-8 rounded-full bg-[#2A2A2A] flex items-center justify-center border border-gray-700">
             <BiUser className="text-gray-300" size={16} />
           </div>
+
+          {/* Logout Icon - Mobile */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-[#B2171E]/20 border border-[#B2171E]/50 text-[#B2171E] hover:bg-[#B2171E] hover:text-white transition-colors"
+            title="Logout"
+          >
+            <FiLogOut size={14} />
+          </button>
         </div>
 
         {/* Search Bar - Desktop always visible, Mobile shows when clicked */}
@@ -111,6 +128,15 @@ export default function Navbar() {
           <div className="w-10 h-10 rounded-full bg-[#2A2A2A] flex items-center justify-center border border-gray-700">
             <BiUser className="text-gray-300" size={20} />
           </div>
+
+          {/* Logout Button - Desktop */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-[#B2171E]/10 border border-[#B2171E]/30 text-[#B2171E] hover:bg-[#B2171E] hover:text-white transition-colors ml-2"
+            title="Logout"
+          >
+            <FiLogOut size={18} />
+          </button>
         </div>
       </div>
     </div>

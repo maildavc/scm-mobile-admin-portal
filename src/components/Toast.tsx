@@ -36,7 +36,7 @@ function ToastItem({
 
   useEffect(() => {
     // Start exit animation before store removes toast
-    const exitDelay = type === "error" ? 14600 : 8600;
+    const exitDelay = type === "error" ? 1600 : 8600;
     const timer = setTimeout(() => setExiting(true), exitDelay);
     return () => clearTimeout(timer);
   }, [type]);

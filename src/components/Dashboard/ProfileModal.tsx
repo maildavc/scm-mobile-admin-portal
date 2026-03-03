@@ -2,6 +2,7 @@ import React from "react";
 import Modal from "../Modal";
 import { PiCaretDown } from "react-icons/pi";
 import { BiUser } from "react-icons/bi";
+import { useAuthStore } from "@/stores/authStore";
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -17,6 +18,11 @@ const PERMISSIONS = [
 ];
 
 const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
+  const user = useAuthStore((s) => s.user);
+  const displayName = user
+    ? user.name || `${user.firstName || ""} ${user.lastName || ""}`.trim()
+    : "Admin User";
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="p-8 md:p-10 min-h-150">
@@ -27,7 +33,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-sm font-semibold text-[#2F3140]">
-              Ehizojie Ihayere
+              {displayName}
             </h2>
             <p className="text-[#707781] text-xs">Permission Name Here</p>
             <button className="flex items-center gap-1 text-[#B2171E] font-medium text-xs mt-1 w-fit">

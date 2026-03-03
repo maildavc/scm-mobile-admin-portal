@@ -86,12 +86,29 @@ export const useOnboardingForm = () => {
   const handleChangePassword = () => {
     if (!isStep2Valid || !user) return;
 
-    changePasswordMutation.mutate({
-      userId: user.id,
-      currentPassword: password, // password they just logged in with
-      newPassword,
-    });
-    // useChangePassword hook handles logout + redirect on success
+    changePasswordMutation.mutate(
+      {
+        userId: user.id,
+        currentPassword: password, // password they just logged in with
+        newPassword,
+      },
+      {
+        onSuccess: () => {
+          // Reset all local form state back to step 1 (login screen)
+          setStep(1);
+          setEmail("");
+          setPassword("");
+          setToken("");
+          setNewPassword("");
+          setConfirmNewPassword("");
+          setEmailTouched(false);
+          setPasswordTouched(false);
+          setTokenTouched(false);
+          setNewPasswordTouched(false);
+          setConfirmNewPasswordTouched(false);
+        },
+      }
+    );
   };
 
   return {
