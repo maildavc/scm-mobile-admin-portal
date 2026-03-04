@@ -65,7 +65,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     // Persist user & org in localStorage for hydration
     if (typeof window !== "undefined") {
       localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("organization", JSON.stringify(organization));
+      // Safely stringify organization, using null if undefined
+      localStorage.setItem(
+        "organization",
+        JSON.stringify(organization || null),
+      );
       localStorage.setItem(
         "requiresPasswordChange",
         JSON.stringify(requiresPasswordChange),
@@ -115,18 +119,22 @@ export const useAuthStore = create<AuthState>((set) => ({
     const orgStr = localStorage.getItem("organization");
     const rpc = localStorage.getItem("requiresPasswordChange");
 
-    if (accessToken && userStr && orgStr) {
+    if (accessToken && userStr && userStr !== "undefined") {
       try {
         const user = JSON.parse(userStr) as User;
+        const org =
+          orgStr && orgStr !== "undefined" ? JSON.parse(orgStr) : null;
+
         set({
           user,
-          organization: JSON.parse(orgStr),
+          organization: org,
           isAuthenticated: true,
           requiresPasswordChange: rpc === "true",
           isApprover: isApproverRole(user.role),
           isInitiator: isInitiatorRole(user.role),
         });
-      } catch {
+      } catch (err) {
+        console.error("Auth hydration error:", err);
         // Corrupted data — reset
         Cookies.remove("accessToken");
         Cookies.remove("refreshToken");

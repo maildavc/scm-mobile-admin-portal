@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import SearchResults from "./SearchResults";
 import { SEARCH_ITEMS } from "@/constants/search";
 import { useAuthStore } from "@/stores/authStore";
+import apiClient from "@/lib/axios";
 
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -19,7 +20,13 @@ export default function Navbar() {
   const logout = useAuthStore((s) => s.logout);
   const router = useRouter();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      // Call the logout API to end the server session
+      await apiClient.post("/api/v1/auth/logout");
+    } catch {
+      // Even if the API call fails, still clear local state
+    }
     logout();
     router.push("/");
   };
