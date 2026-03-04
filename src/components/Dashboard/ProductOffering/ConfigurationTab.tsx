@@ -2,10 +2,12 @@ import React from "react";
 
 interface ConfigurationTabProps {
   onDeactivate?: () => void;
+  portfolioSize?: string;
 }
 
 const ConfigurationTab: React.FC<ConfigurationTabProps> = ({
   onDeactivate,
+  portfolioSize,
 }) => {
   const configOptions = [
     {
@@ -30,10 +32,9 @@ const ConfigurationTab: React.FC<ConfigurationTabProps> = ({
         <p className="text-[13px] text-[#707781] font-medium mb-1">
           Portfolio size
         </p>
-        <h2 className="text-lg font-semibold text-[#2F3140] mb-1">NGN200M</h2>
-        <p className="text-[13px] text-[#707781] font-medium">
-          101M customers subscribed
-        </p>
+        <h2 className="text-lg font-semibold text-[#2F3140] mb-1">
+          {portfolioSize || "—"}
+        </h2>
       </div>
 
       <div className="border border-gray-200 rounded-xl p-6 max-w-2xl min-h-112.5 flex flex-col">
@@ -51,7 +52,7 @@ const ConfigurationTab: React.FC<ConfigurationTabProps> = ({
               showBorder={index === 0}
             />
           ))}
-          
+
           {/* Spacer to push border down */}
           <div className="grow border-b border-gray-100"></div>
         </div>
@@ -75,7 +76,9 @@ const ConfigRow = ({
   onClick?: () => void;
   showBorder: boolean;
 }) => (
-  <div className={`flex items-center justify-between ${showBorder ? "pb-6 border-b border-gray-100" : ""}`}>
+  <div
+    className={`flex items-center justify-between ${showBorder ? "pb-6 border-b border-gray-100" : ""}`}
+  >
     <div>
       <h4 className="text-sm font-semibold text-[#2F3140] mb-1">{title}</h4>
       <p className="text-xs text-[#707781]">{description}</p>

@@ -2,20 +2,18 @@ import React, { useState } from "react";
 import Button from "@/components/Button";
 import { BiUser } from "react-icons/bi";
 import Image from "next/image";
-import {
-  PRODUCT_DETAILS,
-  FINANCIAL_DETAILS,
-} from "@/constants/productOffering/productOffering";
 import { DetailCard, DetailRow } from "@/components/Dashboard/SharedDetails";
 import ApproveModal from "@/components/Dashboard/Shared/ApproveModal";
 import RejectModal from "@/components/Dashboard/Shared/RejectModal";
+import { useProductDetail, useApproveProduct } from "@/hooks/useProducts";
+import { useToastStore } from "@/stores/toastStore";
 
 type Product = {
   id: string;
   name: string;
   type: string;
   size: string;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
+  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval";
   updated: string;
 };
 
@@ -36,15 +34,100 @@ const ViewProductRequest: React.FC<ViewProductRequestProps> = ({
     "review" | "success" | "rejected"
   >("review");
 
-  const handleApproveConfirm = () => {
+  const { data: detailRes, isLoading } = useProductDetail(product.id);
+  const approveProduct = useApproveProduct();
+  const addToast = useToastStore((s) => s.addToast);
+
+  const detail = detailRes?.value?.data;
+
+  // Build product details from API data
+  const productDetails = detail
+    ? [
+        { label: "Product Name", value: detail.productDetails.productName },
+        {
+          label: "Instrument Type",
+          value: detail.productDetails.instrumentType,
+        },
+        { label: "Issuer", value: detail.productDetails.issuer },
+        { label: "Sector", value: detail.productDetails.sector },
+      ]
+    : [];
+
+  // Build financial details from API data
+  const financialDetails = detail
+    ? [
+        {
+          label: "Selling Price",
+          value: `₦${detail.financialDetails.sellingPrice.toLocaleString()}`,
+        },
+        {
+          label: "Available Volume",
+          value: detail.financialDetails.availableVolume.toLocaleString(),
+        },
+        {
+          label: "Interest or returns Percentage",
+          value: `${detail.financialDetails.interestOrReturnsPercentage}%`,
+        },
+        {
+          label: "Minimum Investment Amount",
+          value: `₦${detail.financialDetails.minimumInvestmentAmount.toLocaleString()}`,
+        },
+        {
+          label: "Maximum Investment Amount",
+          value: `₦${detail.financialDetails.maximumInvestmentAmount.toLocaleString()}`,
+        },
+        {
+          label: "Settlement Date",
+          value: new Date(
+            detail.financialDetails.settlementDate,
+          ).toLocaleDateString(),
+        },
+        {
+          label: "Allow for Early Liquidation",
+          value: detail.financialDetails.allowForEarlyLiquidation
+            ? "Yes"
+            : "No",
+        },
+        {
+          label: "Early Liquidation Period",
+          value: detail.financialDetails.earlyLiquidationPeriod || "N/A",
+        },
+        {
+          label: "Early Liquidation Penalty?",
+          value: detail.financialDetails.earlyLiquidationPenalty || "N/A",
+        },
+        { label: "WHT Amount", value: `${detail.financialDetails.whtAmount}%` },
+        {
+          label: "Applicable Tax",
+          value: `${detail.financialDetails.applicableTax}%`,
+        },
+      ]
+    : [];
+
+  const handleApproveConfirm = async () => {
     setIsApproveModalOpen(false);
-    setViewStatus("success");
+    try {
+      await approveProduct.mutateAsync({
+        productId: product.id,
+        payload: { productId: product.id, action: "approve", reason: null },
+      });
+      setViewStatus("success");
+    } catch {
+      addToast("Failed to approve product", "error");
+    }
   };
 
-  const handleRejectConfirm = (reason: string) => {
+  const handleRejectConfirm = async (reason: string) => {
     setIsRejectModalOpen(false);
-    console.log("Rejection reason:", reason); // In a real app, you'd send this to API
-    setViewStatus("rejected");
+    try {
+      await approveProduct.mutateAsync({
+        productId: product.id,
+        payload: { productId: product.id, action: "reject", reason },
+      });
+      setViewStatus("rejected");
+    } catch {
+      addToast("Failed to reject product", "error");
+    }
   };
 
   if (viewStatus === "success") {
@@ -95,6 +178,14 @@ const ViewProductRequest: React.FC<ViewProductRequestProps> = ({
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20 text-gray-400 text-sm">
+        Loading product details...
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
       <ApproveModal
@@ -115,8 +206,18 @@ const ViewProductRequest: React.FC<ViewProductRequestProps> = ({
         </div>
         <div>
           <p className="text-[10px] text-[#707781] font-semibold">Created By</p>
-          <p className="text-sm font-bold text-[#2F3140]">Ehizojie Ihayere</p>
-          <p className="text-xs text-[#707781]">January 12, 2026 13:23</p>
+          <p className="text-sm font-bold text-[#2F3140]">{product.name}</p>
+          <p className="text-xs text-[#707781]">
+            {detail?.createdAt
+              ? new Date(detail.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : product.updated}
+          </p>
         </div>
       </div>
 
@@ -124,7 +225,7 @@ const ViewProductRequest: React.FC<ViewProductRequestProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Product Details Card */}
         <DetailCard title="Product Details">
-          {PRODUCT_DETAILS.map((detail) => (
+          {productDetails.map((detail) => (
             <DetailRow
               key={detail.label}
               label={detail.label}
@@ -135,7 +236,7 @@ const ViewProductRequest: React.FC<ViewProductRequestProps> = ({
 
         {/* Financial Details Card */}
         <DetailCard title="Financial Details">
-          {FINANCIAL_DETAILS.map((detail) => (
+          {financialDetails.map((detail) => (
             <DetailRow
               key={detail.label}
               label={detail.label}

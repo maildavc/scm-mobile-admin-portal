@@ -1,6 +1,12 @@
 import React from "react";
 
-const ProductPerformanceChart = () => {
+interface ProductPerformanceChartProps {
+  portfolioSize?: string;
+}
+
+const ProductPerformanceChart: React.FC<ProductPerformanceChartProps> = ({
+  portfolioSize,
+}) => {
   const dataPoints = [
     500000, 650000, 820000, 800000, 790000, 700000, 550000, 420000, 250000,
     120000, 100000, 130000,
@@ -83,11 +89,12 @@ const ProductPerformanceChart = () => {
   return (
     <div className="pt-6 mb-8">
       <div className="mb-8">
-        <p className="text-[13px] text-[#707781] font-medium mb-1">Portfolio size</p>
-        <h2 className="text-lg font-semibold text-[#2F3140] mb-1">NGN200M</h2>
-        <p className="text-[13px] text-[#707781] font-medium">
-          101M customers subscribed
+        <p className="text-[13px] text-[#707781] font-medium mb-1">
+          Portfolio size
         </p>
+        <h2 className="text-lg font-semibold text-[#2F3140] mb-1">
+          {portfolioSize || "—"}
+        </h2>
       </div>
 
       <div className="flex gap-4">

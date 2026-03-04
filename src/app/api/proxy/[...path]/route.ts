@@ -19,35 +19,15 @@ async function proxyFetch(
   headers: Record<string, string>,
   body?: string,
 ): Promise<ProxyResult> {
-  console.log("[PROXY] >>> Requesting:", method, targetUrl);
-  console.log("[PROXY] >>> Request headers:", JSON.stringify(headers));
-  if (body) console.log("[PROXY] >>> Request body:", body);
-
   const res = await fetch(targetUrl, {
     method,
     headers,
     body: body || undefined,
-    // @ts-expect-error — Next.js extends RequestInit with this option
     cache: "no-store",
   });
 
-  // Log ALL response headers
-  console.log("[PROXY] <<< Status:", res.status, res.statusText);
-  console.log("[PROXY] <<< All response headers:");
-  res.headers.forEach((value, key) => {
-    console.log(`  ${key}: ${value}`);
-  });
-
-  // Try arrayBuffer first to see raw bytes
   const buffer = await res.arrayBuffer();
-  console.log("[PROXY] <<< ArrayBuffer byteLength:", buffer.byteLength);
-
-  // Convert to string
-  const uint8 = new Uint8Array(buffer);
-  console.log("[PROXY] <<< First 100 bytes (raw):", Array.from(uint8.slice(0, 100)));
   const text = new TextDecoder().decode(buffer);
-  console.log("[PROXY] <<< Text length:", text.length);
-  console.log("[PROXY] <<< Full body:", text);
 
   return {
     status: res.status,
@@ -65,11 +45,10 @@ function buildHeaders(
   includeContentType = false,
 ): Record<string, string> {
   const headers: Record<string, string> = {
-    // Match the headers that Postman sends (which work against this backend)
     "User-Agent": "SCM-Admin-Proxy/1.0",
-    "Accept": "*/*",
+    Accept: "*/*",
     "Accept-Encoding": "gzip, deflate, br",
-    "Connection": "keep-alive",
+    Connection: "keep-alive",
   };
 
   if (includeContentType) {
@@ -103,15 +82,23 @@ export async function POST(
 ) {
   const { path } = await params;
   const targetUrl = `${API_BASE_URL}/${path.join("/")}`;
-  const body = await request.text();
+  const contentType = request.headers.get("content-type") || "";
+  const isMultipart = contentType.includes("multipart/form-data");
 
   try {
-    const result = await proxyFetch(
-      targetUrl,
-      "POST",
-      buildHeaders(request, true),
-      body,
-    );
+    let body: string;
+    const headers = buildHeaders(request, !isMultipart);
+
+    if (isMultipart) {
+      // Forward the original content-type (with boundary) and raw body
+      headers["Content-Type"] = contentType;
+      const buffer = await request.arrayBuffer();
+      body = new TextDecoder().decode(buffer);
+    } else {
+      body = await request.text();
+    }
+
+    const result = await proxyFetch(targetUrl, "POST", headers, body);
     return toNextResponse(result);
   } catch (error) {
     return NextResponse.json(
@@ -131,11 +118,7 @@ export async function GET(
   const targetUrl = `${API_BASE_URL}/${path.join("/")}${search}`;
 
   try {
-    const result = await proxyFetch(
-      targetUrl,
-      "GET",
-      buildHeaders(request),
-    );
+    const result = await proxyFetch(targetUrl, "GET", buildHeaders(request));
     return toNextResponse(result);
   } catch (error) {
     return NextResponse.json(
@@ -152,15 +135,22 @@ export async function PUT(
 ) {
   const { path } = await params;
   const targetUrl = `${API_BASE_URL}/${path.join("/")}`;
-  const body = await request.text();
+  const contentType = request.headers.get("content-type") || "";
+  const isMultipart = contentType.includes("multipart/form-data");
 
   try {
-    const result = await proxyFetch(
-      targetUrl,
-      "PUT",
-      buildHeaders(request, true),
-      body,
-    );
+    let body: string;
+    const headers = buildHeaders(request, !isMultipart);
+
+    if (isMultipart) {
+      headers["Content-Type"] = contentType;
+      const buffer = await request.arrayBuffer();
+      body = new TextDecoder().decode(buffer);
+    } else {
+      body = await request.text();
+    }
+
+    const result = await proxyFetch(targetUrl, "PUT", headers, body);
     return toNextResponse(result);
   } catch (error) {
     return NextResponse.json(
@@ -179,11 +169,7 @@ export async function DELETE(
   const targetUrl = `${API_BASE_URL}/${path.join("/")}`;
 
   try {
-    const result = await proxyFetch(
-      targetUrl,
-      "DELETE",
-      buildHeaders(request),
-    );
+    const result = await proxyFetch(targetUrl, "DELETE", buildHeaders(request));
     return toNextResponse(result);
   } catch (error) {
     return NextResponse.json(

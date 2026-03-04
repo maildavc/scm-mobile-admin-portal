@@ -4,13 +4,14 @@ import React, { useState } from "react";
 import Tabs from "@/components/Dashboard/Tabs";
 import ProductInfoTab from "./ProductInfoTab";
 import ConfigurationTab from "./ConfigurationTab";
+import { useProductDetail } from "@/hooks/useProducts";
 
 type Product = {
   id: string;
   name: string;
   type: string;
   size: string;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
+  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval";
   updated: string;
 };
 
@@ -26,12 +27,14 @@ const ViewProduct: React.FC<ViewProductProps> = ({
   onDeactivate,
 }) => {
   const [activeTab, setActiveTab] = useState("Product Info");
+  const { data: detailRes, isLoading } = useProductDetail(product.id);
+
+  const detail = detailRes?.value?.data;
 
   const tabs = ["Product Info", "Configuration"];
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Tabs */}
       <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
       {activeTab === "Product Info" ? (
@@ -39,9 +42,15 @@ const ViewProduct: React.FC<ViewProductProps> = ({
           onEdit={onEdit}
           onDeactivate={onDeactivate}
           status={product.status}
+          productDetail={detail ?? null}
+          portfolioSize={product.size}
+          isLoading={isLoading}
         />
       ) : (
-        <ConfigurationTab onDeactivate={onDeactivate} />
+        <ConfigurationTab
+          onDeactivate={onDeactivate}
+          portfolioSize={product.size}
+        />
       )}
     </div>
   );

@@ -9,32 +9,52 @@ import CreateProductForm from "@/components/Dashboard/ProductOffering/CreateProd
 import ViewProduct from "@/components/Dashboard/ProductOffering/ViewProduct";
 import ViewProductRequest from "@/components/Dashboard/ProductOffering/ViewProductRequest";
 import {
-  PRODUCTS,
   PRODUCT_OFFERING_SIDEBAR_ITEMS,
-  STATS_CONFIG,
   PAGE_CONFIG,
   getBreadcrumbs,
 } from "@/constants/productOffering/productOffering";
 import ActionButton from "@/components/Dashboard/ActionButton";
 import { createProductColumns } from "./columns";
 import { useAuthStore } from "@/stores/authStore";
+import {
+  useProducts,
+  useApproveProduct,
+  useUpdateProductStatus,
+} from "@/hooks/useProducts";
+import { useToastStore } from "@/stores/toastStore";
 
-type Product = {
+export type Product = {
   id: string;
   name: string;
   type: string;
   size: string;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
+  // API returns "Inactive"; legacy child components expect "Deactivated" — both accepted
+  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval";
   updated: string;
 };
 
 export default function ProductOffering() {
   const isApprover = useAuthStore((s) => s.isApprover);
+  const addToast = useToastStore((s) => s.addToast);
   const [currentView, setCurrentView] = useState("Overview");
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [viewProduct, setViewProduct] = useState<Product | null>(null);
 
-  // Filter sidebar items based on role - Approver only sees Overview
+  // ── Live data ──────────────────────────────────────────────────────
+  const { data: productsRes, isLoading } = useProducts({ page: 1, limit: 50 });
+  const approveProduct = useApproveProduct();
+  const updateStatus = useUpdateProductStatus();
+
+  const products: Product[] = productsRes?.value?.data?.products ?? [];
+  const stats = productsRes?.value?.data?.stats;
+
+  const statsConfig = [
+    { label: "Active Products", value: stats?.activeProducts ?? "—" },
+    { label: "Inactive Products", value: stats?.inactiveProducts ?? "—" },
+    { label: "Unsubscribed", value: stats?.unsubscribedProducts ?? "—" },
+  ];
+
+  // ── Sidebar / navigation ───────────────────────────────────────────
   const filteredSidebarItems = isApprover
     ? PRODUCT_OFFERING_SIDEBAR_ITEMS.filter((item) => item.label === "Overview")
     : PRODUCT_OFFERING_SIDEBAR_ITEMS;
@@ -64,17 +84,62 @@ export default function ProductOffering() {
     setCurrentView(product.name);
   };
 
-  const columns = createProductColumns(
-    handleEditProduct,
-    handleViewProduct,
-    isApprover,
-  );
-
   const resetView = () => {
     setCurrentView("Overview");
     setEditProduct(null);
     setViewProduct(null);
   };
+
+  // ── Approve / Reject ───────────────────────────────────────────────
+  const handleApprove = async () => {
+    if (!viewProduct) return;
+    try {
+      await approveProduct.mutateAsync({
+        productId: viewProduct.id,
+        payload: { productId: viewProduct.id, action: "approve", reason: null },
+      });
+      addToast("Product approved successfully", "success");
+      resetView();
+    } catch {
+      addToast("Failed to approve product", "error");
+    }
+  };
+
+  const handleReject = async (reason: string) => {
+    if (!viewProduct) return;
+    try {
+      await approveProduct.mutateAsync({
+        productId: viewProduct.id,
+        payload: { productId: viewProduct.id, action: "reject", reason },
+      });
+      addToast("Product rejected successfully", "success");
+      resetView();
+    } catch {
+      addToast("Failed to reject product", "error");
+    }
+  };
+
+  // ── Deactivate / Activate ──────────────────────────────────────────
+  const handleDeactivate = async () => {
+    if (!viewProduct) return;
+    const newStatus = viewProduct.status === "Active" ? "Inactive" : "Active";
+    try {
+      await updateStatus.mutateAsync({
+        productId: viewProduct.id,
+        payload: { productId: viewProduct.id, status: newStatus },
+      });
+      addToast(`Product set to ${newStatus}`, "success");
+      resetView();
+    } catch {
+      addToast("Failed to update product status", "error");
+    }
+  };
+
+  const columns = createProductColumns(
+    handleEditProduct,
+    handleViewProduct,
+    isApprover,
+  );
 
   const breadcrumbs = getBreadcrumbs(
     viewProduct ? viewProduct.name : currentView,
@@ -98,13 +163,13 @@ export default function ProductOffering() {
             {currentView === "Overview" ? (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-10">
-                  {STATS_CONFIG.map((stat, index) => (
+                  {statsConfig.map((stat, index) => (
                     <StatsCard
                       key={stat.label}
                       label={stat.label}
-                      value={stat.value}
+                      value={isLoading ? "..." : String(stat.value)}
                       className={
-                        STATS_CONFIG.length === 3 && index === 2
+                        statsConfig.length === 3 && index === 2
                           ? "col-span-2 md:col-span-1"
                           : ""
                       }
@@ -127,11 +192,17 @@ export default function ProductOffering() {
                   />
                 </div>
 
-                <Table
-                  data={PRODUCTS}
-                  columns={columns}
-                  itemsPerPage={PAGE_CONFIG.itemsPerPage}
-                />
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-20 text-gray-400 text-sm">
+                    Loading products...
+                  </div>
+                ) : (
+                  <Table
+                    data={products}
+                    columns={columns}
+                    itemsPerPage={PAGE_CONFIG.itemsPerPage}
+                  />
+                )}
               </>
             ) : currentView === "Create Product" ? (
               <CreateProductForm
@@ -149,26 +220,14 @@ export default function ProductOffering() {
               isApprover ? (
                 <ViewProductRequest
                   product={viewProduct}
-                  onApprove={() => {
-                    // Handle approval
-                    setCurrentView("Overview");
-                    setViewProduct(null);
-                  }}
-                  onReject={() => {
-                    // Handle rejection
-                    setCurrentView("Overview");
-                    setViewProduct(null);
-                  }}
+                  onApprove={handleApprove}
+                  onReject={() => handleReject("")}
                 />
               ) : (
                 <ViewProduct
                   product={viewProduct}
                   onEdit={() => handleEditProduct(viewProduct)}
-                  onDeactivate={() => {
-                    // Handle deactivation
-                    setCurrentView("Overview");
-                    setViewProduct(null);
-                  }}
+                  onDeactivate={handleDeactivate}
                 />
               )
             ) : (

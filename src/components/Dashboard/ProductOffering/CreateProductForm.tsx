@@ -6,13 +6,15 @@ import Button from "@/components/Button";
 import { FiUploadCloud } from "react-icons/fi";
 import { FORM_SECTIONS } from "@/constants/productOffering/createProduct";
 import Image from "next/image";
+import { useCreateProduct, useUpdateProduct } from "@/hooks/useProducts";
+import { useToastStore } from "@/stores/toastStore";
 
 type Product = {
   id: string;
   name: string;
   type: string;
   size: string;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
+  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval";
   updated: string;
 };
 
@@ -27,24 +29,29 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
   onCancel,
   initialData,
 }) => {
-  const [formData, setFormData] = useState<Record<string, string | File>>(() => {
-    if (initialData) {
-      return {
-        "Product Name": initialData.name,
-        "Instrument Type": initialData.type,
-      };
-    }
-    return {} as Record<string, string | File>;
-  });
+  const isEditing = !!initialData;
+  const [formData, setFormData] = useState<Record<string, string | File>>(
+    () => {
+      if (initialData) {
+        return {
+          "Product Name": initialData.name,
+          "Instrument Type": initialData.type,
+        };
+      }
+      return {} as Record<string, string | File>;
+    },
+  );
   const [showSuccess, setShowSuccess] = useState(false);
 
   // Get all required fields from all sections (memoized to prevent infinite loop)
-  const requiredFields = useMemo(() => 
-    FORM_SECTIONS.flatMap((section) =>
-      section.fields
-        .filter((field) => field.required)
-        .map((field) => field.label),
-    ), []
+  const requiredFields = useMemo(
+    () =>
+      FORM_SECTIONS.flatMap((section) =>
+        section.fields
+          .filter((field) => field.required)
+          .map((field) => field.label),
+      ),
+    [],
   );
 
   // Check if all required fields are filled
@@ -65,10 +72,91 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
     }
   };
 
-  const handleCreateProduct = () => {
-    if (isFormValid) {
-      // Here you would normally send the data to an API
+  const createProduct = useCreateProduct();
+  const updateProduct = useUpdateProduct();
+  const addToast = useToastStore((s) => s.addToast);
+
+  // Maps form labels → API field names for create
+  const createFieldMap: Record<string, string> = {
+    "Product Name": "createProduct.productName",
+    "Instrument Type": "createProduct.instrumentType",
+    Issuer: "createProduct.issuer",
+    Sector: "createProduct.sector",
+    "Issuers Logo": "createProduct.issuersLogo",
+    "Selling Price": "createProduct.sellingPrice",
+    "Available Volume": "createProduct.availableVolume",
+    "Interest or returns Percentage":
+      "createProduct.interestOrReturnsPercentage",
+    "Minimum Investment Amount": "createProduct.minimumInvestmentAmount",
+    "Maximum Investment Amount": "createProduct.maximumInvestmentAmount",
+    "Settlement Date": "createProduct.settlementDate",
+    "Allow for Early Liquidation": "createProduct.allowForEarlyLiquidation",
+    "Early Liquidation Period": "createProduct.earlyLiquidationPeriod",
+    "Early Liquidation Penalty?": "createProduct.earlyLiquidationPenalty",
+    "WHT Amount": "createProduct.whtAmount",
+    "Applicable Tax": "createProduct.applicableTax",
+    Source: "createProduct.source",
+  };
+
+  // Maps form labels → API field names for update
+  const updateFieldMap: Record<string, string> = {
+    "Product Name": "basicInformation.productName",
+    "Instrument Type": "basicInformation.instrumentType",
+    Issuer: "basicInformation.issuer",
+    Sector: "basicInformation.sector",
+    "Issuers Logo": "basicInformation.issuersLogo",
+    "Selling Price": "financialInformation.sellingPrice",
+    "Available Volume": "financialInformation.availableVolume",
+    "Interest or returns Percentage":
+      "financialInformation.interestOrReturnsPercentage",
+    "Minimum Investment Amount": "financialInformation.minimumInvestmentAmount",
+    "Maximum Investment Amount": "financialInformation.maximumInvestmentAmount",
+    "Settlement Date": "financialInformation.settlementDate",
+    "Allow for Early Liquidation":
+      "financialInformation.allowForEarlyLiquidation",
+    "Early Liquidation Period": "financialInformation.earlyLiquidationPeriod",
+    "Early Liquidation Penalty?":
+      "financialInformation.earlyLiquidationPenalty",
+    "WHT Amount": "financialInformation.whtAmount",
+    "Applicable Tax": "financialInformation.applicableTax",
+    Source: "integration.source",
+  };
+
+  const handleCreateProduct = async () => {
+    if (!isFormValid) return;
+
+    const fd = new FormData();
+    const fieldMap = isEditing ? updateFieldMap : createFieldMap;
+
+    for (const [label, value] of Object.entries(formData)) {
+      const apiKey = fieldMap[label];
+      if (!apiKey) continue;
+      if (value instanceof File) {
+        fd.append(apiKey, value);
+      } else {
+        // Convert "Yes"/"No" to booleans for the API
+        const v = value === "yes" ? "true" : value === "no" ? "false" : value;
+        fd.append(apiKey, v);
+      }
+    }
+
+    try {
+      if (isEditing && initialData) {
+        await updateProduct.mutateAsync({
+          productId: initialData.id,
+          formData: fd,
+        });
+        addToast("Product updated successfully", "success");
+      } else {
+        await createProduct.mutateAsync(fd);
+        addToast("Product created successfully", "success");
+      }
       setShowSuccess(true);
+    } catch {
+      addToast(
+        isEditing ? "Failed to update product" : "Failed to create product",
+        "error",
+      );
     }
   };
 
@@ -88,12 +176,7 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <div className="mb-6">
-          <Image
-            src="/success.svg"
-            alt="Success"
-            width={80}
-            height={80}
-          />
+          <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
         <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
           Product Creation Successful
@@ -177,7 +260,7 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
         </div>
         <div className="w-40">
           <Button
-            text="Create Product"
+            text={isEditing ? "Update Product" : "Create Product"}
             variant="primary"
             disabled={!isFormValid}
             onClick={handleCreateProduct}

@@ -5,6 +5,7 @@ import { GoCheckCircleFill } from "react-icons/go";
 
 type StatusType =
   | "Active"
+  | "Inactive"
   | "Deactivated"
   | "Awaiting Approval"
   | "Completed"
@@ -32,6 +33,11 @@ const statusStyles: Record<
     text: "text-black",
   },
   Deactivated: {
+    bg: "bg-[#EEEEEE]",
+    border: "border-[#555555]/10",
+    text: "text-black",
+  },
+  Inactive: {
     bg: "bg-[#EEEEEE]",
     border: "border-[#555555]/10",
     text: "text-black",
@@ -93,6 +99,8 @@ const getStatusIcon = (status: StatusType) => {
     case "Active":
       return <GoCheckCircleFill className="" size={14} color="#00A85A" />;
     case "Deactivated":
+      return <BsPauseCircleFill className="" size={14} color="#A4A4A4" />;
+    case "Inactive":
       return <BsPauseCircleFill className="" size={14} color="#A4A4A4" />;
     case "Awaiting Approval":
       return (

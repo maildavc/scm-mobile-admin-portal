@@ -12,7 +12,7 @@ type Product = {
   name: string;
   type: string;
   size: string;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
+  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval";
   updated: string;
 };
 

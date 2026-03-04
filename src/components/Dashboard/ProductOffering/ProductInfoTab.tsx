@@ -2,31 +2,114 @@ import React from "react";
 import Button from "@/components/Button";
 import { StatusBadge } from "@/components/Dashboard/StatusBadge";
 import ProductPerformanceChart from "./ProductPerformanceChart";
-import {
-  PRODUCT_DETAILS,
-  FINANCIAL_DETAILS,
-} from "@/constants/productOffering/productOffering";
 import { DetailCard, DetailRow } from "@/components/Dashboard/SharedDetails";
+import type { ProductDetailData } from "@/types/product";
 
 interface ProductInfoTabProps {
   onEdit?: () => void;
   onDeactivate?: () => void;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
+  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval";
+  productDetail: ProductDetailData | null;
+  portfolioSize: string;
+  isLoading: boolean;
 }
 
 const ProductInfoTab: React.FC<ProductInfoTabProps> = ({
   onEdit,
   onDeactivate,
   status,
+  productDetail,
+  portfolioSize,
+  isLoading,
 }) => {
+  // Build product details from API data
+  const productDetails = productDetail
+    ? [
+        {
+          label: "Product Name",
+          value: productDetail.productDetails.productName,
+        },
+        {
+          label: "Instrument Type",
+          value: productDetail.productDetails.instrumentType,
+        },
+        { label: "Issuer", value: productDetail.productDetails.issuer },
+        { label: "Sector", value: productDetail.productDetails.sector },
+      ]
+    : [];
+
+  // Build financial details from API data
+  const financialDetails = productDetail
+    ? [
+        {
+          label: "Selling Price",
+          value: `₦${productDetail.financialDetails.sellingPrice.toLocaleString()}`,
+        },
+        {
+          label: "Available Volume",
+          value:
+            productDetail.financialDetails.availableVolume.toLocaleString(),
+        },
+        {
+          label: "Interest or returns Percentage",
+          value: `${productDetail.financialDetails.interestOrReturnsPercentage}%`,
+        },
+        {
+          label: "Minimum Investment Amount",
+          value: `₦${productDetail.financialDetails.minimumInvestmentAmount.toLocaleString()}`,
+        },
+        {
+          label: "Maximum Investment Amount",
+          value: `₦${productDetail.financialDetails.maximumInvestmentAmount.toLocaleString()}`,
+        },
+        {
+          label: "Settlement Date",
+          value: new Date(
+            productDetail.financialDetails.settlementDate,
+          ).toLocaleDateString(),
+        },
+        {
+          label: "Allow for Early Liquidation",
+          value: productDetail.financialDetails.allowForEarlyLiquidation
+            ? "Yes"
+            : "No",
+        },
+        {
+          label: "Early Liquidation Period",
+          value: productDetail.financialDetails.earlyLiquidationPeriod || "N/A",
+        },
+        {
+          label: "Early Liquidation Penalty?",
+          value:
+            productDetail.financialDetails.earlyLiquidationPenalty || "N/A",
+        },
+        {
+          label: "WHT Amount",
+          value: `${productDetail.financialDetails.whtAmount}%`,
+        },
+        {
+          label: "Applicable Tax",
+          value: `${productDetail.financialDetails.applicableTax}%`,
+        },
+      ]
+    : [];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20 text-gray-400 text-sm">
+        Loading product details...
+      </div>
+    );
+  }
+
   return (
     <>
-      <ProductPerformanceChart />
+      <ProductPerformanceChart portfolioSize={portfolioSize} />
 
       {/* Product Details Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <DetailCard title="Product Details">
-          {PRODUCT_DETAILS.map((detail) => (
+          {productDetails.map((detail) => (
             <DetailRow
               key={detail.label}
               label={detail.label}
@@ -40,7 +123,7 @@ const ProductInfoTab: React.FC<ProductInfoTabProps> = ({
         </DetailCard>
 
         <DetailCard title="Financial Details">
-          {FINANCIAL_DETAILS.map((detail) => (
+          {financialDetails.map((detail) => (
             <DetailRow
               key={detail.label}
               label={detail.label}
