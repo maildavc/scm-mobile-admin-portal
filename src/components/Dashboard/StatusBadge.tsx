@@ -3,7 +3,7 @@ import { BsFillExclamationCircleFill, BsPauseCircleFill } from "react-icons/bs";
 import { BsFillStopCircleFill } from "react-icons/bs";
 import { GoCheckCircleFill } from "react-icons/go";
 
-type StatusType =
+export type StatusType =
   | "Active"
   | "Inactive"
   | "Deactivated"
@@ -137,14 +137,26 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   status,
   displayLabel,
 }) => {
-  const styles = statusStyles[status];
+  const fallbackStyle = {
+    bg: "bg-[#FEF6E7]",
+    border: "border-[#865503]/10",
+    text: "text-black",
+  };
+  const isKnownStatus = status in statusStyles;
+  const styles = isKnownStatus
+    ? statusStyles[status as StatusType]
+    : fallbackStyle;
 
   return (
     <span
       className={`inline-flex border items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${styles.bg} ${styles.border} ${styles.text}`}
     >
-      {getStatusIcon(status)}
-      {displayLabel || status}
+      {isKnownStatus ? (
+        getStatusIcon(status as StatusType)
+      ) : (
+        <BsFillExclamationCircleFill className="" size={14} color="#E3A300" />
+      )}
+      {displayLabel || status || "Pending"}
     </span>
   );
 };

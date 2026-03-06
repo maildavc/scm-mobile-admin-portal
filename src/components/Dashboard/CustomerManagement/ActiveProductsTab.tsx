@@ -141,7 +141,10 @@ const ActiveProductsTab: React.FC<ActiveProductsTabProps> = ({
           onClick={() => console.log("Export CSV")}
         />
       </div>
-      <Table data={ACTIVE_PRODUCTS} columns={columns} />
+      <Table data={[]} columns={columns} />
+      <div className="flex flex-col items-center justify-center py-12 text-[#707781] text-sm">
+        <p>No active products allocated yet.</p>
+      </div>
     </div>
   );
 };

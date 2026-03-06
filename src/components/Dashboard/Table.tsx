@@ -12,12 +12,14 @@ interface TableProps<T> {
   data: T[];
   columns: Column<T>[];
   itemsPerPage?: number;
+  isLoading?: boolean;
 }
 
 export default function Table<T>({
   data,
   columns,
   itemsPerPage = 10,
+  isLoading = false,
 }: TableProps<T>) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPageState, setItemsPerPageState] = useState(itemsPerPage);
@@ -55,25 +57,45 @@ export default function Table<T>({
             </tr>
           </thead>
           <tbody>
-            {currentData.map((item, rowIdx) => (
-              <tr
-                key={rowIdx}
-                className="group transition-colors border-b border-[#F4F4F5]"
-              >
-                {columns.map((col, colIdx) => (
-                  <td
-                    key={colIdx}
-                    className={`py-4 px-4 align-middle whitespace-nowrap ${col.className || ""}`}
-                  >
-                    {col.render
-                      ? col.render(item)
-                      : col.accessorKey
-                        ? (item[col.accessorKey] as React.ReactNode)
-                        : null}
-                  </td>
-                ))}
+            {isLoading ? (
+              <tr>
+                <td
+                  colSpan={columns.length}
+                  className="py-10 text-center text-gray-500"
+                >
+                  Loading data...
+                </td>
               </tr>
-            ))}
+            ) : currentData.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={columns.length}
+                  className="py-10 text-center text-gray-500"
+                >
+                  No data available.
+                </td>
+              </tr>
+            ) : (
+              currentData.map((item, rowIdx) => (
+                <tr
+                  key={rowIdx}
+                  className="group transition-colors border-b border-[#F4F4F5]"
+                >
+                  {columns.map((col, colIdx) => (
+                    <td
+                      key={colIdx}
+                      className={`py-4 px-4 align-middle whitespace-nowrap ${col.className || ""}`}
+                    >
+                      {col.render
+                        ? col.render(item)
+                        : col.accessorKey
+                          ? (item[col.accessorKey] as React.ReactNode)
+                          : null}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

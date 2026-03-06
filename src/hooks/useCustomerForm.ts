@@ -1,13 +1,21 @@
 import { useState, useMemo } from "react";
-import { BASIC_INFO_FIELDS, ProductAssignment, DEFAULT_PRODUCT_ASSIGNMENTS, EMPTY_PRODUCT_ASSIGNMENTS } from "@/constants/customerManagement/createCustomer";
+import {
+  BASIC_INFO_FIELDS,
+  ProductAssignment,
+  DEFAULT_PRODUCT_ASSIGNMENTS,
+  EMPTY_PRODUCT_ASSIGNMENTS,
+} from "@/constants/customerManagement/createCustomer";
+import { useCreateCustomer, useUpdateCustomer } from "./useCustomers";
 
 type Customer = {
   id: string;
   name: string;
-  tier: string;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
-  kycStatus: "Awaiting Approval" | "Completed";
-  updated: string;
+  email: string;
+  phone: string;
+  tier?: string;
+  status: string;
+  kycStatus: string;
+  updatedAt?: string;
 };
 
 export function useCustomerForm(initialData?: Customer | null) {
@@ -23,16 +31,20 @@ export function useCustomerForm(initialData?: Customer | null) {
     return {} as Record<string, string>;
   });
 
-  const [productAssignments, setProductAssignments] = useState<ProductAssignment>(
-    initialData ? DEFAULT_PRODUCT_ASSIGNMENTS : DEFAULT_PRODUCT_ASSIGNMENTS
-  );
+  const [productAssignments, setProductAssignments] =
+    useState<ProductAssignment>(
+      initialData ? DEFAULT_PRODUCT_ASSIGNMENTS : DEFAULT_PRODUCT_ASSIGNMENTS,
+    );
 
   const [showSuccess, setShowSuccess] = useState(false);
 
   // Get all required fields
   const requiredFields = useMemo(
-    () => BASIC_INFO_FIELDS.filter((field) => field.required).map((field) => field.label),
-    []
+    () =>
+      BASIC_INFO_FIELDS.filter((field) => field.required).map(
+        (field) => field.label,
+      ),
+    [],
   );
 
   // Check if all required fields are filled
@@ -57,9 +69,35 @@ export function useCustomerForm(initialData?: Customer | null) {
     }));
   };
 
-  const handleSaveChanges = () => {
-    if (isFormValid) {
+  const createMutation = useCreateCustomer();
+  const updateMutation = useUpdateCustomer();
+
+  const handleSaveChanges = async () => {
+    if (!isFormValid) return;
+
+    try {
+      const payload = {
+        name: `${formData["Legal First Name"] || ""} ${formData["Legal Last Name"] || ""}`.trim(),
+        email: formData["Email Address"] || "",
+        phone: formData["Phone Number"] || "",
+      };
+
+      if (initialData) {
+        await updateMutation.mutateAsync({
+          customerId: initialData.id,
+          payload: {
+            ...payload,
+            customerId: initialData.id,
+          },
+        });
+      } else {
+        await createMutation.mutateAsync(payload);
+      }
+
       setShowSuccess(true);
+    } catch (error) {
+      console.error("Failed to save customer:", error);
+      // Optional: Handle error UI state here if desired
     }
   };
 

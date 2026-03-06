@@ -4,49 +4,20 @@ import { BiUser } from "react-icons/bi";
 import Image from "next/image";
 import ApproveModal from "@/components/Dashboard/Shared/ApproveModal";
 import RejectModal from "@/components/Dashboard/Shared/RejectModal";
-import { StatusBadge } from "@/components/Dashboard/StatusBadge";
+import { StatusBadge, StatusType } from "@/components/Dashboard/StatusBadge";
 import Tabs from "@/components/Dashboard/Tabs";
 import ActiveProductsTab from "./ActiveProductsTab";
 import PaymentsAndCardsTab from "./PaymentsAndCardsTab";
 import DocumentsTab from "./DocumentsTab";
 
-type Customer = {
-  id: string;
-  name: string;
-  tier: string;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
-  kycStatus: "Awaiting Approval" | "Completed";
-  updated: string;
-  requestType?: string;
-};
+import { Customer } from "@/types/customer";
+import { useApproveRejectCustomer } from "@/hooks/useCustomers";
 
 interface ViewCustomerRequestProps {
   customer: Customer;
   onApprove: () => void;
   onReject: () => void;
 }
-
-const CUSTOMER_INFO = [
-  { label: "Customers name", value: "Aremu Victoria Babatunde" },
-  { label: "Gender", value: "Male" },
-  { label: "Date of Birth", value: "DD/MM/YYYY" },
-  { label: "Citizenship", value: "Nigerian" },
-  { label: "Email", value: "aremuvictoria@gmail.com" },
-  { label: "Phone Number", value: "0900 000 0000" },
-];
-
-const PROFILE_INFO = [
-  { label: "Account Tier", value: "User & Role Management" },
-  { label: "BVN", value: "00000000098" },
-  { label: "NIN", value: "00000000098" },
-  { label: "Bank Account", value: "000098765678 - Stanbic IBTC PLC" },
-  {
-    label: "Address",
-    value: "25 Idemejo Estate, Trinity Avenue, Idemejo, Victoria Island, Lagos",
-  },
-  { label: "Next of Kin", value: "Juanita (Sister)" },
-  { label: "Next of Kin Phone", value: "08000000909" },
-];
 
 const DetailRow = ({
   label,
@@ -77,19 +48,63 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
   const [activeTab, setActiveTab] = useState("Customer Info");
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const customerInfoRows = [
+    { label: "Customer Name", value: customer.name || "—" },
+    { label: "Email", value: customer.email || "—" },
+    { label: "Phone Number", value: customer.phone || "—" },
+    { label: "Tier", value: customer.tier || "—" },
+    {
+      label: "Date Registered",
+      value: customer.createdAt
+        ? new Date(customer.createdAt).toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })
+        : "—",
+    },
+    {
+      label: "Last Updated",
+      value: customer.updatedAt
+        ? new Date(customer.updatedAt).toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })
+        : "—",
+    },
+  ];
   const [viewStatus, setViewStatus] = useState<
     "review" | "success" | "rejected"
   >("review");
 
-  const handleApproveConfirm = () => {
-    setIsApproveModalOpen(false);
-    setViewStatus("success");
+  const { mutateAsync: approveRejectCustomer } = useApproveRejectCustomer();
+
+  const handleApproveConfirm = async () => {
+    try {
+      await approveRejectCustomer({
+        customerId: customer.id,
+        action: "approve",
+      });
+      setIsApproveModalOpen(false);
+      setViewStatus("success");
+    } catch (error) {
+      console.error("Failed to approve customer", error);
+    }
   };
 
-  const handleRejectConfirm = (reason: string) => {
-    setIsRejectModalOpen(false);
-    console.log("Rejection reason:", reason);
-    setViewStatus("rejected");
+  const handleRejectConfirm = async (reason: string) => {
+    try {
+      // The API doesn't currently take a 'reason' for rejection, but we pass the action
+      await approveRejectCustomer({
+        customerId: customer.id,
+        action: "reject",
+      });
+      setIsRejectModalOpen(false);
+      setViewStatus("rejected");
+    } catch (error) {
+      console.error("Failed to reject customer", error);
+    }
   };
 
   if (viewStatus === "success") {
@@ -167,8 +182,10 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
         </div>
         <div>
           <p className="text-[10px] text-[#707781] font-semibold">Created By</p>
-          <p className="text-sm font-bold text-[#2F3140]">Adeyemi Opeyemi</p>
-          <p className="text-xs text-[#707781]">January 12, 2026 13:23</p>
+          <p className="text-sm font-bold text-[#2F3140]">{customer.name}</p>
+          <p className="text-xs text-[#707781]">
+            {customer.createdAt || "N/A"}
+          </p>
         </div>
       </div>
 
@@ -198,22 +215,32 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
               </div>
 
               {/* Customer Info */}
-              <div className="space-y-4">
-                {CUSTOMER_INFO.map((info) => (
+              <div className="space-y-0">
+                {customerInfoRows.map((info, index) => (
                   <DetailRow
                     key={info.label}
                     label={info.label}
                     value={info.value}
-                    isLast={false}
+                    isLast={index === customerInfoRows.length - 1}
                   />
                 ))}
                 <div className="flex justify-between items-center py-2 border-b border-[#F4F4F5]">
                   <span className="text-sm text-[#2F3140]">Account Status</span>
-                  <StatusBadge status={customer.status} />
+                  <StatusBadge
+                    status={
+                      (customer.status || "Awaiting Approval") as StatusType
+                    }
+                    displayLabel={
+                      !customer.status ? "Awaiting Approval" : undefined
+                    }
+                  />
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-sm text-[#2F3140]">KYC Status</span>
-                  <StatusBadge status={customer.kycStatus} />
+                  <StatusBadge
+                    status={(customer.kycStatus || "Pending") as StatusType}
+                    displayLabel={!customer.kycStatus ? "Pending" : undefined}
+                  />
                 </div>
               </div>
             </div>
@@ -223,15 +250,12 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
               <h3 className="text-sm font-semibold text-[#2F3140] mb-6">
                 Profile Information
               </h3>
-              <div className="space-y-4">
-                {PROFILE_INFO.map((info, index) => (
-                  <DetailRow
-                    key={info.label}
-                    label={info.label}
-                    value={info.value}
-                    isLast={index === PROFILE_INFO.length - 1}
-                  />
-                ))}
+              <div className="flex flex-col items-center justify-center py-12 text-center text-[#707781]">
+                <BiUser size={40} className="mb-3 opacity-30" />
+                <p className="text-sm">
+                  Extended profile details (BVN, NIN, address) are not yet
+                  available from the backend.
+                </p>
               </div>
             </div>
           </div>

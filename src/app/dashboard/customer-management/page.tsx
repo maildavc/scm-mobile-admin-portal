@@ -8,7 +8,6 @@ import Table from "@/components/Dashboard/Table";
 import CreateCustomerForm from "@/components/Dashboard/CustomerManagement/CreateCustomerForm";
 import ViewCustomer from "@/components/Dashboard/CustomerManagement/ViewCustomer";
 import {
-  CUSTOMERS,
   CUSTOMER_MANAGEMENT_SIDEBAR_ITEMS,
   STATS_CONFIG,
   PAGE_CONFIG,
@@ -18,22 +17,20 @@ import ActionButton from "@/components/Dashboard/ActionButton";
 import { createCustomerColumns } from "./columns";
 import { useAuthStore } from "@/stores/authStore";
 import ViewCustomerRequest from "@/components/Dashboard/CustomerManagement/ViewCustomerRequest";
-
-type Customer = {
-  id: string;
-  name: string;
-  tier: string;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
-  kycStatus: "Awaiting Approval" | "Completed";
-  updated: string;
-  requestType?: string;
-};
+import { Customer } from "@/types/customer";
+import { useGetCustomers } from "@/hooks/useCustomers";
 
 export default function CustomerManagement() {
   const [currentView, setCurrentView] = useState("Overview");
   const [editCustomer, setEditCustomer] = useState<Customer | null>(null);
   const [viewCustomer, setViewCustomer] = useState<Customer | null>(null);
+  const [page, setPage] = useState(1);
   const isApprover = useAuthStore((s) => s.isApprover);
+
+  const { data: customersData, isLoading } = useGetCustomers({
+    page,
+    limit: PAGE_CONFIG.itemsPerPage,
+  });
 
   // Sidebar Logic
   const allSidebarItems = CUSTOMER_MANAGEMENT_SIDEBAR_ITEMS.map((item) => ({
@@ -99,13 +96,32 @@ export default function CustomerManagement() {
             {currentView === "Overview" ? (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-10">
-                  {STATS_CONFIG.map((stat) => (
-                    <StatsCard
-                      key={stat.label}
-                      label={stat.label}
-                      value={stat.value}
-                    />
-                  ))}
+                  {STATS_CONFIG.map((stat) => {
+                    let value = "0";
+                    if (customersData?.data) {
+                      if (stat.label === "Active Customers") {
+                        value = customersData.data
+                          .filter((c) => c.status === "Active")
+                          .length.toString();
+                      } else if (stat.label === "Inactive Customers") {
+                        value = customersData.data
+                          .filter((c) => c.status === "Deactivated")
+                          .length.toString();
+                      } else if (stat.label === "Customers with Pending KYC") {
+                        value = customersData.data
+                          .filter((c) => c.kycStatus === "Awaiting Approval")
+                          .length.toString();
+                      }
+                    }
+
+                    return (
+                      <StatsCard
+                        key={stat.label}
+                        label={stat.label}
+                        value={value}
+                      />
+                    );
+                  })}
                 </div>
 
                 <div className="flex justify-between items-center gap-3 mb-6">
@@ -124,9 +140,10 @@ export default function CustomerManagement() {
                 </div>
 
                 <Table
-                  data={CUSTOMERS}
+                  data={customersData?.data || []}
                   columns={columns}
                   itemsPerPage={PAGE_CONFIG.itemsPerPage}
+                  isLoading={isLoading}
                 />
               </>
             ) : currentView === "Create Customer" ? (

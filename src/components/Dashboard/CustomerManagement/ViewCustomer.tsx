@@ -9,14 +9,7 @@ import PaymentsAndCardsTab from "./PaymentsAndCardsTab";
 import ActiveProductsTab from "./ActiveProductsTab";
 import ActivityLogTab from "./ActivityLogTab";
 
-type Customer = {
-  id: string;
-  name: string;
-  tier: string;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
-  kycStatus: "Awaiting Approval" | "Completed";
-  updated: string;
-};
+import { Customer } from "@/types/customer";
 
 interface ViewCustomerProps {
   customer: Customer;

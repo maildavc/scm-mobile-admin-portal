@@ -14,15 +14,7 @@ import {
 } from "react-icons/fi";
 import { useState, useRef, useEffect } from "react";
 
-type Customer = {
-  id: string;
-  name: string;
-  tier: string;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
-  kycStatus: "Awaiting Approval" | "Completed";
-  updated: string;
-  requestType?: string;
-};
+import { Customer } from "@/types/customer";
 
 const FilterableHeader = ({ children }: { children: string }) => (
   <div className="flex text-xs text-[#2F3140] items-center gap-2">
@@ -147,7 +139,9 @@ export const customerColumns: Column<Customer>[] = [
           </div>
           <div>
             <p className="font-bold text-[#2F3140] text-sm">{customer.name}</p>
-            <p className="text-[#707781] text-xs">{customer.tier}</p>
+            <p className="text-[#707781] text-xs">
+              {(customer as any).tier || "Tier 1 User"}
+            </p>
           </div>
         </div>
       </div>
@@ -156,19 +150,29 @@ export const customerColumns: Column<Customer>[] = [
   {
     header: <FilterableHeader>STATUS</FilterableHeader>,
     className: "w-[15%]",
-    render: (customer) => <StatusBadge status={customer.status} />,
+    render: (customer) => (
+      <StatusBadge
+        status={(customer.status || "Awaiting Approval") as StatusType}
+        displayLabel={!customer.status ? "Awaiting Approval" : undefined}
+      />
+    ),
   },
   {
     header: <FilterableHeader>KYC STATUS</FilterableHeader>,
     className: "w-[20%]",
-    render: (customer) => <StatusBadge status={customer.kycStatus} />,
+    render: (customer) => (
+      <StatusBadge
+        status={(customer.kycStatus || "Pending") as StatusType}
+        displayLabel={!customer.kycStatus ? "Pending" : undefined}
+      />
+    ),
   },
   {
     header: <FilterableHeader>LAST UPDATED ON</FilterableHeader>,
     className: "w-[20%]",
     render: (customer) => (
       <span className="text-sm text-[#2F3140] font-medium">
-        {customer.updated}
+        {customer.updatedAt || customer.createdAt}
       </span>
     ),
   },
@@ -212,7 +216,9 @@ export const createCustomerColumns = (
                 <p className="font-bold text-[#2F3140] text-sm">
                   {customer.name}
                 </p>
-                <p className="text-[#707781] text-xs">{customer.tier}</p>
+                <p className="text-[#707781] text-xs">
+                  {(customer as any).tier || "Tier 1 User"}
+                </p>
               </div>
             </div>
           </div>
@@ -242,7 +248,7 @@ export const createCustomerColumns = (
         className: "w-[20%]",
         render: (customer) => (
           <span className="text-sm text-[#2F3140] font-medium">
-            {customer.updated}
+            {customer.updatedAt || customer.createdAt}
           </span>
         ),
       },

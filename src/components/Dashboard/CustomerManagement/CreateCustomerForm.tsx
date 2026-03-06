@@ -4,18 +4,14 @@ import React from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import CustomCheckbox from "@/components/CustomCheckbox";
-import { BASIC_INFO_FIELDS, PRODUCT_TYPES } from "@/constants/customerManagement/createCustomer";
+import {
+  BASIC_INFO_FIELDS,
+  PRODUCT_TYPES,
+} from "@/constants/customerManagement/createCustomer";
 import Image from "next/image";
 import { useCustomerForm } from "@/hooks/useCustomerForm";
 
-type Customer = {
-  id: string;
-  name: string;
-  tier: string;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
-  kycStatus: "Awaiting Approval" | "Completed";
-  updated: string;
-};
+import { Customer } from "@/types/customer";
 
 interface CreateCustomerFormProps {
   onSuccess?: () => void;
@@ -48,10 +44,12 @@ const CreateCustomerForm: React.FC<CreateCustomerFormProps> = ({
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
         <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
-          {initialData ? "Customer Details Updated Successfully" : "Customer Creation Successful"}
+          {initialData
+            ? "Customer Details Updated Successfully"
+            : "Customer Creation Successful"}
         </h2>
         <p className="text-sm text-[#707781] mb-8 text-center max-w-sm">
-          {initialData 
+          {initialData
             ? "Edit to customer details was successfully sent for approver confirmation."
             : "Customer creation was successfully sent for approver confirmation."}
         </p>
@@ -66,7 +64,11 @@ const CreateCustomerForm: React.FC<CreateCustomerFormProps> = ({
             </div>
           )}
           <div className="w-32">
-            <Button text="Done" variant="primary" onClick={() => handleDone(onSuccess)} />
+            <Button
+              text="Done"
+              variant="primary"
+              onClick={() => handleDone(onSuccess)}
+            />
           </div>
         </div>
       </div>
@@ -116,12 +118,12 @@ const CreateCustomerForm: React.FC<CreateCustomerFormProps> = ({
                   {product.name}
                 </h4>
                 <div className="flex flex-col gap-3">
-                  <CustomCheckbox 
+                  <CustomCheckbox
                     checked={productAssignments[product.id]?.buy || false}
                     onChange={() => handleProductToggle(product.id, "buy")}
                     label="Buy"
                   />
-                  <CustomCheckbox 
+                  <CustomCheckbox
                     checked={productAssignments[product.id]?.sell || false}
                     onChange={() => handleProductToggle(product.id, "sell")}
                     label="Sell"
@@ -152,4 +154,3 @@ const CreateCustomerForm: React.FC<CreateCustomerFormProps> = ({
 };
 
 export default CreateCustomerForm;
-                    

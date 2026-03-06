@@ -97,7 +97,10 @@ const ActivityLogTab: React.FC = () => {
           onClick={() => console.log("Export CSV")}
         />
       </div>
-      <Table data={ACTIVITY_LOG_DATA} columns={columns} />
+      <Table data={[]} columns={columns} />
+      <div className="flex flex-col items-center justify-center py-12 text-[#707781] text-sm">
+        <p>No activity records found.</p>
+      </div>
     </div>
   );
 };
