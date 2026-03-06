@@ -7,9 +7,6 @@ import StatsCard from "@/components/Dashboard/StatsCard";
 import Table from "@/components/Dashboard/Table";
 import Tabs from "@/components/Dashboard/Tabs";
 import {
-  USERS,
-  ROLES,
-  DEPARTMENTS,
   USER_ROLE_SIDEBAR_ITEMS,
   STATS_CONFIG,
   PAGE_CONFIG,
@@ -29,38 +26,53 @@ import ApproveRoleRequest from "@/components/Dashboard/UserRoleManagement/Approv
 import ViewDepartment from "@/components/Dashboard/UserRoleManagement/ViewDepartment";
 import ApproveDepartmentRequest from "@/components/Dashboard/UserRoleManagement/ApproveDepartmentRequest";
 import ActionButton from "@/components/Dashboard/ActionButton";
+import { useUsers, useRoles, useDepartments } from "@/hooks/useUserManagement";
 
 type User = {
-  // ... User type stays same
   id: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   roleName: string;
   roleType: string;
-  roleExpiry?: string;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
+  status: string;
   updated: string;
 };
 
 type Role = {
   id: string;
   name: string;
-  description: string;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
+  description?: string;
+  status: string;
   updated: string;
 };
 
 type Department = {
   id: string;
   name: string;
-  description: string;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
+  description?: string;
+  members?: number;
+  status: string;
   updated: string;
 };
 
 export default function UserRoleManagement() {
   const [currentView, setCurrentView] = useState("Overview");
   const [activeTab, setActiveTab] = useState("Users");
+
+  // -- API Queries --
+  const { data: usersData, isLoading: isUsersLoading } = useUsers({
+    page: 1,
+    limit: 100,
+  });
+  const { data: rolesData, isLoading: isRolesLoading } = useRoles({
+    page: 1,
+    limit: 100,
+  });
+  const { data: departmentsData, isLoading: isDepartmentsLoading } =
+    useDepartments({ page: 1, limit: 100 });
+
   const [editUser, setEditUser] = useState<User | null>(null);
   const [editRole, setEditRole] = useState<Role | null>(null);
   const [viewUser, setViewUser] = useState<User | null>(null);
@@ -160,12 +172,28 @@ export default function UserRoleManagement() {
             {viewDepartment ? (
               isApprover ? (
                 <ApproveDepartmentRequest
-                  department={viewDepartment}
+                  department={
+                    viewDepartment as unknown as {
+                      id: string;
+                      name: string;
+                      description: string;
+                      status: "Active" | "Deactivated" | "Awaiting Approval";
+                      updated: string;
+                    }
+                  }
                   onBack={() => setViewDepartment(null)}
                 />
               ) : (
                 <ViewDepartment
-                  department={viewDepartment}
+                  department={
+                    viewDepartment as unknown as {
+                      id: string;
+                      name: string;
+                      description: string;
+                      status: "Active" | "Deactivated" | "Awaiting Approval";
+                      updated: string;
+                    }
+                  }
                   onEdit={handleEditDepartment}
                   onDeactivate={handleDeactivateDepartment}
                 />
@@ -173,7 +201,15 @@ export default function UserRoleManagement() {
             ) : viewRole ? (
               isApprover ? (
                 <ApproveRoleRequest
-                  role={viewRole}
+                  role={
+                    viewRole as unknown as {
+                      id: string;
+                      name: string;
+                      description: string;
+                      status: "Active" | "Deactivated" | "Awaiting Approval";
+                      updated: string;
+                    }
+                  }
                   onBack={() => setViewRole(null)}
                   onApprove={(role) => {
                     console.log("Approve role:", role);
@@ -186,7 +222,15 @@ export default function UserRoleManagement() {
                 />
               ) : (
                 <ViewRole
-                  role={viewRole}
+                  role={
+                    viewRole as unknown as {
+                      id: string;
+                      name: string;
+                      description: string;
+                      status: "Active" | "Deactivated" | "Awaiting Approval";
+                      updated: string;
+                    }
+                  }
                   onBack={() => setViewRole(null)}
                   onEdit={handleEditRole}
                   onDeactivate={handleDeactivateRole}
@@ -195,7 +239,16 @@ export default function UserRoleManagement() {
             ) : viewUser ? (
               isApprover ? (
                 <ApproveUserRequest
-                  user={viewUser}
+                  user={
+                    viewUser as unknown as {
+                      id: string;
+                      name: string;
+                      email: string;
+                      roleName: string;
+                      roleType: string;
+                      status: "Active" | "Deactivated" | "Awaiting Approval";
+                    }
+                  }
                   onBack={() => setViewUser(null)}
                   onApprove={(user) => {
                     console.log("Approve user:", user);
@@ -208,7 +261,16 @@ export default function UserRoleManagement() {
                 />
               ) : (
                 <ViewUser
-                  user={viewUser}
+                  user={
+                    viewUser as unknown as {
+                      id: string;
+                      name: string;
+                      email: string;
+                      roleName: string;
+                      roleType: string;
+                      status: "Active" | "Deactivated" | "Awaiting Approval";
+                    }
+                  }
                   onBack={() => setViewUser(null)}
                   onEdit={(user) => {
                     setEditUser(user);
@@ -253,23 +315,85 @@ export default function UserRoleManagement() {
                 </div>
 
                 {activeTab === "Users" ? (
-                  <Table
-                    data={USERS}
-                    columns={columns}
-                    itemsPerPage={PAGE_CONFIG.itemsPerPage}
-                  />
+                  isUsersLoading ? (
+                    <div className="flex items-center justify-center p-8">
+                      Loading users...
+                    </div>
+                  ) : (
+                    <Table
+                      data={(Array.isArray(usersData)
+                        ? usersData
+                        : usersData?.data || []
+                      ).map((u) => ({
+                        ...u,
+                        name:
+                          u.name ||
+                          `${u.firstName} ${u.lastName}`.trim() ||
+                          "Unknown User",
+                        roleName: u.roleName || "Unassigned",
+                        roleType: u.roleType || "Permanent",
+                        status: u.status as
+                          | "Active"
+                          | "Deactivated"
+                          | "Awaiting Approval",
+                        updated:
+                          u.updated || u.updatedAt || u.createdAt || "N/A",
+                      }))}
+                      columns={columns}
+                      itemsPerPage={PAGE_CONFIG.itemsPerPage}
+                    />
+                  )
                 ) : activeTab === "Roles" ? (
-                  <Table
-                    data={ROLES}
-                    columns={roleColumns}
-                    itemsPerPage={PAGE_CONFIG.itemsPerPage}
-                  />
+                  isRolesLoading ? (
+                    <div className="flex items-center justify-center p-8">
+                      Loading roles...
+                    </div>
+                  ) : (
+                    <Table
+                      data={(Array.isArray(rolesData)
+                        ? rolesData
+                        : rolesData?.data || []
+                      ).map((r) => ({
+                        ...r,
+                        description: r.description || "No description provided",
+                        status: r.status as
+                          | "Active"
+                          | "Deactivated"
+                          | "Awaiting Approval",
+                        updated:
+                          r.updated || r.updatedAt || r.createdAt || "N/A",
+                      }))}
+                      columns={roleColumns}
+                      itemsPerPage={PAGE_CONFIG.itemsPerPage}
+                    />
+                  )
                 ) : activeTab === "Department" ? (
-                  <Table
-                    data={DEPARTMENTS}
-                    columns={departmentColumns}
-                    itemsPerPage={PAGE_CONFIG.itemsPerPage}
-                  />
+                  isDepartmentsLoading ? (
+                    <div className="flex items-center justify-center p-8">
+                      Loading departments...
+                    </div>
+                  ) : (
+                    <Table
+                      data={(Array.isArray(departmentsData)
+                        ? departmentsData
+                        : Array.isArray(departmentsData?.data)
+                          ? departmentsData.data
+                          : []
+                      ).map((d) => ({
+                        ...d,
+                        description: d.description || "No description provided",
+                        members: d.members || 0,
+                        status: d.status as
+                          | "Active"
+                          | "Deactivated"
+                          | "Awaiting Approval",
+                        updated:
+                          d.updated || d.updatedAt || d.createdAt || "N/A",
+                      }))}
+                      columns={departmentColumns}
+                      itemsPerPage={PAGE_CONFIG.itemsPerPage}
+                    />
+                  )
                 ) : (
                   <div className="flex items-center justify-center h-64 text-gray-500">
                     {activeTab} view coming soon
@@ -299,7 +423,15 @@ export default function UserRoleManagement() {
               />
             ) : currentView === "Create New Role" ? (
               <CreateRoleForm
-                editRole={editRole}
+                editRole={
+                  editRole as unknown as {
+                    id: string;
+                    name: string;
+                    description: string;
+                    status: "Active" | "Deactivated" | "Awaiting Approval";
+                    updated: string;
+                  } | null
+                }
                 onCancel={() => {
                   setCurrentView("Overview");
                   setEditRole(null);

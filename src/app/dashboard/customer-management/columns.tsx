@@ -1,7 +1,7 @@
 "use client";
 
 import { Column } from "@/components/Dashboard/Table";
-import { StatusBadge } from "@/components/Dashboard/StatusBadge";
+import { StatusBadge, StatusType } from "@/components/Dashboard/StatusBadge";
 import { TbFilterEdit } from "react-icons/tb";
 import { HiMenu } from "react-icons/hi";
 import {
@@ -238,7 +238,7 @@ export const createCustomerColumns = (
         className: "w-[15%]",
         render: (customer) => (
           <StatusBadge
-            status={customer.status}
+            status={(customer.status || "Awaiting Approval") as StatusType}
             displayLabel={customer.status === "Active" ? "Approved" : undefined}
           />
         ),

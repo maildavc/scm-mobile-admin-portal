@@ -4,6 +4,11 @@ import React, { useState, useMemo } from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Image from "next/image";
+import {
+  useCreateUser,
+  useRoles,
+  useDepartments,
+} from "@/hooks/useUserManagement";
 
 import { CREATE_USER_FORM_SECTIONS } from "@/constants/userRoleManagement/createUser";
 
@@ -22,6 +27,32 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
     initialData || {},
   );
   const [showSuccess, setShowSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const createUser = useCreateUser();
+
+  const { data: rolesData } = useRoles({ page: 1, limit: 100 });
+  const { data: departmentsData } = useDepartments({ page: 1, limit: 100 });
+
+  const roleOptions = useMemo(() => {
+    const roles = Array.isArray(rolesData) ? rolesData : rolesData?.data || [];
+    return roles.map((r: { name: string; id: string }) => ({
+      label: r.name,
+      value: r.id,
+    }));
+  }, [rolesData]);
+
+  const departmentOptions = useMemo(() => {
+    const departments = Array.isArray(departmentsData)
+      ? departmentsData
+      : Array.isArray(departmentsData?.data)
+        ? departmentsData.data
+        : [];
+    return departments.map((d: { name: string; id: string }) => ({
+      label: d.name,
+      value: d.id,
+    }));
+  }, [departmentsData]);
 
   const requiredFields = useMemo(
     () =>
@@ -46,7 +77,40 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
 
   const handleCreateUser = () => {
     if (isFormValid) {
-      setShowSuccess(true);
+      setErrorMsg("");
+
+      // Map dynamic form labels to the API payload
+      const [firstName, ...lastNameParts] = (formData["Full Name"] || "").split(
+        " ",
+      );
+      const lastName = lastNameParts.join(" ") || firstName; // Fallback if only one name provided
+
+      const payload = {
+        firstName,
+        lastName,
+        email: formData["Email Address"] || "",
+        phoneNumber: formData["Phone Number"] || "",
+        roleId: formData["Assign Role"] || "",
+        departmentId: formData["Department"] || "",
+      };
+
+      createUser.mutate(
+        payload as unknown as Parameters<typeof createUser.mutate>[0],
+        {
+          onSuccess: () => setShowSuccess(true),
+          onError: (error: Error | unknown) => {
+            const err = error as {
+              response?: { data?: { message?: string } };
+              message?: string;
+            };
+            setErrorMsg(
+              err?.response?.data?.message ||
+                err?.message ||
+                "Failed to create user",
+            );
+          },
+        },
+      );
     }
   };
 
@@ -91,6 +155,11 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
 
   return (
     <div className="flex flex-col gap-8 pb-8">
+      {errorMsg && (
+        <div className="p-4 bg-red-50 text-red-600 rounded-md text-sm border border-red-200">
+          {errorMsg}
+        </div>
+      )}
       {CREATE_USER_FORM_SECTIONS.map((section, index) => (
         <section key={index}>
           <h3 className="text-sm font-bold text-[#2F3140] mb-1">
@@ -105,7 +174,13 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
                 placeholder={field.placeholder}
                 theme="light"
                 type={field.type as "text" | "select" | "date" | "email"}
-                options={field.options}
+                options={
+                  field.label === "Assign Role"
+                    ? roleOptions
+                    : field.label === "Department"
+                      ? departmentOptions
+                      : field.options
+                }
                 required={field.required}
                 value={formData[field.label] || ""}
                 onChange={(e) => handleInputChange(field.label, e.target.value)}
@@ -121,9 +196,17 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
         </div>
         <div className="w-40">
           <Button
-            text={initialData ? "Update User" : "Create User"}
+            text={
+              createUser.isPending
+                ? initialData
+                  ? "Updating..."
+                  : "Creating..."
+                : initialData
+                  ? "Update User"
+                  : "Create User"
+            }
             variant="primary"
-            disabled={!isFormValid}
+            disabled={!isFormValid || createUser.isPending}
             onClick={handleCreateUser}
           />
         </div>

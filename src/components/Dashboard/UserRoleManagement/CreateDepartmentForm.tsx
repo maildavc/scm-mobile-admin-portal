@@ -4,6 +4,7 @@ import React, { useState, useMemo } from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Image from "next/image";
+import { useCreateDepartment } from "@/hooks/useUserManagement";
 
 interface CreateDepartmentFormProps {
   onSuccess?: () => void;
@@ -17,6 +18,9 @@ const CreateDepartmentForm: React.FC<CreateDepartmentFormProps> = ({
   const [departmentName, setDepartmentName] = useState("");
   const [description, setDescription] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const createDepartment = useCreateDepartment();
 
   const isFormValid = useMemo(() => {
     return departmentName.trim() !== "";
@@ -24,7 +28,26 @@ const CreateDepartmentForm: React.FC<CreateDepartmentFormProps> = ({
 
   const handleCreateDepartment = () => {
     if (isFormValid) {
-      setShowSuccess(true);
+      setErrorMsg("");
+      createDepartment.mutate(
+        { name: departmentName.trim(), description: description.trim() },
+        {
+          onSuccess: () => {
+            setShowSuccess(true);
+          },
+          onError: (error: Error | unknown) => {
+            const err = error as {
+              response?: { data?: { message?: string } };
+              message?: string;
+            };
+            setErrorMsg(
+              err?.response?.data?.message ||
+                err?.message ||
+                "Failed to create department",
+            );
+          },
+        },
+      );
     }
   };
 
@@ -63,7 +86,12 @@ const CreateDepartmentForm: React.FC<CreateDepartmentFormProps> = ({
             />
           </div>
           <div className="w-32">
-            <Button text="Done" variant="primary" onClick={handleDone} className="text-sm" />
+            <Button
+              text="Done"
+              variant="primary"
+              onClick={handleDone}
+              className="text-sm"
+            />
           </div>
         </div>
       </div>
@@ -72,6 +100,11 @@ const CreateDepartmentForm: React.FC<CreateDepartmentFormProps> = ({
 
   return (
     <div className="flex flex-col gap-8 pb-8">
+      {errorMsg && (
+        <div className="p-4 bg-red-50 text-red-600 rounded-md text-sm border border-red-200">
+          {errorMsg}
+        </div>
+      )}
       {/* Department Information Section */}
       <section>
         <h3 className="text-base font-bold text-[#2F3140] mb-1">
@@ -114,9 +147,11 @@ const CreateDepartmentForm: React.FC<CreateDepartmentFormProps> = ({
         </div>
         <div className="w-40">
           <Button
-            text="Create Department"
+            text={
+              createDepartment.isPending ? "Creating..." : "Create Department"
+            }
             variant="primary"
-            disabled={!isFormValid}
+            disabled={!isFormValid || createDepartment.isPending}
             onClick={handleCreateDepartment}
             className="text-sm"
           />

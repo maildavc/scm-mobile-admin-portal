@@ -5,6 +5,7 @@ import Input from "@/components/Input";
 import Button from "@/components/Button";
 import CustomCheckbox from "@/components/CustomCheckbox";
 import Image from "next/image";
+import { useCreateRole, useUpdateRole } from "@/hooks/useUserManagement";
 
 interface CreateRoleFormProps {
   onSuccess?: () => void;
@@ -31,6 +32,10 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
     Record<string, boolean>
   >({});
   const [showSuccess, setShowSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const createRole = useCreateRole();
+  const updateRole = useUpdateRole();
 
   const handlePermissionToggle = (permission: string) => {
     setSelectedPermissions((prev) => ({
@@ -45,7 +50,51 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
 
   const handleCreateRole = () => {
     if (isFormValid) {
-      setShowSuccess(true);
+      setErrorMsg("");
+      const permissions = Object.keys(selectedPermissions).filter(
+        (k) => selectedPermissions[k],
+      );
+
+      const payload = {
+        name: roleName.trim(),
+        description: description.trim(),
+        permissions,
+      };
+
+      if (editRole) {
+        updateRole.mutate(
+          { id: editRole.id, data: payload },
+          {
+            onSuccess: () => setShowSuccess(true),
+            onError: (error: Error | unknown) => {
+              const err = error as {
+                response?: { data?: { message?: string } };
+                message?: string;
+              };
+              setErrorMsg(
+                err?.response?.data?.message ||
+                  err?.message ||
+                  "Failed to update role",
+              );
+            },
+          },
+        );
+      } else {
+        createRole.mutate(payload, {
+          onSuccess: () => setShowSuccess(true),
+          onError: (error: Error | unknown) => {
+            const err = error as {
+              response?: { data?: { message?: string } };
+              message?: string;
+            };
+            setErrorMsg(
+              err?.response?.data?.message ||
+                err?.message ||
+                "Failed to create role",
+            );
+          },
+        });
+      }
     }
   };
 
@@ -94,8 +143,15 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
     );
   }
 
+  const isPending = createRole.isPending || updateRole.isPending;
+
   return (
     <div className="flex flex-col gap-8 pb-8">
+      {errorMsg && (
+        <div className="p-4 bg-red-50 text-red-600 rounded-md text-sm border border-red-200">
+          {errorMsg}
+        </div>
+      )}
       {/* Role Information Section */}
       <section>
         <h3 className="text-base font-bold text-[#2F3140] mb-1">
@@ -162,9 +218,17 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
         </div>
         <div className="w-40">
           <Button
-            text={editRole ? "Update Role" : "Create Role"}
+            text={
+              isPending
+                ? editRole
+                  ? "Updating..."
+                  : "Creating..."
+                : editRole
+                  ? "Update Role"
+                  : "Create Role"
+            }
             variant="primary"
-            disabled={!isFormValid}
+            disabled={!isFormValid || isPending}
             onClick={handleCreateRole}
           />
         </div>
