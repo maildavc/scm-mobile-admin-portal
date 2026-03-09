@@ -38,4 +38,7 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# swagger spec (local reference only)
+swagger.json
 next-env.d.ts

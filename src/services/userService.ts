@@ -3,27 +3,46 @@ import type {
   User,
   CreateUserRequest,
   UpdateProfileRequest,
-  PaginatedResponse,
 } from "@/types/userManagement";
-import type { ChangePasswordRequest } from "@/types/auth"; // Reusing from auth if it fits, or we can use any
+import type { ChangePasswordRequest } from "@/types/auth";
 
-// Backend wraps responses: { isSuccess, isFailure, value: <actual payload>, error, errors }
-type BackendEnvelope<T> = {
-  isSuccess: boolean;
-  isFailure: boolean;
-  value: T;
-  error: unknown;
-  errors: unknown;
-};
+function formatDate(iso: string | undefined | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+}
 
 export const userService = {
   getUsers: async (
     params?: Record<string, any>,
-  ): Promise<PaginatedResponse<User> | User[]> => {
-    const { data } = await apiClient.get<
-      BackendEnvelope<PaginatedResponse<User> | User[]>
-    >("/api/v1/users", { params });
-    return data.value ?? (data as unknown as PaginatedResponse<User> | User[]);
+  ): Promise<User[]> => {
+    const { data } = await apiClient.get("/api/v1/users", { params });
+
+    // After the axios interceptor decrypts, `data` is:
+    //   { status: "success", data: [ ...users ] }
+    // Extract the inner array.
+    let users: User[];
+    if (Array.isArray(data)) {
+      users = data as User[];
+    } else {
+      const inner = (data as Record<string, unknown>)?.data;
+      users = Array.isArray(inner) ? (inner as User[]) : [];
+    }
+
+    // Map list fields to the shape the UI expects
+    return users.map((u) => ({
+      ...u,
+      roleName: u.roleName || u.role || "Unassigned",
+      roleType: u.expiryStatus || u.roleType || "Permanent",
+      roleExpiry: u.expires || u.roleExpiry,
+      updated: formatDate(u.dateModified) || u.updated || "N/A",
+    }));
   },
 
   getUserById: async (id: string): Promise<User> => {
@@ -33,6 +52,10 @@ export const userService = {
 
   createUser: async (payload: CreateUserRequest): Promise<User> => {
     const { data } = await apiClient.post("/api/v1/users", payload);
+    const resp = data as Record<string, unknown>;
+    if (resp?.status === "error") {
+      throw new Error((resp.message as string) || "Failed to create user");
+    }
     return data;
   },
 
@@ -40,8 +63,16 @@ export const userService = {
     await apiClient.delete(`/api/v1/users/${id}`);
   },
 
-  approveUser: async (id: string): Promise<void> => {
-    await apiClient.patch(`/api/v1/users/${id}/approve`);
+  approveUser: async (
+    id: string,
+    action: "approve" | "reject",
+    reason?: string,
+  ): Promise<void> => {
+    await apiClient.patch(`/api/v1/users/${id}/approve`, {
+      userId: id,
+      action,
+      ...(reason ? { reason } : {}),
+    });
   },
 
   updateProfile: async (payload: UpdateProfileRequest): Promise<User> => {
@@ -84,5 +115,13 @@ export const userService = {
     payload: { status: string },
   ): Promise<void> => {
     await apiClient.put(`/api/v1/users/${id}/status`, payload);
+  },
+
+  deactivateUser: async (id: string, reason?: string): Promise<void> => {
+    await apiClient.put(`/api/v1/users/${id}/status`, {
+      userId: id,
+      status: 0,
+      reason: reason || "User deactivated by admin",
+    });
   },
 };

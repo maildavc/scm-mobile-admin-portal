@@ -4,26 +4,23 @@ import type {
   CreateRoleRequest,
   UpdateRoleRequest,
   ReassignUsersRequest,
-  PaginatedResponse,
 } from "@/types/userManagement";
-
-// Backend wraps responses: { isSuccess, isFailure, value: <actual payload>, error, errors }
-type BackendEnvelope<T> = {
-  isSuccess: boolean;
-  isFailure: boolean;
-  value: T;
-  error: unknown;
-  errors: unknown;
-};
 
 export const roleService = {
   getRoles: async (
     params?: Record<string, any>,
-  ): Promise<PaginatedResponse<Role> | Role[]> => {
-    const { data } = await apiClient.get<
-      BackendEnvelope<PaginatedResponse<Role> | Role[]>
-    >("/api/v1/roles", { params });
-    return data.value ?? (data as unknown as PaginatedResponse<Role> | Role[]);
+  ): Promise<Role[]> => {
+    const { data } = await apiClient.get("/api/v1/roles", { params });
+
+    // After the axios interceptor decrypts, `data` is:
+    //   { status: "success", message: "...", data: [ ...roles ] }
+    // Extract the inner array.
+    if (Array.isArray(data)) return data as Role[];
+
+    const inner = (data as Record<string, unknown>)?.data;
+    if (Array.isArray(inner)) return inner as Role[];
+
+    return [];
   },
 
   getRoleById: async (id: string): Promise<Role> => {
@@ -33,6 +30,10 @@ export const roleService = {
 
   createRole: async (payload: CreateRoleRequest): Promise<Role> => {
     const { data } = await apiClient.post("/api/v1/roles", payload);
+    const resp = data as Record<string, unknown>;
+    if (resp?.status === "error") {
+      throw new Error((resp.message as string) || "Failed to create role");
+    }
     return data;
   },
 
@@ -42,11 +43,11 @@ export const roleService = {
   },
 
   approveRole: async (id: string): Promise<void> => {
-    await apiClient.patch(`/api/v1/roles/${id}/approve`);
+    await apiClient.patch(`/api/v1/roles/${id}/approve`, { action: "approve" });
   },
 
-  rejectRole: async (id: string): Promise<void> => {
-    await apiClient.patch(`/api/v1/roles/${id}/reject`);
+  rejectRole: async (id: string, reason?: string): Promise<void> => {
+    await apiClient.patch(`/api/v1/roles/${id}/reject`, { action: "reject", reason });
   },
 
   deactivateRole: async (id: string): Promise<void> => {

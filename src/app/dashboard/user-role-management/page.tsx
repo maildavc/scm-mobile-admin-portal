@@ -26,7 +26,8 @@ import ApproveRoleRequest from "@/components/Dashboard/UserRoleManagement/Approv
 import ViewDepartment from "@/components/Dashboard/UserRoleManagement/ViewDepartment";
 import ApproveDepartmentRequest from "@/components/Dashboard/UserRoleManagement/ApproveDepartmentRequest";
 import ActionButton from "@/components/Dashboard/ActionButton";
-import { useUsers, useRoles, useDepartments } from "@/hooks/useUserManagement";
+import { useUsers, useRoles, useDepartments, useDeactivateUser, useApproveUser, useApproveRole, useRejectRole, useApproveDepartment, useRejectDepartment } from "@/hooks/useUserManagement";
+import { useToastStore } from "@/stores/toastStore";
 
 type User = {
   id: string;
@@ -79,6 +80,13 @@ export default function UserRoleManagement() {
   const [viewRole, setViewRole] = useState<Role | null>(null);
   const [viewDepartment, setViewDepartment] = useState<Department | null>(null);
   const isApprover = useAuthStore((s) => s.isApprover);
+  const deactivateUser = useDeactivateUser();
+  const approveUser = useApproveUser();
+  const approveRole = useApproveRole();
+  const rejectRole = useRejectRole();
+  const approveDepartment = useApproveDepartment();
+  const rejectDepartment = useRejectDepartment();
+  const addToast = useToastStore((s) => s.addToast);
 
   const allSidebarItems = USER_ROLE_SIDEBAR_ITEMS.map((item) => ({
     ...item,
@@ -139,21 +147,29 @@ export default function UserRoleManagement() {
     setViewDepartment(department);
   };
 
+  const usersList = Array.isArray(usersData) ? usersData : [];
+  const rolesList = Array.isArray(rolesData) ? rolesData : [];
+  const departmentsList = Array.isArray(departmentsData) ? departmentsData : [];
+
   const columns = createUserColumns(
     handleEditUser,
     handleViewUser,
     handleDeactivateUser,
     isApprover,
+    usersList.length,
   );
   const roleColumns = createRoleColumns(
     handleEditRole,
     handleViewRole,
     isApprover,
+    rolesList.length,
   );
+
   const departmentColumns = createDepartmentColumns(
     handleEditDepartment,
     handleViewDepartment,
     isApprover,
+    departmentsList.length,
   );
 
   return (
@@ -182,6 +198,18 @@ export default function UserRoleManagement() {
                     }
                   }
                   onBack={() => setViewDepartment(null)}
+                  onApprove={(dept) => {
+                    approveDepartment.mutate(dept.id, {
+                      onSuccess: () => addToast("Department approved successfully", "success"),
+                      onError: () => addToast("Failed to approve department", "error"),
+                    });
+                  }}
+                  onReject={(dept, reason) => {
+                    rejectDepartment.mutate({ id: dept.id, reason }, {
+                      onSuccess: () => addToast("Department rejected successfully", "success"),
+                      onError: () => addToast("Failed to reject department", "error"),
+                    });
+                  }}
                 />
               ) : (
                 <ViewDepartment
@@ -212,12 +240,16 @@ export default function UserRoleManagement() {
                   }
                   onBack={() => setViewRole(null)}
                   onApprove={(role) => {
-                    console.log("Approve role:", role);
-                    // Approval logic handled in component
+                    approveRole.mutate(role.id, {
+                      onSuccess: () => addToast("Role approved successfully", "success"),
+                      onError: () => addToast("Failed to approve role", "error"),
+                    });
                   }}
                   onReject={(role, reason) => {
-                    console.log("Reject role:", role, "Reason:", reason);
-                    // Rejection logic handled in component
+                    rejectRole.mutate({ id: role.id, reason }, {
+                      onSuccess: () => addToast("Role rejected successfully", "success"),
+                      onError: () => addToast("Failed to reject role", "error"),
+                    });
                   }}
                 />
               ) : (
@@ -251,12 +283,22 @@ export default function UserRoleManagement() {
                   }
                   onBack={() => setViewUser(null)}
                   onApprove={(user) => {
-                    console.log("Approve user:", user);
-                    // Approval logic handled in component
+                    approveUser.mutate(
+                      { id: user.id, action: "approve" },
+                      {
+                        onSuccess: () => addToast("User approved successfully", "success"),
+                        onError: () => addToast("Failed to approve user", "error"),
+                      },
+                    );
                   }}
                   onReject={(user, reason) => {
-                    console.log("Reject user:", user, "Reason:", reason);
-                    // Rejection logic handled in component
+                    approveUser.mutate(
+                      { id: user.id, action: "reject", reason },
+                      {
+                        onSuccess: () => addToast("User rejected successfully", "success"),
+                        onError: () => addToast("Failed to reject user", "error"),
+                      },
+                    );
                   }}
                 />
               ) : (
@@ -277,8 +319,15 @@ export default function UserRoleManagement() {
                     setViewUser(null);
                   }}
                   onDeactivate={(user) => {
-                    console.log("Deactivate user:", user);
-                    // Add deactivation logic here
+                    deactivateUser.mutate(user.id, {
+                      onSuccess: () => {
+                        addToast("Deactivation request sent for approval", "success");
+                        setViewUser(null);
+                      },
+                      onError: () => {
+                        addToast("Failed to send deactivation request", "error");
+                      },
+                    });
                   }}
                 />
               )
@@ -321,10 +370,7 @@ export default function UserRoleManagement() {
                     </div>
                   ) : (
                     <Table
-                      data={(Array.isArray(usersData)
-                        ? usersData
-                        : usersData?.data || []
-                      ).map((u) => ({
+                      data={usersList.map((u) => ({
                         ...u,
                         name:
                           u.name ||
@@ -350,10 +396,7 @@ export default function UserRoleManagement() {
                     </div>
                   ) : (
                     <Table
-                      data={(Array.isArray(rolesData)
-                        ? rolesData
-                        : rolesData?.data || []
-                      ).map((r) => ({
+                      data={rolesList.map((r) => ({
                         ...r,
                         description: r.description || "No description provided",
                         status: r.status as
@@ -374,12 +417,7 @@ export default function UserRoleManagement() {
                     </div>
                   ) : (
                     <Table
-                      data={(Array.isArray(departmentsData)
-                        ? departmentsData
-                        : Array.isArray(departmentsData?.data)
-                          ? departmentsData.data
-                          : []
-                      ).map((d) => ({
+                      data={departmentsList.map((d) => ({
                         ...d,
                         description: d.description || "No description provided",
                         members: d.members || 0,

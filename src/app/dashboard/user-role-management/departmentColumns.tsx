@@ -176,8 +176,28 @@ export const createDepartmentColumns = (
   onEditDepartment?: (department: Department) => void,
   onViewDepartment?: (department: Department) => void,
   isApprover?: boolean,
+  departmentCount?: number,
 ): Column<Department>[] => [
-  ...departmentColumns.slice(0, 4),
+  {
+    header: (
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          className="rounded border-gray-300"
+          aria-label="Select all departments"
+        />
+        <span className="uppercase text-[#2F3140]">DEPARTMENT ({departmentCount ?? 0})</span>
+      </div>
+    ),
+    className: "w-[30%]",
+    render: (department) => (
+      <div className="flex flex-col">
+        <p className="font-bold text-[#2F3140] text-sm">{department.name}</p>
+        <p className="text-[#707781] text-xs">{department.description}</p>
+      </div>
+    ),
+  },
+  ...departmentColumns.slice(1, 4),
   {
     header: (
       <div className="flex items-center gap-1">

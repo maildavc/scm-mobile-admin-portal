@@ -12,6 +12,8 @@ export interface Department {
 export interface CreateDepartmentRequest {
   name: string;
   description?: string;
+  organizationId?: string;
+  createdBy?: string;
 }
 
 export interface UpdateDepartmentRequest {
@@ -55,10 +57,15 @@ export interface User {
   name?: string; // combination of real name for UI
   email: string;
   phoneNumber?: string;
+  role?: string;
   roleId?: string;
   roleName?: string;
   roleType?: string;
   roleExpiry?: string;
+  expiryStatus?: string;
+  expires?: string | null;
+  dateCreated?: string;
+  dateModified?: string;
   departmentId?: string;
   status: string;
   createdAt?: string;
@@ -68,12 +75,20 @@ export interface User {
 }
 
 export interface CreateUserRequest {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber?: string;
-  roleId: string;
-  departmentId?: string;
+  basicInformation: {
+    firstName: string;
+    middleName?: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+  };
+  department?: string;
+  assignRole: {
+    role: string;
+    expiryStatus: string;
+    expires?: string;
+    departmentId?: string;
+  };
 }
 
 export interface UpdateProfileRequest {

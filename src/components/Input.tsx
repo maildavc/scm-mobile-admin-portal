@@ -18,6 +18,7 @@ interface InputProps extends Omit<
   label: string;
   isPassword?: boolean;
   error?: boolean;
+  errorMessage?: string;
   theme?: "dark" | "light"; // dark for login (default), light for dashboard
   type?: React.HTMLInputTypeAttribute | "select" | "file";
   options?: { value: string; label: string | React.ReactNode }[];
@@ -30,6 +31,7 @@ const Input: React.FC<InputProps> = ({
   isPassword,
   required,
   error,
+  errorMessage,
   className,
   theme = "dark",
   type = "text",
@@ -153,8 +155,9 @@ const Input: React.FC<InputProps> = ({
   };
 
   return (
+    <div className="flex flex-col">
     <div
-      className={`relative w-full border rounded-xl px-4 py-3 transition-colors ${bgColor} ${borderColor} ${className}`}
+      className={`relative w-full border rounded-xl px-4 py-3 transition-colors ${bgColor} ${borderColor} ${props.disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
       ref={dropdownRef}
     >
       <div className="flex flex-col gap-0.5 pr-8">
@@ -297,6 +300,10 @@ const Input: React.FC<InputProps> = ({
           {rightIcon}
         </div>
       ) : null}
+    </div>
+    {errorMessage && (
+      <p className="mt-1 text-xs text-red-500">{errorMessage}</p>
+    )}
     </div>
   );
 };

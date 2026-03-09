@@ -35,23 +35,25 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
   const { data: departmentsData } = useDepartments({ page: 1, limit: 100 });
 
   const roleOptions = useMemo(() => {
-    const roles = Array.isArray(rolesData) ? rolesData : rolesData?.data || [];
-    return roles.map((r: { name: string; id: string }) => ({
-      label: r.name,
-      value: r.id,
-    }));
+    const roles = Array.isArray(rolesData) ? rolesData : [];
+    return roles
+      .filter((r: { status?: string }) => r.status?.toLowerCase() === "approved")
+      .map((r: { name: string; id: string }) => ({
+        label: r.name,
+        value: r.name,
+      }));
   }, [rolesData]);
 
   const departmentOptions = useMemo(() => {
     const departments = Array.isArray(departmentsData)
       ? departmentsData
-      : Array.isArray(departmentsData?.data)
-        ? departmentsData.data
-        : [];
-    return departments.map((d: { name: string; id: string }) => ({
-      label: d.name,
-      value: d.id,
-    }));
+      : [];
+    return departments
+      .filter((d: { status?: string }) => d.status?.toLowerCase() === "approved")
+      .map((d: { name: string; id: string }) => ({
+        label: d.name,
+        value: d.id,
+      }));
   }, [departmentsData]);
 
   const requiredFields = useMemo(
@@ -65,37 +67,48 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
   );
 
   const isFormValid = useMemo(() => {
+    const isPermanent = formData["Expiry Status"] === "Permanent";
     return requiredFields.every((fieldLabel) => {
+      // Expires is not required when Permanent
+      if (fieldLabel === "Expires" && isPermanent) return true;
       const value = formData[fieldLabel];
       return value !== undefined && value !== "" && value !== null;
     });
   }, [formData, requiredFields]);
 
   const handleInputChange = (label: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [label]: value }));
+    setFormData((prev) => {
+      const next = { ...prev, [label]: value };
+      // Clear Expires when switching to Permanent
+      if (label === "Expiry Status" && value === "Permanent") {
+        next["Expires"] = "";
+      }
+      return next;
+    });
   };
 
   const handleCreateUser = () => {
     if (isFormValid) {
       setErrorMsg("");
 
-      // Map dynamic form labels to the API payload
-      const [firstName, ...lastNameParts] = (formData["Full Name"] || "").split(
-        " ",
-      );
-      const lastName = lastNameParts.join(" ") || firstName; // Fallback if only one name provided
-
       const payload = {
-        firstName,
-        lastName,
-        email: formData["Email Address"] || "",
-        phoneNumber: formData["Phone Number"] || "",
-        roleId: formData["Assign Role"] || "",
-        departmentId: formData["Department"] || "",
+        basicInformation: {
+          firstName: formData["First Name"] || "",
+          middleName: formData["Middle Name"] || undefined,
+          lastName: formData["Last Name"] || "",
+          email: formData["Email Address"] || "",
+          phoneNumber: formData["Phone Number"] || "",
+        },
+        department: formData["Department"] || undefined,
+        assignRole: {
+          role: formData["Assign Role"] || "",
+          expiryStatus: formData["Expiry Status"] || "Permanent",
+          expires: formData["Expires"] || undefined,
+          departmentId: formData["Department"] || undefined,
+        },
       };
 
-      createUser.mutate(
-        payload as unknown as Parameters<typeof createUser.mutate>[0],
+      createUser.mutate(payload,
         {
           onSuccess: () => setShowSuccess(true),
           onError: (error: Error | unknown) => {
@@ -167,25 +180,33 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
           </h3>
           <p className="text-xs text-[#707781] mb-4">{section.description}</p>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {section.fields.map((field, fieldIndex) => (
-              <Input
-                key={fieldIndex}
-                label={field.label}
-                placeholder={field.placeholder}
-                theme="light"
-                type={field.type as "text" | "select" | "date" | "email"}
-                options={
-                  field.label === "Assign Role"
-                    ? roleOptions
-                    : field.label === "Department"
-                      ? departmentOptions
-                      : field.options
-                }
-                required={field.required}
-                value={formData[field.label] || ""}
-                onChange={(e) => handleInputChange(field.label, e.target.value)}
-              />
-            ))}
+            {section.fields.map((field, fieldIndex) => {
+              const isPermanent = formData["Expiry Status"] === "Permanent";
+              const isExpiresField = field.label === "Expires";
+              const isDisabled = isExpiresField && isPermanent;
+              const isRequired = isExpiresField ? !isPermanent : field.required;
+
+              return (
+                <Input
+                  key={fieldIndex}
+                  label={field.label}
+                  placeholder={field.placeholder}
+                  theme="light"
+                  type={field.type as "text" | "select" | "date" | "email"}
+                  options={
+                    field.label === "Assign Role"
+                      ? roleOptions
+                      : field.label === "Department"
+                        ? departmentOptions
+                        : field.options
+                  }
+                  required={isRequired}
+                  disabled={isDisabled}
+                  value={formData[field.label] || ""}
+                  onChange={(e) => handleInputChange(field.label, e.target.value)}
+                />
+              );
+            })}
           </div>
         </section>
       ))}

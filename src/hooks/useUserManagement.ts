@@ -9,7 +9,6 @@ import type {
   UpdateProfileRequest,
   UpdateRoleRequest,
   UpdateDepartmentRequest,
-  PaginatedResponse,
   User,
   Role,
   Department,
@@ -48,9 +47,22 @@ export const useDeleteUser = () => {
 export const useApproveUser = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => userService.approveUser(id),
+    mutationFn: (data: { id: string; action: "approve" | "reject"; reason?: string }) =>
+      userService.approveUser(data.id, data.action, data.reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
+    },
+  });
+};
+
+export const useDeactivateUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => userService.deactivateUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
     },
   });
 };
@@ -99,7 +111,8 @@ export const useApproveRole = () => {
 export const useRejectRole = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => roleService.rejectRole(id),
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+      roleService.rejectRole(id, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["roles"] });
     },
@@ -160,7 +173,8 @@ export const useApproveDepartment = () => {
 export const useRejectDepartment = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => departmentService.rejectDepartment(id),
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+      departmentService.rejectDepartment(id, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["departments"] });
     },

@@ -4,29 +4,31 @@ import type {
   CreateDepartmentRequest,
   UpdateDepartmentRequest,
   ReassignUsersRequest,
-  PaginatedResponse,
 } from "@/types/userManagement";
-
-// Backend wraps responses: { isSuccess, isFailure, value: <actual payload>, error, errors }
-type BackendEnvelope<T> = {
-  isSuccess: boolean;
-  isFailure: boolean;
-  value: T;
-  error: unknown;
-  errors: unknown;
-};
 
 export const departmentService = {
   getDepartments: async (
     params?: Record<string, any>,
-  ): Promise<PaginatedResponse<Department> | Department[]> => {
-    const { data } = await apiClient.get<
-      BackendEnvelope<PaginatedResponse<Department> | Department[]>
-    >("/api/v1/departments", { params });
-    return (
-      data.value ??
-      (data as unknown as PaginatedResponse<Department> | Department[])
-    );
+  ): Promise<Department[]> => {
+    const { data } = await apiClient.get("/api/v1/departments", { params });
+
+    // After the axios interceptor decrypts, `data` is:
+    //   { status, message, data: { departments: [...], pagination, stats } }
+    // Normalise into a plain Department[].
+    if (Array.isArray(data)) return data as Department[];
+
+    const inner = (data as Record<string, unknown>)?.data;
+    if (Array.isArray(inner)) return inner as Department[];
+
+    // Nested shape: data.departments
+    const nested = (inner as Record<string, unknown>)?.departments;
+    if (Array.isArray(nested)) return nested as Department[];
+
+    // status/message wrapper without .data (direct departments key)
+    const topDepts = (data as Record<string, unknown>)?.departments;
+    if (Array.isArray(topDepts)) return topDepts as Department[];
+
+    return [];
   },
 
   getDepartmentById: async (id: string): Promise<Department> => {
@@ -38,6 +40,11 @@ export const departmentService = {
     payload: CreateDepartmentRequest,
   ): Promise<Department> => {
     const { data } = await apiClient.post("/api/v1/departments", payload);
+    // The backend may return 2xx with { status: "error", message: "..." }
+    const resp = data as Record<string, unknown>;
+    if (resp?.status === "error") {
+      throw new Error((resp.message as string) || "Failed to create department");
+    }
     return data;
   },
 
@@ -57,11 +64,11 @@ export const departmentService = {
   },
 
   approveDepartment: async (id: string): Promise<void> => {
-    await apiClient.patch(`/api/v1/departments/${id}/approve`);
+    await apiClient.patch(`/api/v1/departments/${id}/approve`, { action: "approve" });
   },
 
-  rejectDepartment: async (id: string): Promise<void> => {
-    await apiClient.patch(`/api/v1/departments/${id}/reject`);
+  rejectDepartment: async (id: string, reason?: string): Promise<void> => {
+    await apiClient.patch(`/api/v1/departments/${id}/reject`, { action: "reject", reason });
   },
 
   deactivateDepartment: async (id: string): Promise<void> => {

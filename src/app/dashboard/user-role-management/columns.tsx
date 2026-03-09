@@ -93,7 +93,7 @@ const OptionsButton = ({
               <button
                 key={index}
                 onClick={() => {
-                  if (item.label === "Edit User" && onEditUser) {
+                  if (item.label === "Edit User Details" && onEditUser) {
                     onEditUser(user);
                   } else if (
                     item.label === "Deactivate User" &&
@@ -202,8 +202,23 @@ export const createUserColumns = (
   onViewUser?: (user: User) => void,
   onDeactivateUser?: (user: User) => void,
   isApprover?: boolean,
+  userCount?: number,
 ): Column<User>[] => [
-  ...userColumns.slice(0, 5),
+  {
+    header: (
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          className="rounded border-gray-300"
+          aria-label="Select all users"
+        />
+        <span className="uppercase text-[#2F3140]">{`USER (${userCount ?? 0})`}</span>
+      </div>
+    ),
+    className: "w-[25%]",
+    render: userColumns[0].render,
+  },
+  ...userColumns.slice(1, 5),
   {
     header: (
       <div className="flex items-center gap-1">

@@ -164,8 +164,23 @@ export const createRoleColumns = (
   onEditRole?: (role: Role) => void,
   onViewRole?: (role: Role) => void,
   isApprover?: boolean,
+  roleCount?: number,
 ): Column<Role>[] => [
-  ...roleColumns.slice(0, 3),
+  {
+    header: (
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          className="rounded border-gray-300"
+          aria-label="Select all roles"
+        />
+        <span className="uppercase text-[#2F3140]">{`ROLES (${roleCount ?? 0})`}</span>
+      </div>
+    ),
+    className: "w-[25%]",
+    render: roleColumns[0].render,
+  },
+  ...roleColumns.slice(1, 3),
   {
     header: (
       <div className="flex items-center gap-1">

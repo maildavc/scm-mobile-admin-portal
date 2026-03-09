@@ -5,6 +5,7 @@ import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Image from "next/image";
 import { useCreateDepartment } from "@/hooks/useUserManagement";
+import { useAuthStore } from "@/stores/authStore";
 
 interface CreateDepartmentFormProps {
   onSuccess?: () => void;
@@ -19,8 +20,11 @@ const CreateDepartmentForm: React.FC<CreateDepartmentFormProps> = ({
   const [description, setDescription] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [nameError, setNameError] = useState("");
 
   const createDepartment = useCreateDepartment();
+  const user = useAuthStore((s) => s.user);
+  const organization = useAuthStore((s) => s.organization);
 
   const isFormValid = useMemo(() => {
     return departmentName.trim() !== "";
@@ -29,25 +33,34 @@ const CreateDepartmentForm: React.FC<CreateDepartmentFormProps> = ({
   const handleCreateDepartment = () => {
     if (isFormValid) {
       setErrorMsg("");
-      createDepartment.mutate(
-        { name: departmentName.trim(), description: description.trim() },
-        {
-          onSuccess: () => {
-            setShowSuccess(true);
-          },
-          onError: (error: Error | unknown) => {
-            const err = error as {
-              response?: { data?: { message?: string } };
-              message?: string;
-            };
-            setErrorMsg(
-              err?.response?.data?.message ||
-                err?.message ||
-                "Failed to create department",
-            );
-          },
+      setNameError("");
+      const payload = {
+        name: departmentName.trim(),
+        description: description.trim(),
+        organizationId: organization?.id,
+        createdBy: user?.id,
+      };
+      createDepartment.mutate(payload, {
+        onSuccess: () => {
+          setShowSuccess(true);
         },
-      );
+        onError: (error: Error | unknown) => {
+          const err = error as {
+            response?: { data?: { message?: string; error?: string } };
+            message?: string;
+          };
+          const msg =
+            err?.response?.data?.error ||
+            err?.response?.data?.message ||
+            err?.message ||
+            "Failed to create department";
+          if (msg.toLowerCase().includes("already exists")) {
+            setNameError(msg);
+          } else {
+            setErrorMsg(msg);
+          }
+        },
+      });
     }
   };
 
@@ -121,7 +134,12 @@ const CreateDepartmentForm: React.FC<CreateDepartmentFormProps> = ({
             type="text"
             required={true}
             value={departmentName}
-            onChange={(e) => setDepartmentName(e.target.value)}
+            onChange={(e) => {
+              setDepartmentName(e.target.value);
+              if (nameError) setNameError("");
+            }}
+            error={!!nameError}
+            errorMessage={nameError}
           />
           <Input
             label="Department Description (Optional)"

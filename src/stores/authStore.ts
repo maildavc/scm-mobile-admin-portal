@@ -122,8 +122,22 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (accessToken && userStr && userStr !== "undefined") {
       try {
         const user = JSON.parse(userStr) as User;
-        const org =
+        let org =
           orgStr && orgStr !== "undefined" ? JSON.parse(orgStr) : null;
+
+        // Fallback: extract organization_id from JWT when localStorage has no org
+        if (!org && accessToken) {
+          try {
+            const payload = JSON.parse(atob(accessToken.split(".")[1]));
+            const orgId = payload.organization_id || payload.OrganizationId;
+            if (orgId) {
+              org = { id: orgId, name: "", domain: "", type: 0, logoUrl: null } as Organization;
+              localStorage.setItem("organization", JSON.stringify(org));
+            }
+          } catch {
+            // JWT decode failed — ignore
+          }
+        }
 
         set({
           user,

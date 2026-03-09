@@ -33,6 +33,7 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   >({});
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [nameError, setNameError] = useState("");
 
   const createRole = useCreateRole();
   const updateRole = useUpdateRole();
@@ -51,6 +52,7 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   const handleCreateRole = () => {
     if (isFormValid) {
       setErrorMsg("");
+      setNameError("");
       const permissions = Object.keys(selectedPermissions).filter(
         (k) => selectedPermissions[k],
       );
@@ -68,14 +70,19 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
             onSuccess: () => setShowSuccess(true),
             onError: (error: Error | unknown) => {
               const err = error as {
-                response?: { data?: { message?: string } };
+                response?: { data?: { message?: string; error?: string } };
                 message?: string;
               };
-              setErrorMsg(
+              const msg =
+                err?.response?.data?.error ||
                 err?.response?.data?.message ||
-                  err?.message ||
-                  "Failed to update role",
-              );
+                err?.message ||
+                "Failed to update role";
+              if (msg.toLowerCase().includes("already exists")) {
+                setNameError(msg);
+              } else {
+                setErrorMsg(msg);
+              }
             },
           },
         );
@@ -84,14 +91,19 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
           onSuccess: () => setShowSuccess(true),
           onError: (error: Error | unknown) => {
             const err = error as {
-              response?: { data?: { message?: string } };
+              response?: { data?: { message?: string; error?: string } };
               message?: string;
             };
-            setErrorMsg(
+            const msg =
+              err?.response?.data?.error ||
               err?.response?.data?.message ||
-                err?.message ||
-                "Failed to create role",
-            );
+              err?.message ||
+              "Failed to create role";
+            if (msg.toLowerCase().includes("already exists")) {
+              setNameError(msg);
+            } else {
+              setErrorMsg(msg);
+            }
           },
         });
       }
@@ -166,7 +178,12 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
             type="text"
             required={true}
             value={roleName}
-            onChange={(e) => setRoleName(e.target.value)}
+            onChange={(e) => {
+              setRoleName(e.target.value);
+              if (nameError) setNameError("");
+            }}
+            error={!!nameError}
+            errorMessage={nameError}
           />
           <Input
             label="Role Description (Optional)"

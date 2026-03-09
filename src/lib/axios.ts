@@ -65,6 +65,11 @@ apiClient.interceptors.request.use(
       delete config.headers["Content-Type"];
     }
 
+    // The backend expects PascalCase query parameter names (e.g. "Page", "Limit").
+    if (config.params && typeof config.params === "object") {
+      config.params = toPascalCaseKeys(config.params);
+    }
+
     // The backend expects PascalCase JSON keys (e.g. "Email", "Password", "Token").
     // Convert camelCase keys to PascalCase before encrypting.
     // Server expects: { "request": "encrypted_base64_string" }
