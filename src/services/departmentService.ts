@@ -15,20 +15,33 @@ export const departmentService = {
     // After the axios interceptor decrypts, `data` is:
     //   { status, message, data: { departments: [...], pagination, stats } }
     // Normalise into a plain Department[].
-    if (Array.isArray(data)) return data as Department[];
+    let list: Record<string, unknown>[] = [];
 
-    const inner = (data as Record<string, unknown>)?.data;
-    if (Array.isArray(inner)) return inner as Department[];
+    if (Array.isArray(data)) {
+      list = data;
+    } else {
+      const inner = (data as Record<string, unknown>)?.data;
+      if (Array.isArray(inner)) {
+        list = inner;
+      } else {
+        const nested = (inner as Record<string, unknown>)?.departments;
+        if (Array.isArray(nested)) {
+          list = nested;
+        } else {
+          const topDepts = (data as Record<string, unknown>)?.departments;
+          if (Array.isArray(topDepts)) {
+            list = topDepts;
+          }
+        }
+      }
+    }
 
-    // Nested shape: data.departments
-    const nested = (inner as Record<string, unknown>)?.departments;
-    if (Array.isArray(nested)) return nested as Department[];
-
-    // status/message wrapper without .data (direct departments key)
-    const topDepts = (data as Record<string, unknown>)?.departments;
-    if (Array.isArray(topDepts)) return topDepts as Department[];
-
-    return [];
+    // Map backend fields to frontend Department type
+    return list.map((d) => ({
+      ...d,
+      members: (d.userCount as number) ?? (d.members as number) ?? 0,
+      updated: d.updated as string || d.updatedAt as string || "",
+    })) as Department[];
   },
 
   getDepartmentById: async (id: string): Promise<Department> => {

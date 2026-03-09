@@ -40,7 +40,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
       .filter((r: { status?: string }) => r.status?.toLowerCase() === "approved")
       .map((r: { name: string; id: string }) => ({
         label: r.name,
-        value: r.name,
+        value: r.id,
       }));
   }, [rolesData]);
 
