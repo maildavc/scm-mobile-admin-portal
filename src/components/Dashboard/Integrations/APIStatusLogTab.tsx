@@ -1,54 +1,16 @@
-"use client";
-
 import React from "react";
 import ActionButton from "@/components/Dashboard/ActionButton";
 import Table, { Column } from "@/components/Dashboard/Table";
 import { StatusBadge } from "@/components/Dashboard/StatusBadge";
 import { TbFilterEdit } from "react-icons/tb";
+import { useIntegrationLogs } from "@/hooks/useIntegration";
+import { IntegrationLogDto } from "@/types/integration";
 
-type APIStatusLog = {
-  id: string;
-  date: string;
-  user: string;
-  status: "Active" | "Fatal" | "Shortage" | "Failed";
-  affected?: string;
-};
+interface APIStatusLogTabProps {
+  integrationId: string;
+}
 
-const MOCK_LOGS: APIStatusLog[] = [
-  {
-    id: "1",
-    date: "28/12/2025 13:32",
-    user: "Iwinosa Omoregie",
-    status: "Active",
-  },
-  {
-    id: "2",
-    date: "28/12/2025 13:32",
-    user: "Omotolani Babajide",
-    status: "Fatal",
-    affected: "Unable to assign product to customers",
-  },
-  {
-    id: "3",
-    date: "28/12/2025 13:32",
-    user: "Omotolani Babajide",
-    status: "Active",
-  },
-  {
-    id: "4",
-    date: "28/12/2025 13:32",
-    user: "Iwinosa Omoregie",
-    status: "Shortage",
-    affected: "Unable to assign product to customers",
-  },
-  {
-    id: "5",
-    date: "28/12/2025 13:32",
-    user: "Omotolani Babajide",
-    status: "Shortage",
-    affected: "Unable to assign product to customers",
-  },
-];
+// Removed mock logs
 
 const FilterableHeader = ({ children }: { children: string }) => (
   <div className="flex text-xs text-[#2F3140] items-center gap-2">
@@ -57,38 +19,47 @@ const FilterableHeader = ({ children }: { children: string }) => (
   </div>
 );
 
-const columns: Column<APIStatusLog>[] = [
+const columns: Column<IntegrationLogDto>[] = [
   {
     header: <FilterableHeader>DATE</FilterableHeader>,
     className: "w-[25%]",
     render: (item) => (
       <div>
-        <p className="font-bold text-[#2F3140] text-sm">{item.date}</p>
-        <p className="text-[#707781] text-xs">{item.user}</p>
+        <p className="font-bold text-[#2F3140] text-sm">{new Date(item.timestamp).toLocaleDateString("en-GB") + " " + new Date(item.timestamp).toLocaleTimeString("en-GB", { hour:'2-digit', minute:'2-digit' })}</p>
+        <p className="text-[#707781] text-xs">{item.performedBy || "System"}</p>
       </div>
     ),
   },
   {
     header: <FilterableHeader>API STATUS</FilterableHeader>,
     className: "w-[25%]",
-    render: (item) => <StatusBadge status={item.status} />,
+    render: (item) => <StatusBadge status={(item.logLevel === "Error" || item.logLevel === "Critical" ? "Fatal" : item.logLevel === "Warning" ? "Shortage" : "Active") as "Active" | "Fatal" | "Shortage" | "Failed"} displayLabel={item.logLevel || "Info"} />,
   },
   {
     header: (
       <span className="text-xs text-[#2F3140] uppercase font-bold">
-        AFFECTED
+        DETAILS
       </span>
     ),
     className: "w-[50%]",
     render: (item) => (
       <span className="text-sm text-[#2F3140] font-bold">
-        {item.affected || ""}
+        {item.details || item.action || ""}
       </span>
     ),
   },
 ];
 
-const APIStatusLogTab = () => {
+const APIStatusLogTab: React.FC<APIStatusLogTabProps> = ({ integrationId }) => {
+  const itemsPerPage = 10;
+  
+  const { data: logsResponse } = useIntegrationLogs(integrationId, {
+    Page: 1,
+    PageSize: itemsPerPage,
+  });
+
+  const logs = logsResponse?.items || [];
+
   return (
     <div className="flex flex-col gap-6">
       {/* Action Buttons */}
@@ -107,9 +78,9 @@ const APIStatusLogTab = () => {
         />
       </div>
 
-      {/* Table */}
+      {/* Table - ignoring pagination controls since Table doesn't seem to have totalItems natively yet, or we'll fix it if we check Table.tsx soon */}
       <div>
-        <Table data={MOCK_LOGS} columns={columns} itemsPerPage={10} />
+        <Table data={logs} columns={columns} itemsPerPage={itemsPerPage} />
       </div>
     </div>
   );

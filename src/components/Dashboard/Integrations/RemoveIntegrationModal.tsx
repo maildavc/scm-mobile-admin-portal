@@ -9,6 +9,9 @@ interface RemoveIntegrationModalProps {
   onClose: () => void;
   onConfirm: () => void;
   integrationName: string;
+  title?: string;
+  description?: string;
+  actionText?: string;
 }
 
 const RemoveIntegrationModal: React.FC<RemoveIntegrationModalProps> = ({
@@ -16,15 +19,17 @@ const RemoveIntegrationModal: React.FC<RemoveIntegrationModalProps> = ({
   onClose,
   onConfirm,
   integrationName,
+  title = "Remove Connection?",
+  description = "Are you sure you want to remove integration connection for",
+  actionText = "Yes, Disconnect",
 }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="max-w-[480px] p-6">
       <h2 className="text-xl font-bold text-[#101828] mb-2">
-        Remove Connection?
+        {title}
       </h2>
       <p className="text-sm text-[#475467] mb-8">
-        Are you sure you want to remove integration connection for{" "}
-        {integrationName}?
+        {description} {integrationName}?
       </p>
 
       <div className="flex gap-3 justify-end items-center">
@@ -39,7 +44,7 @@ const RemoveIntegrationModal: React.FC<RemoveIntegrationModalProps> = ({
           </div>
           <div className="w-40">
             <Button
-              text="Yes, Disconnect"
+              text={actionText}
               variant="primary"
               onClick={onConfirm}
               className="text-sm"

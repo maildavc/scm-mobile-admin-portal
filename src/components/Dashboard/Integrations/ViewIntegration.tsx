@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import Tabs from "@/components/Dashboard/Tabs";
 import IntegrationInfoTab from "./IntegrationInfoTab";
-import { Integration } from "@/constants/integrations/integrations";
+import { IntegrationDto } from "@/types/integration";
 import APIStatusLogTab from "./APIStatusLogTab";
 
 interface ViewIntegrationProps {
-  integration: Integration;
+  integration: IntegrationDto;
   onRemove?: () => void;
   onEdit?: () => void;
 }
@@ -31,7 +31,7 @@ const ViewIntegration: React.FC<ViewIntegrationProps> = ({
           onEdit={onEdit}
         />
       ) : activeTab === "API Status Log" ? (
-        <APIStatusLogTab />
+        <APIStatusLogTab integrationId={integration.id} />
       ) : (
         <div className="flex items-center justify-center h-64 text-gray-500">
           {activeTab} view coming soon

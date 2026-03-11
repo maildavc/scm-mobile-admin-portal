@@ -42,3 +42,9 @@ yarn-error.log*
 # swagger spec (local reference only)
 swagger.json
 next-env.d.ts
+
+# custom scripts/tests
+_test.js
+test-api.js
+test-payload.json
+

@@ -8,13 +8,13 @@ import ActionButton from "@/components/Dashboard/ActionButton";
 import {
   INTEGRATIONS_SIDEBAR_ITEMS,
   PAGE_CONFIG,
-  MOCK_DATA,
   getBreadcrumbs,
 } from "@/constants/integrations/integrations";
 import { columns } from "./columns";
 import ConnectNewIntegration from "@/components/Dashboard/Integrations/ConnectNewIntegration";
 import ViewIntegration from "@/components/Dashboard/Integrations/ViewIntegration";
-import { Integration } from "@/constants/integrations/integrations";
+import { IntegrationDto, IntegrationType, CreateIntegrationRequestDto } from "@/types/integration";
+import { useIntegrations, useCreateIntegration, useUpdateIntegration, useDisconnectIntegration } from "@/hooks/useIntegration";
 
 import RemoveIntegrationModal from "@/components/Dashboard/Integrations/RemoveIntegrationModal";
 import Button from "@/components/Button";
@@ -25,8 +25,24 @@ const IntegrationsPage = () => {
     "overview" | "connect-new" | "view-integration" | "success"
   >("overview");
   const [selectedIntegration, setSelectedIntegration] =
-    React.useState<Integration | null>(null);
+    React.useState<IntegrationDto | null>(null);
   const [showRemoveModal, setShowRemoveModal] = React.useState(false);
+  const [modalAction, setModalAction] = React.useState<"disconnect" | null>(null);
+  const [actionIntegration, setActionIntegration] = React.useState<IntegrationDto | null>(null);
+  
+  const page = 1;
+  const itemsPerPage = PAGE_CONFIG.itemsPerPage;
+
+  const { data: integrationsResponse, isLoading } = useIntegrations({
+    Page: page,
+    PageSize: itemsPerPage,
+  });
+  
+  const createIntegration = useCreateIntegration();
+  const updateIntegration = useUpdateIntegration();
+  const disconnectIntegration = useDisconnectIntegration();
+
+  const integrationData = integrationsResponse?.items || [];
 
   // Create a mutable copy with proper types
   const breadcrumbs: {
@@ -52,7 +68,7 @@ const IntegrationsPage = () => {
       href: undefined,
     };
   } else if (view === "view-integration" && selectedIntegration) {
-    breadcrumbs.push({ label: selectedIntegration.name, active: true });
+    breadcrumbs.push({ label: selectedIntegration.name || "View Integration", active: true });
     // Make Integrations link active/clickable to go back
     breadcrumbs[1] = {
       ...breadcrumbs[1],
@@ -78,23 +94,42 @@ const IntegrationsPage = () => {
     }
   };
 
-  const handleViewIntegration = (integration: Integration) => {
+  const handleViewIntegration = (integration: IntegrationDto) => {
     setSelectedIntegration(integration);
     setView("view-integration");
   };
 
-  const handleEditIntegration = () => {
+  const handleEditIntegration = (integration?: IntegrationDto) => {
+    if (integration && integration.id !== selectedIntegration?.id) {
+      setSelectedIntegration(integration);
+    }
     // Switch to Connect New view but with prefilled data
     setView("connect-new");
   };
 
-  const handleRemoveIntegration = () => {
+  const handleRemoveIntegration = (integration?: IntegrationDto) => {
+    setActionIntegration(integration || selectedIntegration);
+    setModalAction("disconnect");
     setShowRemoveModal(true);
   };
 
-  const confirmRemoveIntegration = () => {
-    setShowRemoveModal(false);
-    setView("success");
+  const handleDisconnectIntegration = (integration?: IntegrationDto) => {
+    if (integration) {
+      handleViewIntegration(integration);
+    }
+  };
+
+  const confirmModalAction = () => {
+    if (!actionIntegration) return;
+
+    if (modalAction === "disconnect") {
+      disconnectIntegration.mutate(actionIntegration.id, {
+        onSuccess: () => {
+          setShowRemoveModal(false);
+          setView("success");
+        }
+      });
+    }
   };
 
   return (
@@ -122,12 +157,12 @@ const IntegrationsPage = () => {
                 initialData={
                   selectedIntegration
                     ? {
-                        name: selectedIntegration.name,
-                        description: selectedIntegration.description,
-                        clientUrl: "https://accessbankplc.com.ng", // Mock data
-                        clientSecretKey: "mock-secret-key",
-                        username: "mock-user",
-                        password: "mock-password",
+                        name: selectedIntegration.name || "",
+                        description: selectedIntegration.description || "",
+                        clientUrl: selectedIntegration.endpointUrl || "", 
+                        clientSecretKey: "", // Typically we wouldn't fetch the existing secret
+                        username: "",
+                        password: "",
                       }
                     : undefined
                 }
@@ -140,19 +175,44 @@ const IntegrationsPage = () => {
                 }}
                 onTestConnection={(data) => {
                   console.log("Test/Save Connection", data);
+                  
+                  // Construct payload using the backend's expected schema
+                  const payload: CreateIntegrationRequestDto = {
+                    name: data.name,
+                    description: data.description,
+                    clientUrl: data.clientUrl,
+                    secretKey: data.clientSecretKey,
+                    username: data.username,
+                    password: data.password,
+                    type: IntegrationType.Custom, // Default to a standard enum value
+                    maxRetries: 3,
+                    autoRetry: true,
+                  };
+
                   if (selectedIntegration) {
-                    // Navigate back to view integration after save
-                    setView("view-integration");
+                    // Update existing
+                    updateIntegration.mutate(
+                      { id: selectedIntegration.id, payload: payload as any },
+                      {
+                        onSuccess: () => {
+                          setView("view-integration");
+                        }
+                      }
+                    );
                   } else {
-                    setView("overview");
+                    createIntegration.mutate(payload, {
+                      onSuccess: () => {
+                        setView("overview");
+                      }
+                    });
                   }
                 }}
               />
             ) : view === "view-integration" && selectedIntegration ? (
               <ViewIntegration
                 integration={selectedIntegration}
-                onRemove={handleRemoveIntegration}
-                onEdit={handleEditIntegration}
+                onRemove={() => handleRemoveIntegration(selectedIntegration)}
+                onEdit={() => handleEditIntegration(selectedIntegration)}
               />
             ) : view === "success" ? (
               <div className="flex flex-col items-center justify-center py-20">
@@ -203,9 +263,14 @@ const IntegrationsPage = () => {
                 {/* Table */}
                 <div>
                   <Table
-                    data={MOCK_DATA}
-                    columns={columns(handleViewIntegration)}
-                    itemsPerPage={PAGE_CONFIG.itemsPerPage}
+                    data={integrationData}
+                    columns={columns(
+                      handleViewIntegration, 
+                      handleEditIntegration, 
+                      handleDisconnectIntegration
+                    )}
+                    itemsPerPage={itemsPerPage}
+                    isLoading={isLoading}
                   />
                 </div>
               </div>
@@ -218,8 +283,11 @@ const IntegrationsPage = () => {
       <RemoveIntegrationModal
         isOpen={showRemoveModal}
         onClose={() => setShowRemoveModal(false)}
-        onConfirm={confirmRemoveIntegration}
-        integrationName={selectedIntegration?.name || ""}
+        onConfirm={confirmModalAction}
+        integrationName={actionIntegration?.name || ""}
+        title="Remove Connection?"
+        description="Are you sure you want to remove integration connection for"
+        actionText="Yes, Disconnect"
       />
     </SidebarProvider>
   );

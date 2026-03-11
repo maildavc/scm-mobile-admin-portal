@@ -1,6 +1,6 @@
 "use client";
 
-import { Integration } from "@/constants/integrations/integrations";
+import { IntegrationDto } from "@/types/integration";
 import { Column } from "@/components/Dashboard/Table";
 import { StatusBadge } from "@/components/Dashboard/StatusBadge";
 import { FiEye, FiX } from "react-icons/fi";
@@ -22,10 +22,10 @@ const OptionsButton = ({
   onReconfigure,
   onDisconnect,
 }: {
-  integration: Integration;
-  onView?: (item: Integration) => void;
-  onReconfigure?: (item: Integration) => void;
-  onDisconnect?: (item: Integration) => void;
+  integration: IntegrationDto;
+  onView?: (item: IntegrationDto) => void;
+  onReconfigure?: (item: IntegrationDto) => void;
+  onDisconnect?: (item: IntegrationDto) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -109,8 +109,10 @@ const OptionsButton = ({
 };
 
 export const columns = (
-  onView?: (item: Integration) => void,
-): Column<Integration>[] => [
+  onView?: (item: IntegrationDto) => void,
+  onReconfigure?: (item: IntegrationDto) => void,
+  onDisconnect?: (item: IntegrationDto) => void
+): Column<IntegrationDto>[] => [
   {
     header: (
       <div className="flex items-center gap-2">
@@ -119,7 +121,7 @@ export const columns = (
           className="rounded border-gray-300"
           aria-label="Select all"
         />
-        <span className="uppercase text-[#2F3140]">INTEGRATION (500)</span>
+        <span className="uppercase text-[#2F3140]">INTEGRATION</span>
       </div>
     ),
     className: "w-[25%]",
@@ -127,8 +129,8 @@ export const columns = (
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
           <Image
-            src="/scmLogo.svg"
-            alt={item.name}
+            src={item.iconUrl || "/scmLogo.svg"}
+            alt={item.name || "Integration Logo"}
             width={24}
             height={24}
             className="rounded-full"
@@ -146,7 +148,7 @@ export const columns = (
     className: "w-[15%]",
     render: (item) => (
       <div className="flex">
-        <StatusBadge status={item.status} />
+        <StatusBadge status={(item.statusName || "Pending") as "Active" | "Fatal" | "Shortage" | "Failed"} />
       </div>
     ),
   },
@@ -155,7 +157,7 @@ export const columns = (
     className: "w-[15%]",
     render: (item) => (
       <span className="text-sm font-bold text-[#2F3140]">
-        {item.dateCreated}
+        {new Date(item.createdAt).toLocaleDateString("en-GB") + " " + new Date(item.createdAt).toLocaleTimeString("en-GB", { hour:'2-digit', minute:'2-digit' })}
       </span>
     ),
   },
@@ -164,8 +166,8 @@ export const columns = (
     className: "w-[20%]",
     render: (item) => (
       <div>
-        <p className="font-bold text-[#2F3140] text-sm">{item.lastUpdated}</p>
-        <p className="text-[#707781] text-xs">{item.updatedBy}</p>
+        <p className="font-bold text-[#2F3140] text-sm">{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString("en-GB") + " " + new Date(item.updatedAt).toLocaleTimeString("en-GB", { hour:'2-digit', minute:'2-digit' }) : "N/A"}</p>
+        <p className="text-[#707781] text-xs">{item.updatedBy || "System"}</p>
       </div>
     ),
   },
@@ -180,8 +182,8 @@ export const columns = (
       <OptionsButton
         integration={item}
         onView={onView}
-        onReconfigure={() => console.log("Reconfigure", item)}
-        onDisconnect={() => console.log("Disconnect", item)}
+        onReconfigure={onReconfigure}
+        onDisconnect={onDisconnect}
       />
     ),
   },

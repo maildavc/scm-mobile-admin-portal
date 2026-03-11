@@ -4,11 +4,12 @@ import React from "react";
 import { DetailCard, DetailRow } from "@/components/Dashboard/SharedDetails";
 import Button from "@/components/Button";
 import { StatusBadge } from "@/components/Dashboard/StatusBadge";
-import { Integration } from "@/constants/integrations/integrations";
-import { FiUser } from "react-icons/fi"; // Placeholder for avatar
+import { IntegrationDto } from "@/types/integration";
+import { useIntegrationDetails } from "@/hooks/useIntegration";
+import Image from "next/image";
 
 interface IntegrationInfoTabProps {
-  integration: Integration;
+  integration: IntegrationDto;
   onRemove?: () => void;
   onEdit?: () => void;
 }
@@ -18,10 +19,16 @@ const IntegrationInfoTab: React.FC<IntegrationInfoTabProps> = ({
   onRemove,
   onEdit,
 }) => {
+  const { data: details } = useIntegrationDetails(integration.id);
+
+  // We fall back to the basic `integration` prop (which contains core info)
+  // while the robust `IntegrationDetailsDto` loads.
+  const displayData = details || integration;
+
+  // The backend doesn't currently provide Subscribed Products.
+  // Displaying placeholder array just as the design shows.
   const subscribedProducts = [
     { name: "Access Bank 30% Equity", count: 102 },
-    { name: "Name of product here", count: 102 },
-    { name: "Name of product here", count: 102 },
     { name: "Name of product here", count: 102 },
     { name: "Name of product here", count: 102 },
     { name: "Name of product here", count: 102 },
@@ -37,25 +44,31 @@ const IntegrationInfoTab: React.FC<IntegrationInfoTabProps> = ({
             title=""
             className="h-full"
             headerContent={
-              <div className="w-20 h-20 rounded-full bg-[#1A1C29] flex items-center justify-center">
-                <FiUser size={32} className="text-white" />
+              <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+                <Image
+                  src={displayData.iconUrl || "/scmLogo.svg"}
+                  alt={displayData.name || "Logo"}
+                  width={48}
+                  height={48}
+                  className="rounded-full"
+                />
               </div>
             }
           >
-            <DetailRow label="Integration name" value={integration.name} />
+            <DetailRow label="Integration name" value={displayData.name || "N/A"} />
             <DetailRow
               label="Description"
-              value={integration.description || "No description"}
+              value={displayData.description || "No description"}
             />
             <DetailRow
               label="Client URL"
-              value="https://accessbankplc.com.ng"
+              value={displayData.endpointUrl || "N/A"}
             />
             <div className="flex justify-between items-center py-2 border-b border-[#F4F4F5]">
               <span className="text-sm text-[#2F3140]">
-                Connection Status Status
+                Connection Status
               </span>
-              <StatusBadge status="Active" displayLabel="Test connected" />
+              <StatusBadge status={(displayData.statusName || "Pending") as "Active" | "Fatal" | "Shortage" | "Failed"} />
             </div>
           </DetailCard>
         </div>
