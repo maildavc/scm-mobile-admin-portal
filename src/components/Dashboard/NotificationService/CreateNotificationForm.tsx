@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from "react";
 import { FiEye, FiLink2 } from "react-icons/fi";
 import {
@@ -13,6 +11,8 @@ import Input from "@/components/Input";
 import TextArea from "@/components/TextArea";
 import Button from "@/components/Button";
 import EmailPreviewModal from "./EmailPreviewModal";
+import { useCreateNotification } from "@/hooks/useNotification";
+import { NotificationChannel, RecipientType } from "@/types/notification";
 
 interface CreateNotificationFormProps {
   onSuccess: () => void;
@@ -36,6 +36,7 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
     time: "",
   });
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const { mutate: createNotification, isPending } = useCreateNotification();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -44,13 +45,47 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
   const toOptions = (items: string[]) =>
     items.map((item) => ({ label: item, value: item }));
 
+  // Map UI channel label → backend integer enum
+  const channelMap: Record<string, NotificationChannel> = {
+    Email: NotificationChannel.Email,          // 1
+    SMS: NotificationChannel.SMS,              // 2
+    "Push Notification": NotificationChannel.Push, // 3
+    "In-App": NotificationChannel.InApp,       // 4
+  };
+
+  // Map UI recipient type label → backend integer enum
+  const recipientTypeMap: Record<string, RecipientType> = {
+    "All Users": RecipientType.AllUsers,        // 1
+    Vendor: RecipientType.Vendor,              // 2
+    Customer: RecipientType.Customer,          // 3
+    "Specific Users": RecipientType.SpecificUsers, // 4
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form Data:", formData);
-    // Simulate API call
-    setTimeout(() => {
-      onSuccess();
-    }, 1000);
+
+    // Build scheduled date from separate date+time fields
+    let scheduledFor: string | undefined;
+    if (formData.sendType === "Later" && formData.date) {
+      const dt = formData.time
+        ? new Date(`${formData.date}T${formData.time}`)
+        : new Date(formData.date);
+      scheduledFor = dt.toISOString();
+    }
+
+    createNotification(
+      {
+        title: formData.title,
+        message: formData.body,
+        channel: channelMap[formData.channel] ?? NotificationChannel.Email,
+        recipientType: recipientTypeMap[formData.recipientType] ?? undefined,
+        targetAudience: formData.audience || undefined,
+        scheduledFor,
+        allowReply: formData.allowReply === "Yes",
+        replyToEmail: formData.allowReply === "Yes" ? formData.replyToEmail : undefined,
+      },
+      { onSuccess }
+    );
   };
 
   return (
@@ -248,9 +283,9 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
           </div>
           <div className="w-48">
             <Button
-              text="Create Notification"
+              text={isPending ? "Creating..." : "Create Notification"}
               variant="primary"
-              disabled={false}
+              disabled={isPending}
             />
           </div>
         </div>

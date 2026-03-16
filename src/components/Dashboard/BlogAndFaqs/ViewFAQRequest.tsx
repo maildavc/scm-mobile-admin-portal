@@ -2,32 +2,24 @@ import React, { useState } from "react";
 import Button from "@/components/Button";
 import { BiUser } from "react-icons/bi";
 import Image from "next/image";
-import { FAQ_DETAILS, FAQ_ANSWER } from "@/constants/blogAndFaqs/faqDetails";
 import { DetailCard, DetailRow } from "@/components/Dashboard/SharedDetails";
 import ApproveModal from "@/components/Dashboard/Shared/ApproveModal";
 import RejectModal from "@/components/Dashboard/Shared/RejectModal";
 import BlogNFaqContent from "./BlogNFaqContent";
 
-type FAQ = {
-  id: string;
-  title: string;
-  description: string;
-  author: string;
-  dateCreated: string;
-  lastUpdated: string;
-  lastUpdatedBy: string;
-  status: "Active" | "Awaiting Approval";
-  approverStatus: "Approved" | "Awaiting Approval";
-};
+import { useFAQDetails, useFAQAction } from "@/hooks/useFaq";
+import { FAQDto, FAQStatus } from "@/types/faq";
 
 interface ViewFAQRequestProps {
-  faq: FAQ;
+  faq: FAQDto;
+  isApprover?: boolean;
   onApprove: () => void;
   onReject: () => void;
 }
 
 const ViewFAQRequest: React.FC<ViewFAQRequestProps> = ({
   faq,
+  isApprover = false,
   onApprove,
   onReject,
 }) => {
@@ -37,15 +29,26 @@ const ViewFAQRequest: React.FC<ViewFAQRequestProps> = ({
     "review" | "success" | "rejected"
   >("review");
 
+  const { data: detailData, isLoading } = useFAQDetails(faq.id);
+  const approveAction = useFAQAction("approve");
+  const rejectAction = useFAQAction("reject");
+
+  const fullFaq = detailData;
+
   const handleApproveConfirm = () => {
     setIsApproveModalOpen(false);
-    setViewStatus("success");
+    approveAction.mutate(
+      { id: faq.id, action: "approve" },
+      { onSuccess: () => setViewStatus("success") }
+    );
   };
 
-  const handleRejectConfirm = (reason: string) => {
+  const handleRejectConfirm = () => {
     setIsRejectModalOpen(false);
-    console.log("Rejection reason:", reason);
-    setViewStatus("rejected");
+    rejectAction.mutate(
+      { id: faq.id, action: "reject" },
+      { onSuccess: () => setViewStatus("rejected") }
+    );
   };
 
   if (viewStatus === "success") {
@@ -116,50 +119,56 @@ const ViewFAQRequest: React.FC<ViewFAQRequestProps> = ({
         </div>
         <div>
           <p className="text-[10px] text-[#707781] font-semibold">Created By</p>
-          <p className="text-sm font-bold text-[#2F3140]">Ehizojie Ihayere</p>
-          <p className="text-xs text-[#707781]">January 12, 2026 13:23</p>
+          <p className="text-sm font-bold text-[#2F3140]">{faq.authorName || faq.createdBy || "System"}</p>
+          <p className="text-xs text-[#707781]">{new Date(faq.createdAt).toLocaleString()}</p>
         </div>
       </div>
 
-      {/* FAQ Details Card */}
-      <DetailCard title="FAQ Details">
-        {FAQ_DETAILS.map((detail) => (
-          <DetailRow
-            key={detail.label}
-            label={detail.label}
-            value={detail.value}
-          />
-        ))}
-      </DetailCard>
+      {isLoading ? (
+        <div className="py-20 text-center text-gray-500">Loading FAQ details...</div>
+      ) : (
+        <>
+          {/* FAQ Details Card */}
+          <DetailCard title="FAQ Details">
+            <DetailRow label="Question" value={fullFaq?.question || faq.question || "-"} />
+            <DetailRow label="Category" value={fullFaq?.categoryName || "General"} />
+            <DetailRow label="Schedule" value={fullFaq?.whenShouldItGoLive || faq.whenShouldItGoLive || "-"} />
+            <DetailRow label="Status" value={fullFaq?.statusName || FAQStatus[Number(faq.status) as unknown as keyof typeof FAQStatus] || String(faq.status)} />
+          </DetailCard>
 
-      {/* FAQ Answer */}
-      <BlogNFaqContent
-        heading={FAQ_ANSWER.heading}
-        paragraph1={FAQ_ANSWER.paragraph1}
-        subheading={FAQ_ANSWER.subheading}
-        paragraph2={FAQ_ANSWER.paragraph2}
-        showImage={true}
-      />
+          {/* FAQ Answer */}
+          <BlogNFaqContent
+            heading={fullFaq?.question || faq.question || "No Question"}
+            paragraph1={fullFaq?.answer || faq.answer || "No answer provided."}
+            subheading=""
+            paragraph2=""
+            showImage={false}
+          />
+        </>
+      )}
 
-      {/* Footer Actions */}
-      <div className="mt-auto pt-6 flex justify-end gap-3 border-t border-transparent">
-        <div className="w-32">
-          <Button
-            text="Reject Request"
-            variant="outline"
-            onClick={() => setIsRejectModalOpen(true)}
-            className="text-[#B2171E]! text-xs md:text-sm"
-          />
+      {isApprover && (
+        <div className="mt-auto pt-6 flex justify-end gap-3 border-t border-transparent">
+          <div className="w-32">
+            <Button
+              text="Reject Request"
+              variant="outline"
+              onClick={() => setIsRejectModalOpen(true)}
+              className="text-[#B2171E]! text-xs md:text-sm"
+              disabled={approveAction.isPending || rejectAction.isPending}
+            />
+          </div>
+          <div className="w-40">
+            <Button
+              text="Approve Request"
+              variant="primary"
+              onClick={() => setIsApproveModalOpen(true)}
+              className="text-xs md:text-sm"
+              disabled={approveAction.isPending || rejectAction.isPending}
+            />
+          </div>
         </div>
-        <div className="w-40">
-          <Button
-            text="Approve Request"
-            variant="primary"
-            onClick={() => setIsApproveModalOpen(true)}
-            className="text-xs md:text-sm"
-          />
-        </div>
-      </div>
+      )}
     </div>
   );
 };

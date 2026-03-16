@@ -14,22 +14,14 @@ const FilterableHeader = ({ children }: { children: string }) => (
   </div>
 );
 
-type FAQ = {
-  id: string;
-  title: string;
-  description: string;
-  author: string;
-  dateCreated: string;
-  lastUpdated: string;
-  lastUpdatedBy: string;
-  status: "Active" | "Awaiting Approval";
-  approverStatus: "Approved" | "Awaiting Approval";
-};
+import { FAQDto } from "@/types/faq";
 
 export const createFAQColumns = (
-  onViewFAQ?: (faq: FAQ) => void,
+  onViewFAQ?: (faq: FAQDto) => void,
   isApprover?: boolean,
-): Column<FAQ>[] => [
+  onEditFAQ?: (faq: FAQDto) => void,
+  totalCount: number = 0,
+): Column<FAQDto>[] => [
   {
     header: (
       <div className="flex items-center gap-2">
@@ -38,7 +30,7 @@ export const createFAQColumns = (
           className="rounded border-gray-300"
           aria-label="Select all FAQs"
         />
-        <span className="uppercase text-[#2F3140]">FAQ (20)</span>
+        <span className="uppercase text-[#2F3140]">FAQ ({totalCount})</span>
       </div>
     ),
     className: "w-[35%] whitespace-normal!",
@@ -46,12 +38,9 @@ export const createFAQColumns = (
       <div className="flex items-start gap-3">
         <div>
           <p className="font-bold text-[#2F3140] text-sm leading-tight line-clamp-2">
-            {faq.title}
+            {faq.question}
           </p>
-          <p className="text-xs text-[#707781] mt-0.5 line-clamp-1">
-            {faq.description}
-          </p>
-          <p className="text-[10px] text-[#707781] mt-1">{faq.author}</p>
+          <p className="text-[10px] text-[#707781] mt-1">{faq.authorName || faq.createdBy || "-"}</p>
         </div>
       </div>
     ),
@@ -60,7 +49,9 @@ export const createFAQColumns = (
     header: <FilterableHeader>DATE CREATED</FilterableHeader>,
     className: "w-[15%] whitespace-normal!",
     render: (faq) => (
-      <span className="text-sm text-[#2F3140] font-bold">{faq.dateCreated}</span>
+      <span className="text-sm text-[#2F3140] font-bold">
+        {new Date(faq.createdAt).toLocaleDateString()}
+      </span>
     ),
   },
   {
@@ -69,9 +60,9 @@ export const createFAQColumns = (
     render: (faq) => (
       <div className="flex flex-col">
         <span className="text-sm text-[#2F3140] font-bold">
-          {faq.lastUpdated}
+          {faq.updatedAt ? new Date(faq.updatedAt).toLocaleDateString() : "-"}
         </span>
-        <span className="text-xs text-[#707781]">{faq.lastUpdatedBy}</span>
+        <span className="text-xs text-[#707781]">{faq.updatedBy || ""}</span>
       </div>
     ),
   },
@@ -79,15 +70,20 @@ export const createFAQColumns = (
     header: <FilterableHeader>STATUS</FilterableHeader>,
     className: "w-[20%]",
     render: (faq) => {
-      const displayStatus = isApprover ? faq.approverStatus : faq.status;
-      return <StatusBadge status={displayStatus} />;
+      const displayStatus = faq.statusName || String(faq.status);
+      return <StatusBadge status={displayStatus as "Draft" | "Approved" | "Rejected" | "Awaiting Approval" | "Published" | "Archived"} />;
     },
   },
   {
     header: <span className="uppercase text-[#2F3140]">ACTION</span>,
     className: "w-[10%]",
     render: (faq) => (
-      <OptionsButton faq={faq} isApprover={isApprover} onViewFAQ={onViewFAQ} />
+      <OptionsButton 
+        faq={faq} 
+        isApprover={isApprover} 
+        onViewFAQ={onViewFAQ} 
+        onEditFAQ={onEditFAQ} 
+      />
     ),
   },
 ];
@@ -96,10 +92,12 @@ const OptionsButton = ({
   faq,
   isApprover,
   onViewFAQ,
+  onEditFAQ,
 }: {
-  faq: FAQ;
+  faq: FAQDto;
   isApprover?: boolean;
-  onViewFAQ?: (faq: FAQ) => void;
+  onViewFAQ?: (faq: FAQDto) => void;
+  onEditFAQ?: (faq: FAQDto) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -161,15 +159,7 @@ const OptionsButton = ({
       label: "Edit FAQ",
       onClick: () => {
         setIsOpen(false);
-        onViewFAQ?.(faq);
-      },
-    },
-    {
-      icon: FiX,
-      label: "Delete FAQ Request",
-      onClick: () => {
-        setIsOpen(false);
-        onViewFAQ?.(faq);
+        onEditFAQ?.(faq);
       },
     },
   ];

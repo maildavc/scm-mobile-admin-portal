@@ -5,37 +5,69 @@ import Button from "@/components/Button";
 import Input from "@/components/Input";
 import TextArea from "@/components/TextArea";
 import Image from "next/image";
+import { useCreateFAQ, useUpdateFAQ, useFAQDetails } from "@/hooks/useFaq";
+import { FAQDto } from "@/types/faq";
 
 interface CreateFAQFormProps {
   onCancel: () => void;
+  initialData?: FAQDto | null;
 }
 
-const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel }) => {
+const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel, initialData }) => {
   const [showSuccess, setShowSuccess] = useState(false);
+  
+  const { data: faqDetails } = useFAQDetails(initialData?.id || "");
+  
   const [formData, setFormData] = useState({
-    faqQuestion: "",
-    audienceType: "",
-    whenLive: "immediately",
-    scheduledDate: "",
-    faqAnswer: "",
+    faqQuestion: initialData?.question || "",
+    category: initialData?.category?.toString() || "",
+    whenLive: initialData?.whenShouldItGoLive || "immediately",
+    scheduledDate: initialData?.scheduleDate || "",
+    faqAnswer: faqDetails?.answer || initialData?.answer || "",
   });
+
+  React.useEffect(() => {
+    if (faqDetails?.answer) {
+      setFormData(prev => ({ ...prev, faqAnswer: faqDetails.answer }));
+    }
+  }, [faqDetails?.answer]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const isFormValid = () => {
-    const { faqQuestion, audienceType, whenLive, scheduledDate, faqAnswer } =
-      formData;
-    if (!faqQuestion || !audienceType || !faqAnswer) return false;
+    const { faqQuestion, whenLive, scheduledDate, faqAnswer, category } = formData;
+    if (!faqQuestion || !faqAnswer || !category) return false;
     if (whenLive === "scheduled" && !scheduledDate) return false;
     return true;
   };
 
+  const createFaq = useCreateFAQ();
+  const updateFaq = useUpdateFAQ();
+
   const handleCreateFAQ = () => {
     if (isFormValid()) {
-      console.log("Creating FAQ", formData);
-      setShowSuccess(true);
+      const payload = {
+        question: formData.faqQuestion,
+        answer: formData.faqAnswer,
+        whenShouldItGoLive: formData.whenLive || undefined,
+        scheduleDate:
+          formData.whenLive === "scheduled" && formData.scheduledDate
+            ? new Date(formData.scheduledDate).toISOString()
+            : undefined,
+        category: parseInt(formData.category, 10) || 1,
+      };
+
+      if (initialData) {
+        updateFaq.mutate({ id: initialData.id, payload }, {
+          onSuccess: () => setShowSuccess(true),
+        });
+      } else {
+        createFaq.mutate(payload, {
+          onSuccess: () => setShowSuccess(true),
+        });
+      }
     }
   };
 
@@ -48,17 +80,25 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel }) => {
     setShowSuccess(false);
     setFormData({
       faqQuestion: "",
-      audienceType: "",
+      category: "",
       whenLive: "immediately",
       scheduledDate: "",
       faqAnswer: "",
     });
   };
 
-  const audienceOptions = [
-    { value: "faq-section", label: "FAQ Section" },
-    { value: "homepage", label: "Homepage" },
-    { value: "product-page", label: "Product Page" },
+
+
+  const categoryOptions = [
+    { value: "1", label: "General" },
+    { value: "2", label: "Account" },
+    { value: "3", label: "Account Management" },
+    { value: "4", label: "Investment" },
+    { value: "5", label: "Security" },
+    { value: "6", label: "Technical" },
+    { value: "7", label: "Billing" },
+    { value: "8", label: "Support" },
+    { value: "9", label: "Legal" },
   ];
 
   const whenLiveOptions = [
@@ -74,10 +114,10 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel }) => {
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
         <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
-          FAQ Creation Successfully
+          {initialData ? "FAQ Updated Successfully" : "FAQ Creation Successfully"}
         </h2>
         <p className="text-sm text-[#707781] mb-8 text-center">
-          FAQ creation was successfully sent for approver confirmation.
+          {initialData ? "Your FAQ was successfully updated." : "FAQ creation was successfully sent for approver confirmation."}
         </p>
         <div className="flex gap-4">
           <div className="w-42">
@@ -113,7 +153,7 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel }) => {
         </p>
       </div>
 
-      <div className="mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <Input
           label="FAQ Question"
           type="text"
@@ -123,19 +163,19 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel }) => {
           value={formData.faqQuestion}
           onChange={(e) => handleInputChange("faqQuestion", e.target.value)}
         />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         <Input
-          label="Audience Type"
+          label="Category"
           type="select"
           theme="light"
           required
-          options={audienceOptions}
-          value={formData.audienceType}
-          onChange={(e) => handleInputChange("audienceType", e.target.value)}
-          placeholder="Select Option"
+          options={categoryOptions}
+          value={formData.category}
+          onChange={(e) => handleInputChange("category", e.target.value)}
+          placeholder="Select Category"
         />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
         <Input
           label="When should this go live?"
           type="select"
@@ -269,10 +309,10 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel }) => {
         </div>
         <div className="w-40">
           <Button
-            text="Create FAQ"
+            text={initialData ? (updateFaq.isPending ? "Updating..." : "Update FAQ") : (createFaq.isPending ? "Submitting..." : "Create FAQ")}
             variant="primary"
             onClick={handleCreateFAQ}
-            disabled={!isFormValid()}
+            disabled={!isFormValid() || createFaq.isPending || updateFaq.isPending}
           />
         </div>
       </div>

@@ -8,19 +8,7 @@ import { FiX, FiCheck, FiEye } from "react-icons/fi";
 import { HiMenu } from "react-icons/hi";
 import { useState, useRef, useEffect } from "react";
 
-type BlogPost = {
-  id: string;
-  title: string;
-  description: string;
-  author: string;
-  audience: string;
-  dateCreated: string;
-  lastUpdated: string;
-  lastUpdatedBy: string;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
-  approverStatus: "Approved" | "Awaiting Approval";
-  image: string;
-};
+import { BlogListDto } from "@/types/blog";
 
 const FilterableHeader = ({ children }: { children: string }) => (
   <div className="flex text-xs text-[#2F3140] items-center gap-2">
@@ -36,10 +24,10 @@ const OptionsButton = ({
   onDelete,
   isApprover,
 }: {
-  blogPost: BlogPost;
-  onView?: (post: BlogPost) => void;
-  onEdit?: (post: BlogPost) => void;
-  onDelete?: (post: BlogPost) => void;
+  blogPost: BlogListDto;
+  onView?: (post: BlogListDto) => void;
+  onEdit?: (post: BlogListDto) => void;
+  onDelete?: (post: BlogListDto) => void;
   isApprover?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -105,14 +93,6 @@ const OptionsButton = ({
         onEdit?.(blogPost);
       },
     },
-    {
-      icon: FiX,
-      label: "Delete Blog Request",
-      onClick: () => {
-        setIsOpen(false);
-        onDelete?.(blogPost);
-      },
-    },
   ];
 
   const menuItems = isApprover ? approverMenuItems : initiatorMenuItems;
@@ -155,9 +135,11 @@ const OptionsButton = ({
 };
 
 export const createBlogPostColumns = (
-  onView?: (post: BlogPost) => void,
+  onView?: (post: BlogListDto) => void,
   isApprover?: boolean,
-): Column<BlogPost>[] => [
+  onEdit?: (post: BlogListDto) => void,
+  totalCount: number = 0,
+): Column<BlogListDto>[] => [
   {
     header: (
       <div className="flex items-center gap-2">
@@ -166,28 +148,23 @@ export const createBlogPostColumns = (
           className="rounded border-gray-300"
           aria-label="Select all blogs"
         />
-        <span className="uppercase text-[#2F3140]">BLOG POST (500)</span>
+        <span className="uppercase text-[#2F3140]">BLOG POST ({totalCount})</span>
       </div>
     ),
     className: "w-[35%] !whitespace-normal",
     render: (post) => (
       <div className="flex items-start gap-3">
-        {/* Placeholder image logic, using next/image */}
-        <div className="shrink-0 w-10 h-10 relative overflow-hidden rounded-md bg-gray-100">
-          {/* Using a generic placeholder if image fails or just the provided image path */}
+        <div className="shrink-0 w-10 h-10 flex items-center justify-center relative overflow-hidden rounded-md bg-gray-100">
           <Image
-            src={post.image}
+            src="/logo.png"
             alt={post.title}
             fill
-            className="object-cover"
+            className="object-contain p-2 opacity-50"
           />
         </div>
         <div>
           <p className="font-bold text-[#2F3140] text-sm leading-tight line-clamp-2">
             {post.title}
-          </p>
-          <p className="text-xs text-[#707781] mt-0.5 line-clamp-1">
-            {post.description}
           </p>
           <p className="text-[10px] text-[#707781] mt-1">{post.author}</p>
         </div>
@@ -198,7 +175,7 @@ export const createBlogPostColumns = (
     header: <FilterableHeader>AUDIENCE</FilterableHeader>,
     className: "w-[13%]",
     render: (post) => (
-      <span className="text-sm text-[#2F3140] font-bold">{post.audience}</span>
+      <span className="text-sm text-[#2F3140] font-bold">{post.audienceType || "-"}</span>
     ),
   },
   {
@@ -206,26 +183,28 @@ export const createBlogPostColumns = (
     className: "w-[13%]",
     render: (post) => (
       <span className="text-sm text-[#2F3140] font-bold">
-        {post.dateCreated}
+        {new Date(post.createdAt).toLocaleDateString()}
       </span>
     ),
   },
   {
-    header: <FilterableHeader>LAST UPDATED</FilterableHeader>,
+    header: <FilterableHeader>SCHEDULE</FilterableHeader>,
     className: "w-[14%]",
     render: (post) => (
       <div className="flex flex-col">
-        <span className="text-sm text-[#2F3140] font-bold">
-          {post.lastUpdated}
+        <span className="text-sm text-[#2F3140] font-bold capitalize">
+          {post.whenShouldItGoLive || "-"}
         </span>
-        <span className="text-xs text-[#707781]">{post.lastUpdatedBy}</span>
+        <span className="text-xs text-[#707781]">
+          {post.scheduleDate ? new Date(post.scheduleDate).toLocaleDateString() : ""}
+        </span>
       </div>
     ),
   },
   {
     header: <FilterableHeader>STATUS</FilterableHeader>,
     className: "w-[10%]",
-    render: (post) => <StatusBadge status={isApprover ? post.approverStatus : post.status} />,
+    render: (post) => <StatusBadge status={post.status as "Draft" | "Approved" | "Rejected" | "Awaiting Approval" | "Published" | "Archived"} />,
   },
   {
     header: <div className="text-xs text-[#2F3140] uppercase">ACTION</div>,
@@ -234,8 +213,7 @@ export const createBlogPostColumns = (
       <OptionsButton 
         blogPost={post} 
         onView={onView}
-        onEdit={onView}
-        onDelete={onView}
+        onEdit={onEdit}
         isApprover={isApprover} 
       />
     ),

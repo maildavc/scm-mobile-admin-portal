@@ -9,10 +9,6 @@ import Tabs from "@/components/Dashboard/Tabs";
 import ActionButton from "@/components/Dashboard/ActionButton";
 import {
   BLOG_SIDEBAR_ITEMS,
-  BLOG_STATS_CONFIG,
-  FAQ_STATS_CONFIG,
-  BLOG_POSTS,
-  FAQS,
   PAGE_CONFIG,
   getBreadcrumbs,
 } from "@/constants/blogAndFaqs/blogAndFaqs";
@@ -24,39 +20,36 @@ import CreateBlogPostForm from "@/components/Dashboard/BlogAndFaqs/CreateBlogPos
 import CreateFAQForm from "@/components/Dashboard/BlogAndFaqs/CreateFAQForm";
 import ViewBlogRequest from "@/components/Dashboard/BlogAndFaqs/ViewBlogRequest";
 import ViewFAQRequest from "@/components/Dashboard/BlogAndFaqs/ViewFAQRequest";
-
-type BlogPost = {
-  id: string;
-  title: string;
-  description: string;
-  author: string;
-  audience: string;
-  dateCreated: string;
-  lastUpdated: string;
-  lastUpdatedBy: string;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
-  approverStatus: "Approved" | "Awaiting Approval";
-  image: string;
-};
-
-type FAQ = {
-  id: string;
-  title: string;
-  description: string;
-  author: string;
-  dateCreated: string;
-  lastUpdated: string;
-  lastUpdatedBy: string;
-  status: "Active" | "Awaiting Approval";
-  approverStatus: "Approved" | "Awaiting Approval";
-};
+import { useBlogs, useBlogStats } from "@/hooks/useBlog";
+import { useFAQs, useFAQStats } from "@/hooks/useFaq";
+import { BlogListDto } from "@/types/blog";
+import { FAQDto } from "@/types/faq";
 
 export default function BlogAndFaqs() {
   const [currentView, setCurrentView] = useState("Overview");
   const [activeTab, setActiveTab] = useState("Blog");
-  const [viewBlogPost, setViewBlogPost] = useState<BlogPost | null>(null);
-  const [viewFAQ, setViewFAQ] = useState<FAQ | null>(null);
+  const [viewBlogPost, setViewBlogPost] = useState<BlogListDto | null>(null);
+  const [viewFAQ, setViewFAQ] = useState<FAQDto | null>(null);
+  const [editBlogPost, setEditBlogPost] = useState<BlogListDto | null>(null);
+  const [editFAQ, setEditFAQ] = useState<FAQDto | null>(null);
   const isApprover = useAuthStore((s) => s.isApprover);
+
+  const { data: blogsRes, isLoading: blogsLoading } = useBlogs({
+    Page: 1,
+    Limit: PAGE_CONFIG.itemsPerPage,
+  });
+
+  const { data: faqsRes, isLoading: faqsLoading } = useFAQs({
+    Page: 1,
+    PageSize: PAGE_CONFIG.itemsPerPage,
+  });
+
+  const { data: blogStatsRes } = useBlogStats();
+  const { data: faqStatsRes } = useFAQStats();
+
+  const blogPosts = blogsRes?.data || [];
+  // Backend returns pagination directly for FAQ or wrapped in value
+  const faqList = faqsRes?.items || faqsRes?.value?.items || [];
 
   const sidebarItems = isApprover
     ? BLOG_SIDEBAR_ITEMS.filter((item) => item.label === "Overview")
@@ -75,16 +68,41 @@ export default function BlogAndFaqs() {
 
   const breadcrumbs = getBreadcrumbs(currentView);
 
-  const blogColumns = createBlogPostColumns((post) => {
-    setViewBlogPost(post as BlogPost);
-  }, isApprover);
+  const faqsTotalCount = faqsRes?.value?.totalCount || faqsRes?.totalCount || 0;
+  const blogsTotalCount = blogsRes?.totalCount || 0;
 
-  const faqColumns = createFAQColumns((faq) => {
-    setViewFAQ(faq as FAQ);
-  }, isApprover);
+  const blogColumns = createBlogPostColumns(
+    (post) => setViewBlogPost(post as BlogListDto),
+    isApprover,
+    (post) => {
+      setEditBlogPost(post as BlogListDto);
+      setCurrentView("Create Blog Post");
+    },
+    blogsTotalCount
+  );
+
+  const faqColumns = createFAQColumns(
+    (faq) => setViewFAQ(faq as FAQDto),
+    isApprover,
+    (faq) => {
+      setEditFAQ(faq as FAQDto);
+      setCurrentView("Create FAQ");
+    },
+    faqsTotalCount
+  );
 
   const currentStats =
-    activeTab === "Blog" ? BLOG_STATS_CONFIG : FAQ_STATS_CONFIG;
+    activeTab === "Blog"
+      ? [
+          { label: "All Blogs", value: String(blogStatsRes?.allBlogs?.totalPosts ?? blogsTotalCount) },
+          { label: "Homepage Blogs", value: String(blogStatsRes?.homepageBlogs?.totalPosts ?? 0) },
+          { label: "Product Blogs", value: String(blogStatsRes?.productBlogs?.totalPosts ?? 0) },
+        ]
+      : [
+          { label: "All FAQs", value: String(faqStatsRes?.allFAQs?.totalFAQs ?? faqsTotalCount) },
+          { label: "Homepage FAQs", value: String(faqStatsRes?.homepageFAQs?.totalFAQs ?? 0) },
+          { label: "Product FAQs", value: String(faqStatsRes?.productFAQs?.totalFAQs ?? 0) },
+        ];
 
   return (
     <SidebarProvider>
@@ -99,9 +117,10 @@ export default function BlogAndFaqs() {
           />
 
           <main className="flex-1 p-8 bg-white overflow-hidden pt-4 overflow-y-auto">
-            {viewBlogPost && isApprover ? (
+            {viewBlogPost ? (
               <ViewBlogRequest
                 blogPost={viewBlogPost}
+                isApprover={isApprover}
                 onApprove={() => {
                   setCurrentView("Overview");
                   setViewBlogPost(null);
@@ -111,9 +130,10 @@ export default function BlogAndFaqs() {
                   setViewBlogPost(null);
                 }}
               />
-            ) : viewFAQ && isApprover ? (
+            ) : viewFAQ ? (
               <ViewFAQRequest
                 faq={viewFAQ}
+                isApprover={isApprover}
                 onApprove={() => {
                   setCurrentView("Overview");
                   setViewFAQ(null);
@@ -168,22 +188,36 @@ export default function BlogAndFaqs() {
 
                 {activeTab === "Blog" ? (
                   <Table
-                    data={BLOG_POSTS}
+                    data={blogPosts}
                     columns={blogColumns}
                     itemsPerPage={PAGE_CONFIG.itemsPerPage}
+                    isLoading={blogsLoading}
                   />
                 ) : (
                   <Table
-                    data={FAQS}
+                    data={faqList}
                     columns={faqColumns}
                     itemsPerPage={PAGE_CONFIG.itemsPerPage}
+                    isLoading={faqsLoading}
                   />
                 )}
               </>
             ) : currentView === "Create Blog Post" ? (
-              <CreateBlogPostForm onCancel={() => setCurrentView("Overview")} />
+              <CreateBlogPostForm 
+                initialData={editBlogPost} 
+                onCancel={() => {
+                  setCurrentView("Overview");
+                  setEditBlogPost(null);
+                }} 
+              />
             ) : currentView === "Create FAQ" ? (
-              <CreateFAQForm onCancel={() => setCurrentView("Overview")} />
+              <CreateFAQForm 
+                initialData={editFAQ} 
+                onCancel={() => {
+                  setCurrentView("Overview");
+                  setEditFAQ(null);
+                }} 
+              />
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
                 {currentView} view coming soon

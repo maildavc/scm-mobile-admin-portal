@@ -7,51 +7,36 @@ import StatsCard from "@/components/Dashboard/StatsCard";
 import Table from "@/components/Dashboard/Table";
 import ActionButton from "@/components/Dashboard/ActionButton";
 import {
-  NOTIFICATIONS,
   NOTIFICATION_SIDEBAR_ITEMS,
-  STATS_CONFIG,
-  APPROVER_STATS_CONFIG,
   PAGE_CONFIG,
   getBreadcrumbs,
 } from "@/constants/notificationService/notificationService";
 import { createNotificationColumns } from "./columns";
 import { useAuthStore } from "@/stores/authStore";
+import {
+  useNotifications,
+} from "@/hooks/useNotification";
+import { NotificationDto } from "@/types/notification";
 
 import CreateNotificationForm from "@/components/Dashboard/NotificationService/CreateNotificationForm";
 import NotificationSettings from "@/components/Dashboard/NotificationService/NotificationSettings";
 import ViewNotificationRequest from "@/components/Dashboard/NotificationService/ViewNotificationRequest";
 
-type Notification = {
-  id: string;
-  name: string;
-  audience: string;
-  channel: string;
-  type: string;
-  status:
-    | "Sent"
-    | "Sending"
-    | "Draft"
-    | "Failed"
-    | "Awaiting Approval"
-    | "Approved";
-  approverStatus:
-    | "Sent"
-    | "Sending"
-    | "Draft"
-    | "Failed"
-    | "Awaiting Approval"
-    | "Approved";
-  sent: number;
-  delivered: number;
-  dateCreated: string;
-};
-
 export default function NotificationService() {
   const [currentView, setCurrentView] = useState("Overview");
-  const [viewNotification, setViewNotification] = useState<Notification | null>(
-    null,
-  );
+  const [viewNotification, setViewNotification] =
+    useState<NotificationDto | null>(null);
   const isApprover = useAuthStore((s) => s.isApprover);
+
+  const { data: notificationsRes, isLoading } = useNotifications({
+    Page: 1,
+    PageSize: PAGE_CONFIG.itemsPerPage,
+  });
+
+  const notifications = notificationsRes?.data || [];
+  const totalCount = notificationsRes?.totalCount ?? 0;
+  // Stats are embedded directly inside the list response
+  const statsRes = notificationsRes?.stats;
 
   const sidebarItems = isApprover
     ? NOTIFICATION_SIDEBAR_ITEMS.filter((item) => item.label === "Overview")
@@ -72,9 +57,9 @@ export default function NotificationService() {
     setViewNotification(null);
   };
 
-  const handleViewNotification = (notification: Notification) => {
+  const handleViewNotification = (notification: NotificationDto) => {
     setViewNotification(notification);
-    setCurrentView(notification.name);
+    setCurrentView(notification.title);
   };
 
   const resetView = () => {
@@ -83,10 +68,45 @@ export default function NotificationService() {
   };
 
   const breadcrumbs = getBreadcrumbs(
-    viewNotification ? viewNotification.name : currentView,
+    viewNotification ? viewNotification.title : currentView,
   );
-  const currentStats = isApprover ? APPROVER_STATS_CONFIG : STATS_CONFIG;
-  const columns = createNotificationColumns(isApprover, handleViewNotification);
+
+  // Build dynamic stats from API or fall back to 0
+  const currentStats = isApprover
+    ? [
+        {
+          label: "All Notifications",
+          value: String(statsRes?.totalNotifications ?? 0),
+        },
+        {
+          label: "Awaiting Approval",
+          value: String(statsRes?.awaitingApprovalNotifications ?? 0),
+        },
+        {
+          label: "Approved Notifications",
+          value: String(statsRes?.approvedNotifications ?? 0),
+        },
+      ]
+    : [
+        {
+          label: "Total Notifications",
+          value: String(statsRes?.totalNotifications ?? 0),
+        },
+        {
+          label: "Sent Notifications",
+          value: String(statsRes?.sentNotifications ?? 0),
+        },
+        {
+          label: "Scheduled Notifications",
+          value: String(statsRes?.scheduledNotifications ?? 0),
+        },
+      ];
+
+  const columns = createNotificationColumns(
+    isApprover,
+    handleViewNotification,
+    totalCount,
+  );
 
   return (
     <SidebarProvider>
@@ -116,7 +136,6 @@ export default function NotificationService() {
                       label={stat.label}
                       value={stat.value}
                       showLink={false}
-                      // Make the 3rd card span 2 cols on small screens if there are only 3 cards
                       className={
                         currentStats.length === 3 && index === 2
                           ? "col-span-2 md:col-span-1"
@@ -145,11 +164,17 @@ export default function NotificationService() {
                   </div>
                 </div>
 
-                <Table
-                  data={NOTIFICATIONS}
-                  columns={columns}
-                  itemsPerPage={PAGE_CONFIG.itemsPerPage}
-                />
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-20 text-gray-400">
+                    Loading notifications...
+                  </div>
+                ) : (
+                  <Table
+                    data={notifications}
+                    columns={columns}
+                    itemsPerPage={PAGE_CONFIG.itemsPerPage}
+                  />
+                )}
               </>
             ) : currentView === "Create Notification" ? (
               <CreateNotificationForm

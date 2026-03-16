@@ -6,31 +6,8 @@ import { TbFilterEdit } from "react-icons/tb";
 import { useState, useRef, useEffect } from "react";
 import { HiMenu } from "react-icons/hi";
 import { FiEye, FiCheck, FiX } from "react-icons/fi";
-
-type Notification = {
-  id: string;
-  name: string;
-  audience: string;
-  channel: string;
-  type: string;
-  status:
-    | "Sent"
-    | "Sending"
-    | "Draft"
-    | "Failed"
-    | "Awaiting Approval"
-    | "Approved";
-  approverStatus:
-    | "Sent"
-    | "Sending"
-    | "Draft"
-    | "Failed"
-    | "Awaiting Approval"
-    | "Approved";
-  sent: number;
-  delivered: number;
-  dateCreated: string;
-};
+import { NotificationDto } from "@/types/notification";
+import { StatusType } from "@/components/Dashboard/StatusBadge";
 
 const FilterableHeader = ({ children }: { children: string }) => (
   <div className="flex text-xs text-[#2F3140] items-center gap-2">
@@ -43,14 +20,10 @@ const OptionsButton = ({
   notification,
   isApprover,
   onViewRequest,
-  onApproveRequest,
-  onRejectRequest,
 }: {
-  notification: Notification;
+  notification: NotificationDto;
   isApprover?: boolean;
-  onViewRequest?: (notification: Notification) => void;
-  onApproveRequest?: (notification: Notification) => void;
-  onRejectRequest?: (notification: Notification) => void;
+  onViewRequest?: (notification: NotificationDto) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -72,35 +45,44 @@ const OptionsButton = ({
   }, [isOpen]);
 
   const approverMenuItems = [
-    { 
-      icon: FiEye, 
+    {
+      icon: FiEye,
       label: "View Request",
       onClick: () => {
         setIsOpen(false);
         onViewRequest?.(notification);
-      }
+      },
     },
-    { 
-      icon: FiCheck, 
+    {
+      icon: FiCheck,
       label: "Approve Request",
       onClick: () => {
         setIsOpen(false);
-        onApproveRequest?.(notification);
-      }
+        onViewRequest?.(notification);
+      },
     },
-    { 
-      icon: FiX, 
+    {
+      icon: FiX,
       label: "Reject Request",
       onClick: () => {
         setIsOpen(false);
-        onRejectRequest?.(notification);
-      }
+        onViewRequest?.(notification);
+      },
     },
   ];
 
-  const menuItems = isApprover ? approverMenuItems : [];
+  const initiatorMenuItems = [
+    {
+      icon: FiEye,
+      label: "View Notification",
+      onClick: () => {
+        setIsOpen(false);
+        onViewRequest?.(notification);
+      },
+    },
+  ];
 
-  if (!isApprover) return null;
+  const menuItems = isApprover ? approverMenuItems : initiatorMenuItems;
 
   return (
     <>
@@ -139,11 +121,32 @@ const OptionsButton = ({
   );
 };
 
+// Map a numeric status to a StatusBadge-compatible string
+function resolveStatus(statusName: string | null, status: number): StatusType {
+  if (statusName && statusName in {
+    Draft: 1, AwaitingApproval: 1, Approved: 1, Rejected: 1, Scheduled: 1,
+    Sending: 1, Sent: 1, Failed: 1, Cancelled: 1
+  }) return statusName as StatusType;
+  const map: Record<number, StatusType> = {
+    1: "Draft",
+    2: "AwaitingApproval",
+    3: "Approved",
+    4: "Rejected",
+    5: "Scheduled",
+    6: "Sending",
+    7: "Sent",
+    8: "Failed",
+    9: "Cancelled",
+  };
+  return map[status] ?? "Draft";
+}
+
 export const createNotificationColumns = (
   isApprover?: boolean,
-  onViewRequest?: (notification: Notification) => void,
-): Column<Notification>[] => {
-  const commonColumns: Column<Notification>[] = [
+  onViewRequest?: (notification: NotificationDto) => void,
+  totalCount: number = 0,
+): Column<NotificationDto>[] => {
+  const commonColumns: Column<NotificationDto>[] = [
     {
       header: (
         <div className="flex items-center gap-2">
@@ -152,13 +155,15 @@ export const createNotificationColumns = (
             className="rounded border-gray-300"
             aria-label="Select all notifications"
           />
-          <span className="uppercase text-[#2F3140]">NOTIFICATION (5)</span>
+          <span className="uppercase text-[#2F3140]">
+            NOTIFICATION ({totalCount})
+          </span>
         </div>
       ),
       className: "w-[25%]",
       render: (notification) => (
         <span className="font-bold text-[#2F3140] text-sm">
-          {notification.name}
+          {notification.title}
         </span>
       ),
     },
@@ -167,7 +172,7 @@ export const createNotificationColumns = (
       className: "w-[15%]",
       render: (notification) => (
         <span className="text-sm text-[#2F3140] font-medium">
-          {notification.audience}
+          {notification.targetAudience || notification.recipientType || "-"}
         </span>
       ),
     },
@@ -176,7 +181,7 @@ export const createNotificationColumns = (
       className: "w-[10%]",
       render: (notification) => (
         <span className="text-sm text-[#2F3140] font-medium">
-          {notification.channel}
+          {notification.channelName || "-"}
         </span>
       ),
     },
@@ -185,7 +190,7 @@ export const createNotificationColumns = (
       className: "w-[10%]",
       render: (notification) => (
         <span className="text-sm text-[#2F3140] font-medium">
-          {notification.type}
+          {notification.typeName || "-"}
         </span>
       ),
     },
@@ -199,25 +204,30 @@ export const createNotificationColumns = (
         className: "w-[15%]",
         render: (notification) => (
           <span className="text-sm text-[#2F3140] font-medium">
-            {notification.dateCreated}
+            {new Date(notification.createdAt).toLocaleDateString()}
           </span>
         ),
       },
       {
         header: <FilterableHeader>STATUS</FilterableHeader>,
         className: "w-[15%]",
-        render: (notification) => <StatusBadge status={notification.approverStatus} />,
+        render: (notification) => (
+          <StatusBadge
+            status={resolveStatus(
+              notification.statusName,
+              notification.status as number
+            )}
+          />
+        ),
       },
       {
         header: <div className="text-xs text-[#2F3140] uppercase">ACTION</div>,
         className: "w-[10%]",
         render: (notification) => (
-          <OptionsButton 
-            notification={notification} 
+          <OptionsButton
+            notification={notification}
             isApprover={isApprover}
             onViewRequest={onViewRequest}
-            onApproveRequest={onViewRequest}
-            onRejectRequest={onViewRequest}
           />
         ),
       },
@@ -230,23 +240,32 @@ export const createNotificationColumns = (
     {
       header: <FilterableHeader>STATUS</FilterableHeader>,
       className: "w-[15%]",
-      render: (notification) => <StatusBadge status={notification.status} />,
+      render: (notification) => (
+        <StatusBadge
+          status={resolveStatus(
+            notification.statusName,
+            notification.status as number
+          )}
+        />
+      ),
     },
     {
       header: <div className="text-xs text-[#2F3140] uppercase">SENT</div>,
       className: "w-[10%]",
       render: (notification) => (
         <span className="text-sm text-[#2F3140] font-medium">
-          {notification.sent}
+          {notification.totalRecipients ?? "-"}
         </span>
       ),
     },
     {
-      header: <div className="text-xs text-[#2F3140] uppercase">DELIVERED</div>,
+      header: (
+        <div className="text-xs text-[#2F3140] uppercase">DELIVERED</div>
+      ),
       className: "w-[10%]",
       render: (notification) => (
         <span className="text-sm text-[#2F3140] font-medium">
-          {notification.delivered}
+          {notification.deliveredCount ?? "-"}
         </span>
       ),
     },

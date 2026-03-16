@@ -8,6 +8,7 @@ export type StatusType =
   | "Inactive"
   | "Deactivated"
   | "Awaiting Approval"
+  | "AwaitingApproval"
   | "Completed"
   | "Pending Verification"
   | "Failed"
@@ -15,8 +16,13 @@ export type StatusType =
   | "Shortage"
   | "Sent"
   | "Sending"
+  | "Scheduled"
+  | "Cancelled"
   | "Draft"
-  | "Approved";
+  | "Approved"
+  | "Rejected"
+  | "Published"
+  | "Archived";
 
 interface StatusBadgeProps {
   status: StatusType;
@@ -82,6 +88,21 @@ const statusStyles: Record<
     border: "border-[#865503]/10",
     text: "text-black",
   },
+  AwaitingApproval: {
+    bg: "bg-[#FEF6E7]",
+    border: "border-[#865503]/10",
+    text: "text-black",
+  },
+  Scheduled: {
+    bg: "bg-[#EEF2FF]",
+    border: "border-[#3730A3]/10",
+    text: "text-black",
+  },
+  Cancelled: {
+    bg: "bg-[#EEEEEE]",
+    border: "border-[#555555]/10",
+    text: "text-black",
+  },
   Draft: {
     bg: "bg-[#EEEEEE]",
     border: "border-[#555555]/10",
@@ -90,6 +111,21 @@ const statusStyles: Record<
   Approved: {
     bg: "bg-[#E7F6EC]",
     border: "border-[#036B26]/10",
+    text: "text-black",
+  },
+  Rejected: {
+    bg: "bg-[#FDE4E5]",
+    border: "border-[#B2171E]/10",
+    text: "text-black",
+  },
+  Published: {
+    bg: "bg-[#E7F6EC]",
+    border: "border-[#036B26]/10",
+    text: "text-black",
+  },
+  Archived: {
+    bg: "bg-[#EEEEEE]",
+    border: "border-[#555555]/10",
     text: "text-black",
   },
 };
@@ -126,10 +162,26 @@ const getStatusIcon = (status: StatusType) => {
       return (
         <BsFillExclamationCircleFill className="" size={14} color="#E3A300" />
       );
+    case "AwaitingApproval":
+      return (
+        <BsFillExclamationCircleFill className="" size={14} color="#E3A300" />
+      );
+    case "Scheduled":
+      return (
+        <BsFillExclamationCircleFill className="" size={14} color="#3730A3" />
+      );
+    case "Cancelled":
+      return <BsPauseCircleFill className="" size={14} color="#A4A4A4" />;
     case "Draft":
       return <BsPauseCircleFill className="" size={14} color="#A4A4A4" />;
     case "Approved":
       return <GoCheckCircleFill className="" size={14} color="#00A85A" />;
+    case "Rejected":
+      return <BsFillStopCircleFill className="" size={14} color="#f17a63" />;
+    case "Published":
+      return <GoCheckCircleFill className="" size={14} color="#00A85A" />;
+    case "Archived":
+      return <BsPauseCircleFill className="" size={14} color="#A4A4A4" />;
   }
 };
 

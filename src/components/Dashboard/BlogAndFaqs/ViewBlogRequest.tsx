@@ -2,37 +2,24 @@ import React, { useState } from "react";
 import Button from "@/components/Button";
 import { BiUser } from "react-icons/bi";
 import Image from "next/image";
-import {
-  BLOG_DETAILS,
-  BLOG_CONTENT,
-} from "@/constants/blogAndFaqs/blogDetails";
 import { DetailCard, DetailRow } from "@/components/Dashboard/SharedDetails";
 import ApproveModal from "@/components/Dashboard/Shared/ApproveModal";
 import RejectModal from "@/components/Dashboard/Shared/RejectModal";
 import BlogNFaqContent from "./BlogNFaqContent";
 
-type BlogPost = {
-  id: string;
-  title: string;
-  description: string;
-  author: string;
-  audience: string;
-  dateCreated: string;
-  lastUpdated: string;
-  lastUpdatedBy: string;
-  status: "Active" | "Deactivated" | "Awaiting Approval";
-  approverStatus: "Approved" | "Awaiting Approval";
-  image: string;
-};
+import { useBlogDetails, useBlogAction } from "@/hooks/useBlog";
+import { BlogListDto } from "@/types/blog";
 
 interface ViewBlogRequestProps {
-  blogPost: BlogPost;
+  blogPost: BlogListDto;
+  isApprover?: boolean;
   onApprove: () => void;
   onReject: () => void;
 }
 
 const ViewBlogRequest: React.FC<ViewBlogRequestProps> = ({
   blogPost,
+  isApprover = false,
   onApprove,
   onReject,
 }) => {
@@ -42,15 +29,26 @@ const ViewBlogRequest: React.FC<ViewBlogRequestProps> = ({
     "review" | "success" | "rejected"
   >("review");
 
+  const { data: detailData, isLoading } = useBlogDetails(blogPost.id);
+  const approveAction = useBlogAction("approve");
+  const rejectAction = useBlogAction("reject");
+
+  const fullBlog = detailData?.data;
+
   const handleApproveConfirm = () => {
     setIsApproveModalOpen(false);
-    setViewStatus("success");
+    approveAction.mutate(
+      { id: blogPost.id, action: "approve" },
+      { onSuccess: () => setViewStatus("success") }
+    );
   };
 
-  const handleRejectConfirm = (reason: string) => {
+  const handleRejectConfirm = () => {
     setIsRejectModalOpen(false);
-    console.log("Rejection reason:", reason);
-    setViewStatus("rejected");
+    rejectAction.mutate(
+      { id: blogPost.id, action: "reject" },
+      { onSuccess: () => setViewStatus("rejected") }
+    );
   };
 
   if (viewStatus === "success") {
@@ -121,50 +119,56 @@ const ViewBlogRequest: React.FC<ViewBlogRequestProps> = ({
         </div>
         <div>
           <p className="text-[10px] text-[#707781] font-semibold">Created By</p>
-          <p className="text-sm font-bold text-[#2F3140]">Ehizojie Ihayere</p>
-          <p className="text-xs text-[#707781]">January 12, 2026 13:23</p>
+          <p className="text-sm font-bold text-[#2F3140]">{blogPost.author || "System"}</p>
+          <p className="text-xs text-[#707781]">{new Date(blogPost.createdAt).toLocaleString()}</p>
         </div>
       </div>
 
-      {/* Blog Details Card */}
-      <DetailCard title="Blog Details">
-        {BLOG_DETAILS.map((detail) => (
-          <DetailRow
-            key={detail.label}
-            label={detail.label}
-            value={detail.value}
-          />
-        ))}
-      </DetailCard>
+      {isLoading ? (
+        <div className="py-20 text-center text-gray-500">Loading blog details...</div>
+      ) : (
+        <>
+          {/* Blog Details Card */}
+          <DetailCard title="Blog Details">
+            <DetailRow label="Blog Title" value={fullBlog?.title || blogPost.title} />
+            <DetailRow label="Audience Type" value={fullBlog?.audienceType || "General Audience"} />
+            <DetailRow label="Schedule" value={fullBlog?.whenShouldItGoLive || "-"} />
+            <DetailRow label="Status" value={fullBlog?.status || blogPost.status} />
+          </DetailCard>
 
-      {/* Blog Content */}
-      <BlogNFaqContent
-        heading={BLOG_CONTENT.heading}
-        paragraph1={BLOG_CONTENT.paragraph1}
-        subheading={BLOG_CONTENT.subheading}
-        paragraph2={BLOG_CONTENT.paragraph2}
-        showImage={true}
-      />
+          {/* Blog Content */}
+          <BlogNFaqContent
+            heading={fullBlog?.title || "No Title"}
+            paragraph1={fullBlog?.content || "No content provided."}
+            subheading=""
+            paragraph2=""
+            showImage={true}
+          />
+        </>
+      )}
 
-      {/* Footer Actions */}
-      <div className="mt-auto pt-6 flex justify-end gap-3 border-t border-transparent">
-        <div className="w-32">
-          <Button
-            text="Reject Request"
-            variant="outline"
-            onClick={() => setIsRejectModalOpen(true)}
-            className="text-[#B2171E]! text-xs md:text-sm"
-          />
+      {isApprover && (
+        <div className="mt-auto pt-6 flex justify-end gap-3 border-t border-transparent">
+          <div className="w-32">
+            <Button
+              text="Reject Request"
+              variant="outline"
+              onClick={() => setIsRejectModalOpen(true)}
+              className="text-[#B2171E]! text-xs md:text-sm"
+              disabled={approveAction.isPending || rejectAction.isPending}
+            />
+          </div>
+          <div className="w-40">
+            <Button
+              text="Approve Request"
+              variant="primary"
+              onClick={() => setIsApproveModalOpen(true)}
+              className="text-xs md:text-sm"
+              disabled={approveAction.isPending || rejectAction.isPending}
+            />
+          </div>
         </div>
-        <div className="w-40">
-          <Button
-            text="Approve Request"
-            variant="primary"
-            onClick={() => setIsApproveModalOpen(true)}
-            className="text-xs md:text-sm"
-          />
-        </div>
-      </div>
+      )}
     </div>
   );
 };

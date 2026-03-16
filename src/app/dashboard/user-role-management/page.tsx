@@ -334,13 +334,29 @@ export default function UserRoleManagement() {
             ) : currentView === "Overview" ? (
               <>
                 <div className="grid grid-cols-2 lg:grid-cols-2 gap-6 mb-10">
-                  {STATS_CONFIG.map((stat) => (
-                    <StatsCard
-                      key={stat.label}
-                      label={stat.label}
-                      value={stat.value}
-                    />
-                  ))}
+                  {activeTab === "Roles" ? (
+                    <>
+                      <StatsCard
+                        label="Active Roles"
+                        value={rolesList.filter(r => r.status === "Approved").length.toString()}
+                      />
+                      <StatsCard
+                        label="Inactive Roles"
+                        value={rolesList.filter(r => r.status !== "Approved").length.toString()}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <StatsCard
+                        label="Active Users"
+                        value={usersList.filter(u => u.status === "Active").length.toString()}
+                      />
+                      <StatsCard
+                        label="Inactive Users"
+                        value={usersList.filter(u => u.status !== "Active").length.toString()}
+                      />
+                    </>
+                  )}
                 </div>
 
                 <div className="mb-6 flex items-center justify-between">

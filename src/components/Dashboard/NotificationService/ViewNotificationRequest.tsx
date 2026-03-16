@@ -6,34 +6,11 @@ import { DetailCard, DetailRow } from "@/components/Dashboard/SharedDetails";
 import ApproveModal from "@/components/Dashboard/Shared/ApproveModal";
 import RejectModal from "@/components/Dashboard/Shared/RejectModal";
 import EmailPreview from "./EmailPreview";
-
-type Notification = {
-  id: string;
-  name: string;
-  audience: string;
-  channel: string;
-  type: string;
-  status:
-    | "Sent"
-    | "Sending"
-    | "Draft"
-    | "Failed"
-    | "Awaiting Approval"
-    | "Approved";
-  approverStatus:
-    | "Sent"
-    | "Sending"
-    | "Draft"
-    | "Failed"
-    | "Awaiting Approval"
-    | "Approved";
-  sent: number;
-  delivered: number;
-  dateCreated: string;
-};
+import { NotificationDto } from "@/types/notification";
+import { useNotificationAction } from "@/hooks/useNotification";
 
 interface ViewNotificationRequestProps {
-  notification: Notification;
+  notification: NotificationDto;
   onApprove: () => void;
   onReject: () => void;
 }
@@ -45,19 +22,32 @@ const ViewNotificationRequest: React.FC<ViewNotificationRequestProps> = ({
 }) => {
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-  const [viewStatus, setViewStatus] = useState<
-    "review" | "success" | "rejected"
-  >("review");
+  const [viewStatus, setViewStatus] = useState<"review" | "success" | "rejected">("review");
+
+  const { mutate: performAction, isPending } = useNotificationAction("processed");
 
   const handleApproveConfirm = () => {
-    setIsApproveModalOpen(false);
-    setViewStatus("success");
+    performAction(
+      { id: notification.id, action: "approve" },
+      {
+        onSuccess: () => {
+          setIsApproveModalOpen(false);
+          setViewStatus("success");
+        },
+      }
+    );
   };
 
   const handleRejectConfirm = (reason: string) => {
-    setIsRejectModalOpen(false);
-    console.log("Rejection reason:", reason);
-    setViewStatus("rejected");
+    performAction(
+      { id: notification.id, action: "reject", reason },
+      {
+        onSuccess: () => {
+          setIsRejectModalOpen(false);
+          setViewStatus("rejected");
+        },
+      }
+    );
   };
 
   if (viewStatus === "success") {
@@ -109,13 +99,13 @@ const ViewNotificationRequest: React.FC<ViewNotificationRequestProps> = ({
   }
 
   const notificationDetails = [
-    { label: "Notification title", value: "Name of notification title here" },
-    { label: "Recipient type", value: notification.type },
-    { label: "Audience", value: notification.audience },
-    { label: "Channel", value: notification.channel },
-    { label: "Allow email reply", value: "Yes\nreplyemail@scmcapital.com" },
-    { label: "Send type", value: "Scheduled" },
-    { label: "Scheduled date", value: "DD/MM/YYYY" },
+    { label: "Notification title", value: notification.title },
+    { label: "Recipient type", value: notification.recipientType || notification.typeName || "-" },
+    { label: "Audience", value: notification.targetAudience || "-" },
+    { label: "Channel", value: notification.channelName || "-" },
+    { label: "Allow email reply", value: notification.allowReply ? `Yes\n${notification.replyToEmail || ""}` : "No" },
+    { label: "Send type", value: notification.scheduledFor ? "Scheduled" : "Immediately" },
+    { label: "Scheduled date", value: notification.scheduledFor ? new Date(notification.scheduledFor).toLocaleDateString() : "-" },
   ];
 
   return (
@@ -140,8 +130,8 @@ const ViewNotificationRequest: React.FC<ViewNotificationRequestProps> = ({
         </div>
         <div>
           <p className="text-[10px] text-[#707781] font-semibold">Created By</p>
-          <p className="text-sm font-bold text-[#2F3140]">Ehizojie Ihayere</p>
-          <p className="text-xs text-[#707781]">January 12, 2026 13:23</p>
+          <p className="text-sm font-bold text-[#2F3140]">{notification.authorName || notification.createdBy || "N/A"}</p>
+          <p className="text-xs text-[#707781]">{new Date(notification.createdAt).toLocaleString()}</p>
         </div>
       </div>
 
@@ -171,14 +161,16 @@ const ViewNotificationRequest: React.FC<ViewNotificationRequestProps> = ({
             variant="outline"
             onClick={() => setIsRejectModalOpen(true)}
             className="text-[#B2171E] text-sm"
+            disabled={isPending}
           />
         </div>
         <div className="w-40">
           <Button
-            text="Approve Request"
+            text={isPending ? "Processing..." : "Approve Request"}
             variant="primary"
             onClick={() => setIsApproveModalOpen(true)}
             className="text-sm"
+            disabled={isPending}
           />
         </div>
       </div>

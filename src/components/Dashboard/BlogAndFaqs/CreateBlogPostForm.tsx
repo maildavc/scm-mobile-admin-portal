@@ -5,22 +5,38 @@ import Button from "@/components/Button";
 import Input from "@/components/Input";
 import TextArea from "@/components/TextArea";
 import Image from "next/image";
+import { useCreateBlog, useUpdateBlog, useBlogDetails } from "@/hooks/useBlog";
+import { BlogListDto } from "@/types/blog";
 
 interface CreateBlogPostFormProps {
   onCancel: () => void;
+  initialData?: BlogListDto | null;
 }
 
 const CreateBlogPostForm: React.FC<CreateBlogPostFormProps> = ({
   onCancel,
+  initialData,
 }) => {
   const [showSuccess, setShowSuccess] = useState(false);
+  
+  // Fetch full details if editing, so we can pre-fill the content body
+  const { data: blogDetailsResponse, isLoading: isLoadingDetails } = useBlogDetails(initialData?.id || "");
+  const blogDetails = blogDetailsResponse?.data;
+  
   const [formData, setFormData] = useState({
-    blogTitle: "",
-    audienceType: "",
-    whenLive: "immediately",
-    scheduledDate: "",
-    blogBody: "",
+    blogTitle: initialData?.title || "",
+    audienceType: initialData?.audienceType || "",
+    whenLive: initialData?.whenShouldItGoLive || "immediately",
+    scheduledDate: initialData?.scheduleDate || "",
+    blogBody: blogDetails?.content || "",
   });
+
+  // Update content once details are fetched
+  React.useEffect(() => {
+    if (blogDetails?.content) {
+      setFormData(prev => ({ ...prev, blogBody: blogDetails.content }));
+    }
+  }, [blogDetails?.content]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -34,10 +50,32 @@ const CreateBlogPostForm: React.FC<CreateBlogPostFormProps> = ({
     return true;
   };
 
+  const createBlog = useCreateBlog();
+  const updateBlog = useUpdateBlog();
+
   const handleCreateBlog = () => {
     if (isFormValid()) {
-      console.log("Creating blog post", formData);
-      setShowSuccess(true);
+      const payload = {
+        title: formData.blogTitle,
+        content: formData.blogBody,
+        audienceType: formData.audienceType || undefined,
+        whenShouldItGoLive: formData.whenLive || undefined,
+        scheduleDate:
+          formData.whenLive === "scheduled" && formData.scheduledDate
+            ? new Date(formData.scheduledDate).toISOString()
+            : undefined,
+        category: "General", 
+      };
+
+      if (initialData) {
+        updateBlog.mutate({ id: initialData.id, payload }, {
+          onSuccess: () => setShowSuccess(true),
+        });
+      } else {
+        createBlog.mutate(payload, {
+          onSuccess: () => setShowSuccess(true),
+        });
+      }
     }
   };
 
@@ -282,10 +320,10 @@ const CreateBlogPostForm: React.FC<CreateBlogPostFormProps> = ({
         </div>
         <div className="w-40">
           <Button
-            text="Create Blog"
+            text={createBlog.isPending ? "Submitting..." : "Create Blog"}
             variant="primary"
             onClick={handleCreateBlog}
-            disabled={!isFormValid()}
+            disabled={!isFormValid() || createBlog.isPending}
           />
         </div>
       </div>
