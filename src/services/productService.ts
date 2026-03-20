@@ -8,12 +8,7 @@ import type {
   UpdateProductStatusResponse,
 } from "@/types/product";
 
-// Helper: get token from cookie for direct fetch calls (multipart bypasses Axios)
-function getToken(): string | null {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/(?:^|; )token=([^;]*)/);
-  return match ? decodeURIComponent(match[1]) : null;
-}
+// Removed getToken since apiClient handles authorization cookies automatically
 
 export const productService = {
   // GET /api/v1/products
@@ -47,51 +42,37 @@ export const productService = {
     return data;
   },
 
-  // POST /api/v1/products (multipart/form-data — bypasses Axios encryption)
+  // POST /api/v1/products
   createProduct: async (
-    formData: FormData,
+    payload: any,
   ): Promise<{
     status: string;
     message: string;
     data: { id: string; status: string };
   }> => {
-    const token = getToken();
-    const res = await fetch("/api/proxy/api/v1/products", {
-      method: "POST",
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: formData,
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || `Create failed (${res.status})`);
-    }
-    return res.json();
+    const { data } = await apiClient.post<{
+      status: string;
+      message: string;
+      data: { id: string; status: string };
+    }>("/api/v1/products", payload);
+    return data;
   },
 
-  // PUT /api/v1/products/{productId} (multipart/form-data — bypasses Axios encryption)
+  // PUT /api/v1/products/{productId}
   updateProduct: async (
     productId: string,
-    formData: FormData,
+    payload: any,
   ): Promise<{
     status: string;
     message: string;
     data: { id: string; status: string };
   }> => {
-    const token = getToken();
-    const res = await fetch(`/api/proxy/api/v1/products/${productId}`, {
-      method: "PUT",
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: formData,
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || `Update failed (${res.status})`);
-    }
-    return res.json();
+    const { data } = await apiClient.put<{
+      status: string;
+      message: string;
+      data: { id: string; status: string };
+    }>(`/api/v1/products/${productId}`, payload);
+    return data;
   },
 
   // PATCH /api/v1/products/{productId}/approve

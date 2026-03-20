@@ -1,4 +1,4 @@
-import { FiHome, FiUsers, FiLink2 } from "react-icons/fi";
+import { FiHome, FiUsers } from "react-icons/fi";
 
 export const CUSTOMER_DETAILS = [
   { label: "Customer Name", value: "Apodegi Lawal Ibrahim" },
@@ -202,7 +202,6 @@ export const CUSTOMERS = [
 export const CUSTOMER_MANAGEMENT_SIDEBAR_ITEMS = [
   { icon: FiHome, label: "Overview", href: "#", isActive: true },
   { icon: FiUsers, label: "Create Customer", href: "#" },
-  { icon: FiLink2, label: "Customer Settings", href: "#" },
 ];
 
 export const STATS_CONFIG = [

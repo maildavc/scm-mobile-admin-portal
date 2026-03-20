@@ -27,6 +27,7 @@ export const useProducts = (
     queryKey: productKeys.list(params),
     queryFn: () => productService.getProducts(params),
     staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchInterval: 15000, // Auto-refresh every 15 seconds in the background
   });
 };
 
@@ -52,7 +53,7 @@ export const useApproveProduct = () => {
       payload: ApproveProductPayload;
     }) => productService.approveProduct(productId, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: productKeys.all });
     },
   });
 };
@@ -69,35 +70,40 @@ export const useUpdateProductStatus = () => {
       payload: UpdateProductStatusPayload;
     }) => productService.updateProductStatus(productId, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: productKeys.all });
     },
   });
 };
 
-// ── POST /api/v1/products (create - multipart) ─────────────────────
+// ── POST /api/v1/products (create) ─────────────────────
 export const useCreateProduct = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (formData: FormData) => productService.createProduct(formData),
+    mutationFn: (payload: any) => productService.createProduct(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
+      // Delay invalidation to allow backend to finish indexing/transaction
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: productKeys.all });
+      }, 1500);
     },
   });
 };
 
-// ── PUT /api/v1/products/{id} (update - multipart) ──────────────────
+// ── PUT /api/v1/products/{id} (update) ──────────────────
 export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
       productId,
-      formData,
+      payload,
     }: {
       productId: string;
-      formData: FormData;
-    }) => productService.updateProduct(productId, formData),
+      payload: any;
+    }) => productService.updateProduct(productId, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: productKeys.lists() });
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: productKeys.all });
+      }, 1500);
     },
   });
 };

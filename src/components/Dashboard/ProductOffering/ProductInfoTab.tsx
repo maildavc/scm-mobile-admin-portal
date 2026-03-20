@@ -23,7 +23,7 @@ const ProductInfoTab: React.FC<ProductInfoTabProps> = ({
   isLoading,
 }) => {
   // Build product details from API data
-  const productDetails = productDetail
+  const productDetails = productDetail?.productDetails
     ? [
         {
           label: "Product Name",
@@ -39,34 +39,34 @@ const ProductInfoTab: React.FC<ProductInfoTabProps> = ({
     : [];
 
   // Build financial details from API data
-  const financialDetails = productDetail
+  const financialDetails = productDetail?.financialDetails
     ? [
         {
           label: "Selling Price",
-          value: `₦${productDetail.financialDetails.sellingPrice.toLocaleString()}`,
+          value: `₦${productDetail.financialDetails.sellingPrice?.toLocaleString() || "0"}`,
         },
         {
           label: "Available Volume",
           value:
-            productDetail.financialDetails.availableVolume.toLocaleString(),
+            productDetail.financialDetails.availableVolume?.toLocaleString() || "0",
         },
         {
           label: "Interest or returns Percentage",
-          value: `${productDetail.financialDetails.interestOrReturnsPercentage}%`,
+          value: `${productDetail.financialDetails.interestOrReturnsPercentage || "0"}%`,
         },
         {
           label: "Minimum Investment Amount",
-          value: `₦${productDetail.financialDetails.minimumInvestmentAmount.toLocaleString()}`,
+          value: `₦${productDetail.financialDetails.minimumInvestmentAmount?.toLocaleString() || "0"}`,
         },
         {
           label: "Maximum Investment Amount",
-          value: `₦${productDetail.financialDetails.maximumInvestmentAmount.toLocaleString()}`,
+          value: `₦${productDetail.financialDetails.maximumInvestmentAmount?.toLocaleString() || "0"}`,
         },
         {
           label: "Settlement Date",
-          value: new Date(
+          value: productDetail.financialDetails.settlementDate ? new Date(
             productDetail.financialDetails.settlementDate,
-          ).toLocaleDateString(),
+          ).toLocaleDateString() : "N/A",
         },
         {
           label: "Allow for Early Liquidation",
@@ -85,11 +85,11 @@ const ProductInfoTab: React.FC<ProductInfoTabProps> = ({
         },
         {
           label: "WHT Amount",
-          value: `${productDetail.financialDetails.whtAmount}%`,
+          value: `${productDetail.financialDetails.whtAmount || "0"}%`,
         },
         {
           label: "Applicable Tax",
-          value: `${productDetail.financialDetails.applicableTax}%`,
+          value: `${productDetail.financialDetails.applicableTax || "0"}%`,
         },
       ]
     : [];

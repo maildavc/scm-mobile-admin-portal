@@ -41,7 +41,7 @@ const ViewProductRequest: React.FC<ViewProductRequestProps> = ({
   const detail = detailRes?.value?.data;
 
   // Build product details from API data
-  const productDetails = detail
+  const productDetails = detail?.productDetails
     ? [
         { label: "Product Name", value: detail.productDetails.productName },
         {
@@ -54,33 +54,33 @@ const ViewProductRequest: React.FC<ViewProductRequestProps> = ({
     : [];
 
   // Build financial details from API data
-  const financialDetails = detail
+  const financialDetails = detail?.financialDetails
     ? [
         {
           label: "Selling Price",
-          value: `₦${detail.financialDetails.sellingPrice.toLocaleString()}`,
+          value: `₦${detail.financialDetails.sellingPrice?.toLocaleString() || "0"}`,
         },
         {
           label: "Available Volume",
-          value: detail.financialDetails.availableVolume.toLocaleString(),
+          value: detail.financialDetails.availableVolume?.toLocaleString() || "0",
         },
         {
           label: "Interest or returns Percentage",
-          value: `${detail.financialDetails.interestOrReturnsPercentage}%`,
+          value: `${detail.financialDetails.interestOrReturnsPercentage || "0"}%`,
         },
         {
           label: "Minimum Investment Amount",
-          value: `₦${detail.financialDetails.minimumInvestmentAmount.toLocaleString()}`,
+          value: `₦${detail.financialDetails.minimumInvestmentAmount?.toLocaleString() || "0"}`,
         },
         {
           label: "Maximum Investment Amount",
-          value: `₦${detail.financialDetails.maximumInvestmentAmount.toLocaleString()}`,
+          value: `₦${detail.financialDetails.maximumInvestmentAmount?.toLocaleString() || "0"}`,
         },
         {
           label: "Settlement Date",
-          value: new Date(
+          value: detail.financialDetails.settlementDate ? new Date(
             detail.financialDetails.settlementDate,
-          ).toLocaleDateString(),
+          ).toLocaleDateString() : "N/A",
         },
         {
           label: "Allow for Early Liquidation",
@@ -96,10 +96,10 @@ const ViewProductRequest: React.FC<ViewProductRequestProps> = ({
           label: "Early Liquidation Penalty?",
           value: detail.financialDetails.earlyLiquidationPenalty || "N/A",
         },
-        { label: "WHT Amount", value: `${detail.financialDetails.whtAmount}%` },
+        { label: "WHT Amount", value: `${detail.financialDetails.whtAmount || "0"}%` },
         {
           label: "Applicable Tax",
-          value: `${detail.financialDetails.applicableTax}%`,
+          value: `${detail.financialDetails.applicableTax || "0"}%`,
         },
       ]
     : [];

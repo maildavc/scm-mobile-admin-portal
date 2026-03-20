@@ -66,6 +66,7 @@ export interface ProductFinancialDetails {
 export interface ProductDetailData {
   productDetails: ProductDetails;
   financialDetails: ProductFinancialDetails;
+  integration?: { source: string };
   status: string;
   createdAt: string;
   updatedAt: string;

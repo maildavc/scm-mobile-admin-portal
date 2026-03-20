@@ -1,4 +1,4 @@
-import { FiBell, FiHome, FiLink2 } from "react-icons/fi";
+import { FiBell, FiHome } from "react-icons/fi";
 
 export const NOTIFICATION_SIDEBAR_ITEMS = [
   {
@@ -10,12 +10,7 @@ export const NOTIFICATION_SIDEBAR_ITEMS = [
     icon: FiBell,
     label: "Create Notification",
     href: "/dashboard/notification-service/create",
-  },
-  {
-    icon: FiLink2,
-    label: "Notification Settings",
-    href: "/dashboard/notification-service/settings",
-  },
+  }
 ];
 
 export const STATS_CONFIG = [

@@ -39,8 +39,8 @@ export default function Table<T>({
   };
 
   return (
-    <div className="bg-white overflow-hidden">
-      <div className="overflow-x-auto mb-6 -mx-8 px-8 md:mx-0 md:px-0">
+    <div className="bg-white overflow-visible">
+      <div className="overflow-visible mb-6 -mx-8 px-8 md:mx-0 md:px-0 pb-40">
         <table className="w-full min-w-300 md:min-w-200">
           <thead className="border-b border-[#F4F4F5] bg-white">
             <tr>

@@ -43,21 +43,31 @@ export const FORM_SECTIONS: FormSection[] = [
         placeholder: "Select Option",
         type: "select",
         required: true,
-        options: [{ value: "tbill", label: "Treasury Bill" }],
+        options: [
+          { value: "tbill", label: "Treasury Bill" },
+          { value: "Equity", label: "Equity" },
+          { value: "TreasuryBill", label: "Treasury Bill" }
+        ],
       },
       {
         label: "Issuer",
         placeholder: "Select Option",
         type: "select",
         required: true,
-        options: [{ value: "issuer1", label: "Issuer 1" }],
+        options: [
+          { value: "issuer1", label: "Issuer 1" },
+          { value: "Tech Solutions", label: "Tech Solutions" }
+        ],
       },
       {
         label: "Sector",
         placeholder: "Select Option",
         type: "select",
         required: true,
-        options: [{ value: "finance", label: "Finance" }],
+        options: [
+          { value: "finance", label: "Finance" },
+          { value: "Software", label: "Software" }
+        ],
       },
       {
         label: "Issuers Logo",

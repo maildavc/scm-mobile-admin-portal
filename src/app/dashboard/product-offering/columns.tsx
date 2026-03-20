@@ -127,7 +127,7 @@ export const productColumns: Column<Product>[] = [
           className="rounded border-gray-300"
           aria-label="Select all products"
         />
-        <span className="uppercase text-[#2F3140]">PRODUCT (5)</span>
+        <span className="uppercase text-[#2F3140]">PRODUCT</span>
       </div>
     ),
     className: "w-[20%]",
@@ -181,6 +181,7 @@ export const createProductColumns = (
   onEditProduct?: (product: Product) => void,
   onViewProduct?: (product: Product) => void,
   isApprover?: boolean,
+  totalCount: number = 0,
 ): Column<Product>[] => [
   {
     header: (
@@ -190,7 +191,7 @@ export const createProductColumns = (
           className="rounded border-gray-300"
           aria-label="Select all products"
         />
-        <span className="uppercase text-[#2F3140]">PRODUCT (5)</span>
+        <span className="uppercase text-[#2F3140]">PRODUCT ({totalCount})</span>
       </div>
     ),
     className: "w-[20%]",

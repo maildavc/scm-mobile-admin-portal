@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { FiUploadCloud } from "react-icons/fi";
 import { FORM_SECTIONS } from "@/constants/productOffering/createProduct";
 import Image from "next/image";
-import { useCreateProduct, useUpdateProduct } from "@/hooks/useProducts";
+import { useCreateProduct, useUpdateProduct, useProductDetail } from "@/hooks/useProducts";
 import { useToastStore } from "@/stores/toastStore";
 
 type Product = {
@@ -43,6 +43,35 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
   );
   const [showSuccess, setShowSuccess] = useState(false);
 
+  const { data: detailRes, isLoading: isLoadingDetail } = useProductDetail(
+    initialData?.id || ""
+  );
+
+  useEffect(() => {
+    if (isEditing && detailRes?.value?.data) {
+      const { productDetails: pd, financialDetails: fd, integration: intg } = detailRes.value.data;
+      setFormData((prev) => ({
+        ...prev,
+        "Product Name": pd?.productName || initialData?.name || "",
+        "Instrument Type": pd?.instrumentType || initialData?.type || "",
+        "Issuer": pd?.issuer || "",
+        "Sector": pd?.sector || "",
+        "Selling Price": fd?.sellingPrice?.toString() || "",
+        "Available Volume": fd?.availableVolume?.toString() || "",
+        "Interest or returns Percentage": fd?.interestOrReturnsPercentage?.toString() || "",
+        "Minimum Investment Amount": fd?.minimumInvestmentAmount?.toString() || "",
+        "Maximum Investment Amount": fd?.maximumInvestmentAmount?.toString() || "",
+        "Settlement Date": fd?.settlementDate ? fd.settlementDate.split("T")[0] : "",
+        "Allow for Early Liquidation": fd?.allowForEarlyLiquidation ? "yes" : "no",
+        "Early Liquidation Period": fd?.earlyLiquidationPeriod?.toString() || "",
+        "Early Liquidation Penalty?": fd?.earlyLiquidationPenalty || "",
+        "WHT Amount": fd?.whtAmount?.toString() || "",
+        "Applicable Tax": fd?.applicableTax?.toString() || "",
+        "Source": intg?.source || "",
+      }));
+    }
+  }, [detailRes, isEditing, initialData]);
+
   // Get all required fields from all sections (memoized to prevent infinite loop)
   const requiredFields = useMemo(
     () =>
@@ -57,10 +86,14 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
   // Check if all required fields are filled
   const isFormValid = useMemo(() => {
     return requiredFields.every((fieldLabel) => {
+      // When editing, the API might not return the existing logo, so don't block submission
+      if (isEditing && fieldLabel === "Issuers Logo") {
+        return true;
+      }
       const value = formData[fieldLabel];
       return value !== undefined && value !== "" && value !== null;
     });
-  }, [formData, requiredFields]);
+  }, [formData, requiredFields, isEditing]);
 
   const handleInputChange = (label: string, value: string) => {
     setFormData((prev) => ({ ...prev, [label]: value }));
@@ -76,79 +109,68 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
   const updateProduct = useUpdateProduct();
   const addToast = useToastStore((s) => s.addToast);
 
-  // Maps form labels → API field names for create
-  const createFieldMap: Record<string, string> = {
-    "Product Name": "createProduct.productName",
-    "Instrument Type": "createProduct.instrumentType",
-    Issuer: "createProduct.issuer",
-    Sector: "createProduct.sector",
-    "Issuers Logo": "createProduct.issuersLogo",
-    "Selling Price": "createProduct.sellingPrice",
-    "Available Volume": "createProduct.availableVolume",
-    "Interest or returns Percentage":
-      "createProduct.interestOrReturnsPercentage",
-    "Minimum Investment Amount": "createProduct.minimumInvestmentAmount",
-    "Maximum Investment Amount": "createProduct.maximumInvestmentAmount",
-    "Settlement Date": "createProduct.settlementDate",
-    "Allow for Early Liquidation": "createProduct.allowForEarlyLiquidation",
-    "Early Liquidation Period": "createProduct.earlyLiquidationPeriod",
-    "Early Liquidation Penalty?": "createProduct.earlyLiquidationPenalty",
-    "WHT Amount": "createProduct.whtAmount",
-    "Applicable Tax": "createProduct.applicableTax",
-    Source: "createProduct.source",
-  };
-
-  // Maps form labels → API field names for update
-  const updateFieldMap: Record<string, string> = {
-    "Product Name": "basicInformation.productName",
-    "Instrument Type": "basicInformation.instrumentType",
-    Issuer: "basicInformation.issuer",
-    Sector: "basicInformation.sector",
-    "Issuers Logo": "basicInformation.issuersLogo",
-    "Selling Price": "financialInformation.sellingPrice",
-    "Available Volume": "financialInformation.availableVolume",
-    "Interest or returns Percentage":
-      "financialInformation.interestOrReturnsPercentage",
-    "Minimum Investment Amount": "financialInformation.minimumInvestmentAmount",
-    "Maximum Investment Amount": "financialInformation.maximumInvestmentAmount",
-    "Settlement Date": "financialInformation.settlementDate",
-    "Allow for Early Liquidation":
-      "financialInformation.allowForEarlyLiquidation",
-    "Early Liquidation Period": "financialInformation.earlyLiquidationPeriod",
-    "Early Liquidation Penalty?":
-      "financialInformation.earlyLiquidationPenalty",
-    "WHT Amount": "financialInformation.whtAmount",
-    "Applicable Tax": "financialInformation.applicableTax",
-    Source: "integration.source",
+  // Helper to convert File to Base64 string
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
   };
 
   const handleCreateProduct = async () => {
     if (!isFormValid) return;
 
-    const fd = new FormData();
-    const fieldMap = isEditing ? updateFieldMap : createFieldMap;
-
-    for (const [label, value] of Object.entries(formData)) {
-      const apiKey = fieldMap[label];
-      if (!apiKey) continue;
-      if (value instanceof File) {
-        fd.append(apiKey, value);
-      } else {
-        // Convert "Yes"/"No" to booleans for the API
-        const v = value === "yes" ? "true" : value === "no" ? "false" : value;
-        fd.append(apiKey, v);
-      }
+    let issuersLogoBase64 = "";
+    const logoFile = formData["Issuers Logo"];
+    if (logoFile instanceof File) {
+      // The base64 string includes 'data:image/png;base64,...' 
+      // The backend will receive it as a string
+      issuersLogoBase64 = await fileToBase64(logoFile);
+    } else if (typeof logoFile === "string" && logoFile.startsWith("data:")) {
+      issuersLogoBase64 = logoFile;
     }
+
+    // Build the nested payload object based on the new Backend DTO
+    const corePayload = {
+      basicInformation: {
+        productName: formData["Product Name"] as string,
+        instrumentType: formData["Instrument Type"] as string,
+        issuer: formData["Issuer"] as string,
+        sector: formData["Sector"] as string,
+        description: "", // added to match new DTO requirements
+        issuersLogo: issuersLogoBase64
+      },
+      financialInformation: {
+        sellingPrice: parseFloat(formData["Selling Price"] as string) || 0,
+        availableVolume: parseInt(formData["Available Volume"] as string, 10) || 0,
+        interestOrReturnsPercentage: parseFloat(formData["Interest or returns Percentage"] as string) || 0,
+        minimumInvestmentAmount: parseFloat(formData["Minimum Investment Amount"] as string) || 0,
+        maximumInvestmentAmount: parseFloat(formData["Maximum Investment Amount"] as string) || 0,
+        settlementDate: formData["Settlement Date"] 
+          ? new Date(formData["Settlement Date"] as string).toISOString() 
+          : new Date().toISOString(),
+        // Mapping liquidation info into financialInformation per new payload structure
+        allowForEarlyLiquidation: formData["Allow for Early Liquidation"] === "yes",
+        earlyLiquidationPeriod: (formData["Early Liquidation Period"] as string) || "",
+        earlyLiquidationPenalty: (formData["Early Liquidation Penalty?"] as string) || "",
+        whtAmount: parseFloat(formData["WHT Amount"] as string) || 0,
+        applicableTax: parseFloat(formData["Applicable Tax"] as string) || 0
+      }
+    };
 
     try {
       if (isEditing && initialData) {
+        // PUT requires the createProduct wrapper to be valid in the database
         await updateProduct.mutateAsync({
           productId: initialData.id,
-          formData: fd,
+          payload: { createProduct: corePayload },
         });
         addToast("Product updated successfully", "success");
       } else {
-        await createProduct.mutateAsync(fd);
+        // POST also requires the createProduct wrapper
+        await createProduct.mutateAsync({ createProduct: corePayload });
         addToast("Product created successfully", "success");
       }
       setShowSuccess(true);
@@ -255,6 +277,9 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
       ))}
 
       <div className="flex justify-end gap-4 mt-8 pt-4">
+        {isLoadingDetail && isEditing && (
+          <span className="text-sm text-gray-400 self-center mr-4">Loading product details...</span>
+        )}
         <div className="w-32">
           <Button text="Cancel" variant="outline" onClick={onCancel} />
         </div>

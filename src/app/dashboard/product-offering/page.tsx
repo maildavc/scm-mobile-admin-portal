@@ -18,7 +18,6 @@ import { createProductColumns } from "./columns";
 import { useAuthStore } from "@/stores/authStore";
 import {
   useProducts,
-  useApproveProduct,
   useUpdateProductStatus,
 } from "@/hooks/useProducts";
 import { useToastStore } from "@/stores/toastStore";
@@ -29,7 +28,8 @@ export type Product = {
   type: string;
   size: string;
   // API returns "Inactive"; legacy child components expect "Deactivated" — both accepted
-  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval";
+  // Backend apparently returns "Approved" instead of "Active" after approval.
+  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval" | "Approved";
   updated: string;
 };
 
@@ -42,16 +42,24 @@ export default function ProductOffering() {
 
   // ── Live data ──────────────────────────────────────────────────────
   const { data: productsRes, isLoading } = useProducts({ page: 1, limit: 50 });
-  const approveProduct = useApproveProduct();
   const updateStatus = useUpdateProductStatus();
 
   const products: Product[] = productsRes?.value?.data?.products ?? [];
   const stats = productsRes?.value?.data?.stats;
 
   const statsConfig = [
-    { label: "Active Products", value: stats?.activeProducts ?? "—" },
-    { label: "Inactive Products", value: stats?.inactiveProducts ?? "—" },
-    { label: "Unsubscribed", value: stats?.unsubscribedProducts ?? "—" },
+    { 
+      label: "Active Products", 
+      value: products.filter(p => p.status === "Active" || p.status === "Approved").length || stats?.activeProducts || 0
+    },
+    { 
+      label: "Inactive Products", 
+      value: products.filter(p => p.status === "Inactive" || p.status === "Deactivated").length || stats?.inactiveProducts || 0
+    },
+    { 
+      label: "Unsubscribed", 
+      value: stats?.unsubscribedProducts ?? 0
+    },
   ];
 
   // ── Sidebar / navigation ───────────────────────────────────────────
@@ -91,32 +99,12 @@ export default function ProductOffering() {
   };
 
   // ── Approve / Reject ───────────────────────────────────────────────
-  const handleApprove = async () => {
-    if (!viewProduct) return;
-    try {
-      await approveProduct.mutateAsync({
-        productId: viewProduct.id,
-        payload: { productId: viewProduct.id, action: "approve", reason: null },
-      });
-      addToast("Product approved successfully", "success");
-      resetView();
-    } catch {
-      addToast("Failed to approve product", "error");
-    }
+  const handleApprove = () => {
+    resetView();
   };
 
-  const handleReject = async (reason: string) => {
-    if (!viewProduct) return;
-    try {
-      await approveProduct.mutateAsync({
-        productId: viewProduct.id,
-        payload: { productId: viewProduct.id, action: "reject", reason },
-      });
-      addToast("Product rejected successfully", "success");
-      resetView();
-    } catch {
-      addToast("Failed to reject product", "error");
-    }
+  const handleReject = () => {
+    resetView();
   };
 
   // ── Deactivate / Activate ──────────────────────────────────────────
@@ -135,10 +123,12 @@ export default function ProductOffering() {
     }
   };
 
+  const totalCount = productsRes?.value?.data?.pagination?.total || products.length;
   const columns = createProductColumns(
     handleEditProduct,
     handleViewProduct,
     isApprover,
+    totalCount
   );
 
   const breadcrumbs = getBreadcrumbs(
@@ -221,7 +211,7 @@ export default function ProductOffering() {
                 <ViewProductRequest
                   product={viewProduct}
                   onApprove={handleApprove}
-                  onReject={() => handleReject("")}
+                  onReject={handleReject}
                 />
               ) : (
                 <ViewProduct
