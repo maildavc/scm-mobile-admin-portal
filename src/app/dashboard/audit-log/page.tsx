@@ -4,19 +4,43 @@ import React from "react";
 import Sidebar, { SidebarProvider } from "@/components/Dashboard/Sidebar";
 import PageHeader from "@/components/Dashboard/PageHeader";
 import Table from "@/components/Dashboard/Table";
-import StatsCard from "@/components/Dashboard/StatsCard";
 import ActionButton from "@/components/Dashboard/ActionButton";
 import {
   AUDIT_LOG_SIDEBAR_ITEMS,
   PAGE_CONFIG,
   getBreadcrumbs,
-  SUMMARY_CARDS,
-  MOCK_DATA,
 } from "@/constants/auditLog/auditLog";
 import { columns } from "./columns";
+import { useAuditLogs } from "@/hooks/useAuditLog";
+import { auditLogService } from "@/services/auditLogService";
 
 const AuditLogPage = () => {
-  const [currentView, setCurrentView] = React.useState("Customers");
+  const [currentView, setCurrentView] = React.useState("Audit Log");
+
+  // Fetching data - grabbing enough limit for client side pagination locally, 
+  // since Table.tsx doesn't natively support server-side events out of the box.
+  const { data: auditResponse, isLoading } = useAuditLogs({
+    page: 1,
+    limit: 100,
+  });
+
+  const auditData = auditResponse?.data || [];
+
+  const handleExportCSV = async () => {
+    try {
+      const blob = await auditLogService.exportAuditLogs({});
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `audit-logs-${new Date().toISOString()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (e) {
+      console.error("Failed to export audit logs", e);
+    }
+  };
 
   const sidebarItems = AUDIT_LOG_SIDEBAR_ITEMS.map((item) => ({
     ...item,
@@ -39,16 +63,7 @@ const AuditLogPage = () => {
 
           <main className="flex-1 p-8 bg-white overflow-hidden pt-4 overflow-y-auto">
             <div className="flex flex-col gap-6">
-              {/* Summary Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                {SUMMARY_CARDS.map((card) => (
-                  <StatsCard
-                    key={card.label}
-                    label={card.label}
-                    value={card.value}
-                  />
-                ))}
-              </div>
+
 
               {/* Action Cards */}
               <div className="flex flex-col md:flex-row gap-4">
@@ -61,7 +76,7 @@ const AuditLogPage = () => {
                 <ActionButton
                   label="Export Table as CSV"
                   actionText="Export"
-                  onClick={() => console.log("Export CSV")}
+                  onClick={handleExportCSV}
                   fullWidth
                 />
               </div>
@@ -69,9 +84,10 @@ const AuditLogPage = () => {
               {/* Table */}
               <div>
                 <Table
-                  data={MOCK_DATA}
+                  data={auditData}
                   columns={columns}
                   itemsPerPage={PAGE_CONFIG.itemsPerPage}
+                  isLoading={isLoading}
                 />
               </div>
             </div>

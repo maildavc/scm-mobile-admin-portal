@@ -32,6 +32,7 @@ export const PAGE_CONFIG = {
 
 export type KYCRequest = {
   id: string;
+  customerId: string;
   customer: {
     name: string;
     email: string;
@@ -47,8 +48,7 @@ export type KYCRequest = {
 
 export const MOCK_DATA: KYCRequest[] = [
   {
-    id: "1",
-    customer: {
+    id: "1", customerId: "mock-1", customer: {
       name: "Ayodeji Olawole",
       email: "user@scmcapital.com",
     },
@@ -61,8 +61,7 @@ export const MOCK_DATA: KYCRequest[] = [
     dateRequested: "28/12/2025 13:32",
   },
   {
-    id: "2",
-    customer: {
+    id: "2", customerId: "mock-2", customer: {
       name: "Ayodeji Olawole",
       email: "user@scmcapital.com",
     },
@@ -75,8 +74,7 @@ export const MOCK_DATA: KYCRequest[] = [
     dateRequested: "28/12/2025 13:32",
   },
   {
-    id: "3",
-    customer: {
+    id: "3", customerId: "mock-3", customer: {
       name: "Ayodeji Olawole",
       email: "user@scmcapital.com",
     },
@@ -89,8 +87,7 @@ export const MOCK_DATA: KYCRequest[] = [
     dateRequested: "28/12/2025 13:32",
   },
   {
-    id: "4",
-    customer: {
+    id: "4", customerId: "mock-4", customer: {
       name: "Ayodeji Olawole",
       email: "user@scmcapital.com",
     },
@@ -103,8 +100,7 @@ export const MOCK_DATA: KYCRequest[] = [
     dateRequested: "28/12/2025 13:32",
   },
   {
-    id: "5",
-    customer: {
+    id: "5", customerId: "mock-5", customer: {
       name: "Ayodeji Olawole",
       email: "user@scmcapital.com",
     },
@@ -117,8 +113,7 @@ export const MOCK_DATA: KYCRequest[] = [
     dateRequested: "28/12/2025 13:32",
   },
   {
-    id: "6",
-    customer: {
+    id: "6", customerId: "mock-6", customer: {
       name: "Ayodeji Olawole",
       email: "user@scmcapital.com",
     },
@@ -131,8 +126,7 @@ export const MOCK_DATA: KYCRequest[] = [
     dateRequested: "28/12/2025 13:32",
   },
   {
-    id: "7",
-    customer: {
+    id: "7", customerId: "mock-7", customer: {
       name: "Ayodeji Olawole",
       email: "user@scmcapital.com",
     },
@@ -145,8 +139,7 @@ export const MOCK_DATA: KYCRequest[] = [
     dateRequested: "28/12/2025 13:32",
   },
   {
-    id: "8",
-    customer: {
+    id: "8", customerId: "mock-8", customer: {
       name: "Ayodeji Olawole",
       email: "user@scmcapital.com",
     },
@@ -159,8 +152,7 @@ export const MOCK_DATA: KYCRequest[] = [
     dateRequested: "28/12/2025 13:32",
   },
   {
-    id: "9",
-    customer: {
+    id: "9", customerId: "mock-9", customer: {
       name: "Ayodeji Olawole",
       email: "user@scmcapital.com",
     },
@@ -173,8 +165,7 @@ export const MOCK_DATA: KYCRequest[] = [
     dateRequested: "28/12/2025 13:32",
   },
   {
-    id: "10",
-    customer: {
+    id: "10", customerId: "mock-10", customer: {
       name: "Ayodeji Olawole",
       email: "user@scmcapital.com",
     },

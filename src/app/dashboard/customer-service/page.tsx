@@ -13,13 +13,12 @@ export default function CustomerService() {
         title="Customer Support"
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
-          { label: "Customer Support", href: "/dashboard/customer-service" },
-          { label: "Aremu Babalola", active: true },
+          { label: "Customer Support", active: true },
         ]}
       >
         {/* Welcome Message */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-1">Hello Ehizojie 👋</h2>
+          <h2 className="text-2xl font-bold mb-1">Hello 👋</h2>
           <h2 className="text-2xl font-bold">How can we help you?</h2>
         </div>
       </CustomerServicePageHeader>

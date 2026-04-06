@@ -10,17 +10,20 @@ import {
   KYC_SIDEBAR_ITEMS,
   STATS_CONFIG,
   PAGE_CONFIG,
-  MOCK_DATA,
   getBreadcrumbs,
   KYCRequest,
 } from "@/constants/kycVerification/kycVerification";
 import { createColumns } from "./columns";
 import { useAuthStore } from "@/stores/authStore";
 import ViewKYCRequest from "@/components/Dashboard/KYCVerification/ViewKYCRequest";
+import { useKycRequests } from "@/hooks/useKyc";
+import { formatDateToMMMdyyyy } from "@/utils/dateFormatter";
 
 const KYCVerificationPage = () => {
   const [viewRequest, setViewRequest] = useState<KYCRequest | null>(null);
   const isApprover = useAuthStore((s) => s.isApprover);
+  
+  const { data: rawRequests, isLoading } = useKycRequests();
 
   const handleViewRequest = (request: KYCRequest) => {
     setViewRequest(request);
@@ -58,6 +61,32 @@ const KYCVerificationPage = () => {
       active: true,
     });
   }
+
+  // Map API structure to UI structure
+  const mappedData: KYCRequest[] = React.useMemo(() => {
+    if (!rawRequests) return [];
+    return rawRequests.map((req) => {
+      // Map API status to StatusBadge supported strings
+      let statusStr = req.statusName;
+      if (statusStr === "Pending") statusStr = "Pending Verification";
+      
+      return {
+        id: req.id,
+        customerId: req.customerId || "",
+        customer: {
+          name: req.customer?.fullName || "Unknown Customer",
+          email: req.customer?.email || "No Email",
+        },
+        verificationType: req.levelName || req.typeName || "KYC Verification",
+        status: statusStr as KYCRequest["status"],
+        initiatedBy: {
+          name: req.createdBy || req.customer?.fullName || "System",
+          email: req.customer?.email || "",
+        },
+        dateRequested: formatDateToMMMdyyyy(req.submittedAt || req.createdAt),
+      };
+    });
+  }, [rawRequests]);
 
   return (
     <SidebarProvider>
@@ -114,9 +143,10 @@ const KYCVerificationPage = () => {
                 {/* Table */}
                 <div>
                   <Table
-                    data={MOCK_DATA}
+                    data={mappedData}
                     columns={columns}
                     itemsPerPage={PAGE_CONFIG.itemsPerPage}
+                    isLoading={isLoading}
                   />
                 </div>
               </div>

@@ -6,9 +6,14 @@ import { SidebarProvider } from "@/components/Dashboard/Sidebar";
 import ChatList from "@/components/Dashboard/CustomerService/Messages/ChatList";
 import ChatWindow from "@/components/Dashboard/CustomerService/Messages/ChatWindow";
 import { FiSearch } from "react-icons/fi";
+import { useSupportConversations } from "@/hooks/useCustomerSupport";
 
 export default function Messages() {
-  const [selectedChatId, setSelectedChatId] = useState(1);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const { data, isLoading } = useSupportConversations(1, search || undefined);
+
+  const selectedChat = data?.items?.find((c) => c.id === selectedChatId) || null;
 
   return (
     <SidebarProvider>
@@ -19,7 +24,7 @@ export default function Messages() {
           breadcrumbs={[
             { label: "Dashboard", href: "/dashboard" },
             { label: "Customer Support", href: "/dashboard/customer-service" },
-            { label: "Aremu Babalola", active: true },
+            { label: selectedChat ? selectedChat.customerName : "Messages", active: true },
           ]}
         />
 
@@ -30,6 +35,8 @@ export default function Messages() {
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search for customers"
                 className="w-full pl-10 pr-4 py-3 bg-white border border-gray-100 rounded-lg text-sm focus:outline-none"
               />
@@ -38,7 +45,12 @@ export default function Messages() {
           <div className="flex-1 flex flex-col md:flex-row gap-4 md:gap-6 min-h-0">
             {/* Sidebar List */}
             <div className="w-full md:w-120 shrink-0 h-64 md:h-full overflow-hidden">
-              <ChatList selectedChatId={selectedChatId} onSelectChat={setSelectedChatId} />
+              <ChatList 
+                selectedChatId={selectedChatId} 
+                onSelectChat={setSelectedChatId} 
+                chats={data?.items || []} 
+                isLoading={isLoading} 
+              />
             </div>
 
             {/* Chat Window */}

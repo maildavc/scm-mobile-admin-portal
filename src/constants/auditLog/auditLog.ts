@@ -80,30 +80,4 @@ export const SUMMARY_CARDS = [
   },
 ];
 
-export type AuditLogItem = {
-  id: string;
-  user: {
-    name: string;
-    email: string;
-  };
-  userType: "Admin User" | "Customer";
-  action: string;
-  dataPassed: string;
-  anotherColumn: string;
-  anotherColumn2: string;
-};
 
-export const MOCK_DATA: AuditLogItem[] = Array(10)
-  .fill(null)
-  .map((_, i) => ({
-    id: i.toString(),
-    user: {
-      name: "Ehizojie Ihayere",
-      email: "ehizojie@scmcapital.com",
-    },
-    userType: i % 2 === 0 ? "Admin User" : "Customer",
-    action: "Name of action carried out here",
-    dataPassed: "What type of data should diplay here in a string",
-    anotherColumn: "information written here",
-    anotherColumn2: "information written here",
-  }));

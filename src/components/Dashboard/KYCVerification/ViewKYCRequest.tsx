@@ -6,6 +6,8 @@ import Image from "next/image";
 import ApproveModal from "@/components/Dashboard/Shared/ApproveModal";
 import RejectModal from "@/components/Dashboard/Shared/RejectModal";
 import { KYCRequest } from "@/constants/kycVerification/kycVerification";
+import { useCustomerDocuments, useApproveKycDocument, useRejectKycDocument } from "@/hooks/useKyc";
+import { formatDateToMMMdyyyy, formatTimeTohmma } from "@/utils/dateFormatter";
 
 interface ViewKYCRequestProps {
   request: KYCRequest;
@@ -14,45 +16,16 @@ interface ViewKYCRequestProps {
   onBack: () => void;
 }
 
-// Mock documents for the view
-const MOCK_DOCUMENTS = [
-  {
-    id: "1",
-    type: "Document File",
-    name: "Signature",
-    addedDate: "June 12, 2026 12:32 PM",
-    status: "Pending",
-  },
-  {
-    id: "2",
-    type: "Document File",
-    name: "Utility Bill",
-    addedDate: "June 12, 2026 12:32 PM",
-    status: "Approved",
-  },
-  {
-    id: "3",
-    type: "Document File",
-    name: "Other Document",
-    addedDate: "June 12, 2026 12:32 PM",
-    status: "Rejected",
-  },
-  {
-    id: "4",
-    type: "Document File",
-    name: "ID Card",
-    addedDate: "June 12, 2026 12:32 PM",
-    status: "Pending",
-  },
-];
-
 const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
   request,
   onApprove,
   onReject,
   onBack,
 }) => {
-  const [documents, setDocuments] = useState(MOCK_DOCUMENTS);
+  const { data: documents = [], isLoading: isLoadingDocs } = useCustomerDocuments(request.customerId);
+  const { mutate: approveDoc, isPending: isApproving } = useApproveKycDocument();
+  const { mutate: rejectDoc, isPending: isRejecting } = useRejectKycDocument();
+
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [viewStatus, setViewStatus] = useState<
@@ -62,14 +35,29 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
 
   // Handle global approval (e.g. from footer buttons or after document check)
   const handleApproveConfirm = () => {
-    setIsApproveModalOpen(false);
-    setViewStatus("success");
+    if (!selectedDocId) return;
+    approveDoc(
+      { documentId: selectedDocId, payload: { customerId: request.customerId } },
+      {
+        onSuccess: () => {
+          setIsApproveModalOpen(false);
+          setViewStatus("success");
+        }
+      }
+    );
   };
 
   const handleRejectConfirm = (reason: string) => {
-    setIsRejectModalOpen(false);
-    console.log("Rejection reason:", reason);
-    setViewStatus("rejected");
+    if (!selectedDocId) return;
+    rejectDoc(
+      { documentId: selectedDocId, payload: { customerId: request.customerId, reason } },
+      {
+        onSuccess: () => {
+          setIsRejectModalOpen(false);
+          setViewStatus("rejected");
+        }
+      }
+    );
   };
 
   // Handle per-document actions
@@ -173,60 +161,72 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
         </h3>
 
         <div className="flex flex-col gap-4">
-          {documents.map((doc) => (
-            <div
-              key={doc.id}
-              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#F4F4F5] last:border-b-0 last:pb-0"
-            >
-              <div className="flex flex-col gap-1">
-                <p className="text-xs text-[#707781]">{doc.type}</p>
-                <p className="text-sm font-bold text-[#2F3140]">{doc.name}</p>
-                <p className="text-xs text-[#707781]">Added: {doc.addedDate}</p>
-              </div>
+          {isLoadingDocs ? (
+            <p className="text-sm text-gray-500">Loading documents...</p>
+          ) : documents.length === 0 ? (
+            <p className="text-sm text-gray-500">No documents found for this customer.</p>
+          ) : documents.map((doc) => {
+            const isPending = doc.status === "Pending";
+            const isApproved = doc.status === "Approved";
+            const isRejected = doc.status === "Rejected";
 
-              <div className="flex flex-wrap gap-3 items-center">
-                <Button
-                  text="View File"
-                  variant="outline"
-                  onClick={() => console.log("View file", doc.id)}
-                  className="w-auto! px-6! py-2! font-semibold text-sm md:text-base"
-                />
+            return (
+              <div
+                key={doc.id}
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#F4F4F5] last:border-b-0 last:pb-0"
+              >
+                <div className="flex flex-col gap-1">
+                  <p className="text-xs text-[#707781]">{doc.documentType || "Document File"}</p>
+                  <p className="text-sm font-bold text-[#2F3140]">{doc.fileName || doc.id}</p>
+                  <p className="text-xs text-[#707781]">Added: {formatDateToMMMdyyyy(doc.createdAt)} {formatTimeTohmma(doc.createdAt)}</p>
+                </div>
 
-                {doc.status === "Pending" && (
-                  <>
+                <div className="flex flex-wrap gap-3 items-center">
+                  <Button
+                    text="View File"
+                    variant="outline"
+                    onClick={() => console.log("View file", doc.id)}
+                    className="w-auto! px-6! py-2! font-semibold text-sm md:text-base"
+                  />
+
+                  {isPending && (
+                    <>
+                      <Button
+                        text={isRejecting && selectedDocId === doc.id ? "Rejecting..." : "Reject"}
+                        variant="outline"
+                        onClick={() => handleDocumentAction(doc.id, "Reject")}
+                        disabled={isRejecting || isApproving}
+                        className="w-auto! px-6! py-2! text-[#B2171E]! font-semibold text-sm md:text-base"
+                      />
+                      <Button
+                        text={isApproving && selectedDocId === doc.id ? "Approving..." : "Approve"}
+                        variant="outline"
+                        onClick={() => handleDocumentAction(doc.id, "Approve")}
+                        disabled={isRejecting || isApproving}
+                        className="w-auto! px-6! py-2! text-[#29C680]! font-semibold text-sm md:text-base"
+                      />
+                    </>
+                  )}
+
+                  {isApproved && (
                     <Button
-                      text="Reject"
+                      text="Approved"
                       variant="outline"
-                      onClick={() => handleDocumentAction(doc.id, "Reject")}
-                      className="w-auto! px-6! py-2! text-[#B2171E]! font-semibold text-sm md:text-base"
-                    />
-                    <Button
-                      text="Approve"
-                      variant="outline"
-                      onClick={() => handleDocumentAction(doc.id, "Approve")}
                       className="w-auto! px-6! py-2! text-[#29C680]! font-semibold text-sm md:text-base"
                     />
-                  </>
-                )}
+                  )}
 
-                {doc.status === "Approved" && (
-                  <Button
-                    text="Approved"
-                    variant="outline"
-                    className="w-auto! px-6! py-2! text-[#29C680]! font-semibold text-sm md:text-base"
-                  />
-                )}
-
-                {doc.status === "Rejected" && (
-                  <Button
-                    text="Rejected"
-                    variant="outline"
-                    className="w-auto! px-6! py-2! text-[#B2171E]! font-semibold text-sm md:text-base"
-                  />
-                )}
+                  {isRejected && (
+                    <Button
+                      text="Rejected"
+                      variant="outline"
+                      className="w-auto! px-6! py-2! text-[#B2171E]! font-semibold text-sm md:text-base"
+                    />
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
