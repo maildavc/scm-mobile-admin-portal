@@ -31,16 +31,6 @@ export const BASIC_INFO_FIELDS: FormField[] = [
     ],
   },
   {
-    label: "Account Status",
-    placeholder: "Select Option",
-    type: "select",
-    required: true,
-    options: [
-      { value: "active", label: "Active" },
-      { value: "inactive", label: "Inactive" },
-    ],
-  },
-  {
     label: "Gender",
     placeholder: "Select Option",
     type: "select",

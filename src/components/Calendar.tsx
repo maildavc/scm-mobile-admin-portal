@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 interface CalendarProps {
@@ -23,6 +23,27 @@ const Calendar: React.FC<CalendarProps> = ({
   const [currentMonth, setCurrentMonth] = useState(
     selectedDate ? parseDate(selectedDate) : new Date()
   );
+  const [showYearPicker, setShowYearPicker] = useState(false);
+
+  const currentYear = currentMonth.getFullYear();
+  const startYear = 1900;
+  const endYear = new Date().getFullYear() + 10;
+  const years = Array.from(
+    { length: endYear - startYear + 1 },
+    (_, i) => startYear + i
+  );
+
+  const yearGridRef = useRef<HTMLDivElement>(null);
+
+  // Scroll the selected year into view when the picker opens
+  useEffect(() => {
+    if (showYearPicker && yearGridRef.current) {
+      const selectedBtn = yearGridRef.current.querySelector(
+        "[data-selected-year='true']"
+      ) as HTMLElement | null;
+      selectedBtn?.scrollIntoView({ block: "center", behavior: "instant" });
+    }
+  }, [showYearPicker]);
 
   const monthNames = [
     "January",
@@ -67,6 +88,11 @@ const Calendar: React.FC<CalendarProps> = ({
     );
   };
 
+  const handleYearSelect = (year: number) => {
+    setCurrentMonth(new Date(year, currentMonth.getMonth(), 1));
+    setShowYearPicker(false);
+  };
+
   const handleDateClick = (day: number) => {
     const dateString = formatDate(
       currentMonth.getFullYear(),
@@ -84,9 +110,7 @@ const Calendar: React.FC<CalendarProps> = ({
 
     // Empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
-      days.push(
-        <div key={`empty-${i}`} className="h-9 w-9" />
-      );
+      days.push(<div key={`empty-${i}`} className="h-9 w-9" />);
     }
 
     // Actual days
@@ -94,11 +118,6 @@ const Calendar: React.FC<CalendarProps> = ({
     const today = new Date();
 
     for (let day = 1; day <= daysInMonth; day++) {
-      const dateString = formatDate(
-        currentMonth.getFullYear(),
-        currentMonth.getMonth(),
-        day
-      );
       const isSelected =
         selectedDateObj &&
         selectedDateObj.getDate() === day &&
@@ -143,9 +162,22 @@ const Calendar: React.FC<CalendarProps> = ({
         >
           <FiChevronLeft size={20} className="text-[#2F3140]" />
         </button>
-        <div className="text-sm font-semibold text-[#2F3140]">
-          {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+
+        {/* Month + clickable Year */}
+        <div className="flex items-center gap-1 text-sm font-semibold text-[#2F3140]">
+          <span>{monthNames[currentMonth.getMonth()]}</span>
+          <button
+            type="button"
+            onClick={() => setShowYearPicker((v) => !v)}
+            className="px-1.5 py-0.5 rounded hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-[#B2171E] focus:ring-offset-1"
+            aria-label="Select year"
+            title="Click to choose a year"
+          >
+            {currentYear}
+            <span className="ml-0.5 text-[10px] text-[#707781]">▾</span>
+          </button>
         </div>
+
         <button
           type="button"
           onClick={handleNextMonth}
@@ -155,6 +187,33 @@ const Calendar: React.FC<CalendarProps> = ({
           <FiChevronRight size={20} className="text-[#2F3140]" />
         </button>
       </div>
+
+      {/* Year Picker */}
+      {showYearPicker && (
+        <div
+          ref={yearGridRef}
+          className="mb-4 max-h-24 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-2"
+          style={{ scrollbarWidth: "thin" }}
+        >
+          <div className="grid grid-cols-4 gap-1">
+            {years.map((year) => (
+              <button
+                key={year}
+                type="button"
+                data-selected-year={year === currentYear ? "true" : undefined}
+                onClick={() => handleYearSelect(year)}
+                className={`rounded-lg py-1.5 text-xs font-medium transition-colors ${
+                  year === currentYear
+                    ? "bg-[#B2171E] text-white"
+                    : "text-[#2F3140] hover:bg-gray-200"
+                }`}
+              >
+                {year}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Days of week */}
       <div className="grid grid-cols-7 gap-1 mb-2">
