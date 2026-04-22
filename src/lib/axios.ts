@@ -128,6 +128,19 @@ apiClient.interceptors.response.use(
         }
       }
     }
+
+    // Handle 200/201 responses that actually contain an error layout
+    if (
+      response.data &&
+      typeof response.data === "object" &&
+      (response.data.status === "error" || response.data.isFailure === true)
+    ) {
+      return Promise.reject({
+        response,
+        message: response.data.message || response.data.error || "An error occurred",
+      });
+    }
+
     return response;
   },
   (error) => {

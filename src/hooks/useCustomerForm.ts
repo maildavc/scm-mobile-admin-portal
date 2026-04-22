@@ -6,6 +6,7 @@ import {
   EMPTY_PRODUCT_ASSIGNMENTS,
 } from "@/constants/customerManagement/createCustomer";
 import { useCreateCustomer, useUpdateCustomer } from "./useCustomers";
+import { useToastStore } from "@/stores/toastStore";
 
 type Customer = {
   id: string;
@@ -71,6 +72,7 @@ export function useCustomerForm(initialData?: Customer | null) {
 
   const createMutation = useCreateCustomer();
   const updateMutation = useUpdateCustomer();
+  const addToast = useToastStore((state) => state.addToast);
 
   const handleSaveChanges = async () => {
     if (!isFormValid) return;
@@ -95,9 +97,10 @@ export function useCustomerForm(initialData?: Customer | null) {
       }
 
       setShowSuccess(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save customer:", error);
-      // Optional: Handle error UI state here if desired
+      const errorMsg = error?.message || error?.response?.data?.message || "Failed to save customer";
+      addToast(errorMsg, "error");
     }
   };
 
