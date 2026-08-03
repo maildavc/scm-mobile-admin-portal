@@ -25,9 +25,7 @@ const ViewFAQRequest: React.FC<ViewFAQRequestProps> = ({
 }) => {
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-  const [viewStatus, setViewStatus] = useState<
-    "review" | "success" | "rejected"
-  >("review");
+  const [viewStatus, setViewStatus] = useState<"review" | "success" | "rejected">("review");
 
   const { data: detailData, isLoading } = useFAQDetails(faq.id);
   const approveAction = useFAQAction("approve");
@@ -39,7 +37,7 @@ const ViewFAQRequest: React.FC<ViewFAQRequestProps> = ({
     setIsApproveModalOpen(false);
     approveAction.mutate(
       { id: faq.id, action: "approve" },
-      { onSuccess: () => setViewStatus("success") }
+      { onSuccess: () => setViewStatus("success") },
     );
   };
 
@@ -47,7 +45,7 @@ const ViewFAQRequest: React.FC<ViewFAQRequestProps> = ({
     setIsRejectModalOpen(false);
     rejectAction.mutate(
       { id: faq.id, action: "reject" },
-      { onSuccess: () => setViewStatus("rejected") }
+      { onSuccess: () => setViewStatus("rejected") },
     );
   };
 
@@ -57,9 +55,7 @@ const ViewFAQRequest: React.FC<ViewFAQRequestProps> = ({
         <div className="mb-6">
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
-        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
-          FAQ Creation Request Approved
-        </h2>
+        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">FAQ Creation Request Approved</h2>
         <p className="text-sm text-[#707781] mb-8 text-center">
           FAQ creation was successfully approved.
         </p>
@@ -81,9 +77,7 @@ const ViewFAQRequest: React.FC<ViewFAQRequestProps> = ({
         <div className="mb-6">
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
-        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
-          FAQ Creation Request Rejected
-        </h2>
+        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">FAQ Creation Request Rejected</h2>
         <p className="text-sm text-[#707781] mb-8 text-center">
           FAQ creation was successfully rejected.
         </p>
@@ -119,7 +113,9 @@ const ViewFAQRequest: React.FC<ViewFAQRequestProps> = ({
         </div>
         <div>
           <p className="text-[10px] text-[#707781] font-semibold">Created By</p>
-          <p className="text-sm font-bold text-[#2F3140]">{faq.authorName || faq.createdBy || "System"}</p>
+          <p className="text-sm font-bold text-[#2F3140]">
+            {faq.authorName || faq.createdBy || "System"}
+          </p>
           <p className="text-xs text-[#707781]">{new Date(faq.createdAt).toLocaleString()}</p>
         </div>
       </div>
@@ -132,8 +128,18 @@ const ViewFAQRequest: React.FC<ViewFAQRequestProps> = ({
           <DetailCard title="FAQ Details">
             <DetailRow label="Question" value={fullFaq?.question || faq.question || "-"} />
             <DetailRow label="Category" value={fullFaq?.categoryName || "General"} />
-            <DetailRow label="Schedule" value={fullFaq?.whenShouldItGoLive || faq.whenShouldItGoLive || "-"} />
-            <DetailRow label="Status" value={fullFaq?.statusName || FAQStatus[Number(faq.status) as unknown as keyof typeof FAQStatus] || String(faq.status)} />
+            <DetailRow
+              label="Schedule"
+              value={fullFaq?.whenShouldItGoLive || faq.whenShouldItGoLive || "-"}
+            />
+            <DetailRow
+              label="Status"
+              value={
+                fullFaq?.statusName ||
+                FAQStatus[Number(faq.status) as unknown as keyof typeof FAQStatus] ||
+                String(faq.status)
+              }
+            />
           </DetailCard>
 
           {/* FAQ Answer */}

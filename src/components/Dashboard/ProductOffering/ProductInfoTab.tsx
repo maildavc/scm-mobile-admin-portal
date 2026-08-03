@@ -8,7 +8,7 @@ import type { ProductDetailData } from "@/types/product";
 interface ProductInfoTabProps {
   onEdit?: () => void;
   onDeactivate?: () => void;
-  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval";
+  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval" | "Approved";
   productDetail: ProductDetailData | null;
   portfolioSize: string;
   isLoading: boolean;
@@ -47,8 +47,7 @@ const ProductInfoTab: React.FC<ProductInfoTabProps> = ({
         },
         {
           label: "Available Volume",
-          value:
-            productDetail.financialDetails.availableVolume?.toLocaleString() || "0",
+          value: productDetail.financialDetails.availableVolume?.toLocaleString() || "0",
         },
         {
           label: "Interest or returns Percentage",
@@ -64,15 +63,13 @@ const ProductInfoTab: React.FC<ProductInfoTabProps> = ({
         },
         {
           label: "Settlement Date",
-          value: productDetail.financialDetails.settlementDate ? new Date(
-            productDetail.financialDetails.settlementDate,
-          ).toLocaleDateString() : "N/A",
+          value: productDetail.financialDetails.settlementDate
+            ? new Date(productDetail.financialDetails.settlementDate).toLocaleDateString()
+            : "N/A",
         },
         {
           label: "Allow for Early Liquidation",
-          value: productDetail.financialDetails.allowForEarlyLiquidation
-            ? "Yes"
-            : "No",
+          value: productDetail.financialDetails.allowForEarlyLiquidation ? "Yes" : "No",
         },
         {
           label: "Early Liquidation Period",
@@ -80,8 +77,7 @@ const ProductInfoTab: React.FC<ProductInfoTabProps> = ({
         },
         {
           label: "Early Liquidation Penalty?",
-          value:
-            productDetail.financialDetails.earlyLiquidationPenalty || "N/A",
+          value: productDetail.financialDetails.earlyLiquidationPenalty || "N/A",
         },
         {
           label: "WHT Amount",
@@ -110,11 +106,7 @@ const ProductInfoTab: React.FC<ProductInfoTabProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <DetailCard title="Product Details">
           {productDetails.map((detail) => (
-            <DetailRow
-              key={detail.label}
-              label={detail.label}
-              value={detail.value}
-            />
+            <DetailRow key={detail.label} label={detail.label} value={detail.value} />
           ))}
           <div className="flex justify-between items-center py-2">
             <span className="text-sm text-[#707781]">Product Status</span>
@@ -124,11 +116,7 @@ const ProductInfoTab: React.FC<ProductInfoTabProps> = ({
 
         <DetailCard title="Financial Details">
           {financialDetails.map((detail) => (
-            <DetailRow
-              key={detail.label}
-              label={detail.label}
-              value={detail.value}
-            />
+            <DetailRow key={detail.label} label={detail.label} value={detail.value} />
           ))}
         </DetailCard>
       </div>

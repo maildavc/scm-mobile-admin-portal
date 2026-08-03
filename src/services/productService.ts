@@ -20,25 +20,20 @@ export const productService = {
       search?: string;
     } = {},
   ): Promise<ProductListResponse> => {
-    const { data } = await apiClient.get<ProductListResponse>(
-      "/api/v1/products",
-      {
-        params: {
-          page: params.page ?? 1,
-          limit: params.limit ?? 10,
-          ...(params.status && { status: params.status }),
-          ...(params.search && { search: params.search }),
-        },
+    const { data } = await apiClient.get<ProductListResponse>("/api/v1/products", {
+      params: {
+        page: params.page ?? 1,
+        limit: params.limit ?? 10,
+        ...(params.status && { status: params.status }),
+        ...(params.search && { search: params.search }),
       },
-    );
+    });
     return data;
   },
 
   // GET /api/v1/products/{productId}
   getProductById: async (productId: string): Promise<ProductDetailResponse> => {
-    const { data } = await apiClient.get<ProductDetailResponse>(
-      `/api/v1/products/${productId}`,
-    );
+    const { data } = await apiClient.get<ProductDetailResponse>(`/api/v1/products/${productId}`);
     return data;
   },
 

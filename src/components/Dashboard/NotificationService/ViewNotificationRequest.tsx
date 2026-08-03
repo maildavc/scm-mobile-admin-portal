@@ -34,7 +34,7 @@ const ViewNotificationRequest: React.FC<ViewNotificationRequestProps> = ({
           setIsApproveModalOpen(false);
           setViewStatus("success");
         },
-      }
+      },
     );
   };
 
@@ -46,7 +46,7 @@ const ViewNotificationRequest: React.FC<ViewNotificationRequestProps> = ({
           setIsRejectModalOpen(false);
           setViewStatus("rejected");
         },
-      }
+      },
     );
   };
 
@@ -103,9 +103,17 @@ const ViewNotificationRequest: React.FC<ViewNotificationRequestProps> = ({
     { label: "Recipient type", value: notification.recipientType || notification.typeName || "-" },
     { label: "Audience", value: notification.targetAudience || "-" },
     { label: "Channel", value: notification.channelName || "-" },
-    { label: "Allow email reply", value: notification.allowReply ? `Yes\n${notification.replyToEmail || ""}` : "No" },
+    {
+      label: "Allow email reply",
+      value: notification.allowReply ? `Yes\n${notification.replyToEmail || ""}` : "No",
+    },
     { label: "Send type", value: notification.scheduledFor ? "Scheduled" : "Immediately" },
-    { label: "Scheduled date", value: notification.scheduledFor ? new Date(notification.scheduledFor).toLocaleDateString() : "-" },
+    {
+      label: "Scheduled date",
+      value: notification.scheduledFor
+        ? new Date(notification.scheduledFor).toLocaleDateString()
+        : "-",
+    },
   ];
 
   return (
@@ -130,8 +138,12 @@ const ViewNotificationRequest: React.FC<ViewNotificationRequestProps> = ({
         </div>
         <div>
           <p className="text-[10px] text-[#707781] font-semibold">Created By</p>
-          <p className="text-sm font-bold text-[#2F3140]">{notification.authorName || notification.createdBy || "N/A"}</p>
-          <p className="text-xs text-[#707781]">{new Date(notification.createdAt).toLocaleString()}</p>
+          <p className="text-sm font-bold text-[#2F3140]">
+            {notification.authorName || notification.createdBy || "N/A"}
+          </p>
+          <p className="text-xs text-[#707781]">
+            {new Date(notification.createdAt).toLocaleString()}
+          </p>
         </div>
       </div>
 
@@ -139,11 +151,7 @@ const ViewNotificationRequest: React.FC<ViewNotificationRequestProps> = ({
       <div className="mb-8">
         <DetailCard title="Notification Details">
           {notificationDetails.map((detail) => (
-            <DetailRow
-              key={detail.label}
-              label={detail.label}
-              value={detail.value}
-            />
+            <DetailRow key={detail.label} label={detail.label} value={detail.value} />
           ))}
         </DetailCard>
       </div>

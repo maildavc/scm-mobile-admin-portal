@@ -18,11 +18,7 @@ interface ViewDepartmentProps {
   onDeactivate: (department: ViewDepartmentProps["department"]) => void;
 }
 
-const ViewDepartment: React.FC<ViewDepartmentProps> = ({
-  department,
-  onEdit,
-  onDeactivate,
-}) => {
+const ViewDepartment: React.FC<ViewDepartmentProps> = ({ department, onEdit, onDeactivate }) => {
   const [activeTab, setActiveTab] = useState("User Info");
   const [showDeactivateModal, setShowDeactivateModal] = useState(false);
 
@@ -30,8 +26,7 @@ const ViewDepartment: React.FC<ViewDepartmentProps> = ({
     setShowDeactivateModal(true);
   };
 
-  const handleDeactivateConfirm = (newDepartmentId: string) => {
-    console.log("Reassigning users to department:", newDepartmentId);
+  const handleDeactivateConfirm = () => {
     onDeactivate(department);
     setShowDeactivateModal(false);
   };

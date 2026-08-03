@@ -33,10 +33,7 @@ export const blogService = {
     return data;
   },
 
-  updateBlog: async (
-    id: string,
-    payload: UpdateBlogRequestDto
-  ): Promise<unknown> => {
+  updateBlog: async (id: string, payload: UpdateBlogRequestDto): Promise<unknown> => {
     const { data } = await apiClient.put(`/api/v1/blog/posts/${id}`, payload);
     return data;
   },
@@ -76,7 +73,7 @@ export const blogService = {
   getDashboardStats: async (): Promise<BlogDashboardStatsDto> => {
     const { data } = await apiClient.get<any>(`/api/v1/blog/dashboard/stats`);
     if (data.isSuccess !== undefined) {
-       return data.value || data.data;
+      return data.value || data.data;
     }
     return data.data || data;
   },

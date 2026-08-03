@@ -21,10 +21,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <ProfileModal
-        isOpen={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
-      />
+      <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
 
       <main className="flex-1 p-8 max-w-400 mx-auto w-full">
         <div className="mb-8">

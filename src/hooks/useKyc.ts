@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
-  kycService, 
-  ApproveKYCDocumentCommand, 
-  RejectKYCDocumentCommand 
+import {
+  kycService,
+  ApproveKYCDocumentCommand,
+  RejectKYCDocumentCommand,
 } from "@/services/kycService";
 import { useToastStore } from "@/stores/toastStore";
 
@@ -32,8 +32,13 @@ export const useApproveKycDocument = () => {
   const addToast = useToastStore((s) => s.addToast);
 
   return useMutation({
-    mutationFn: ({ documentId, payload }: { documentId: string; payload: ApproveKYCDocumentCommand }) =>
-      kycService.approveKycDocument(documentId, payload),
+    mutationFn: ({
+      documentId,
+      payload,
+    }: {
+      documentId: string;
+      payload: ApproveKYCDocumentCommand;
+    }) => kycService.approveKycDocument(documentId, payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: KYC_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: KYC_KEYS.documents(variables.payload.customerId) });
@@ -41,10 +46,8 @@ export const useApproveKycDocument = () => {
     },
     onError: (error: any) => {
       addToast(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Failed to approve document",
-        "error"
+        error?.response?.data?.message || error?.message || "Failed to approve document",
+        "error",
       );
     },
   });
@@ -55,8 +58,13 @@ export const useRejectKycDocument = () => {
   const addToast = useToastStore((s) => s.addToast);
 
   return useMutation({
-    mutationFn: ({ documentId, payload }: { documentId: string; payload: RejectKYCDocumentCommand }) =>
-      kycService.rejectKycDocument(documentId, payload),
+    mutationFn: ({
+      documentId,
+      payload,
+    }: {
+      documentId: string;
+      payload: RejectKYCDocumentCommand;
+    }) => kycService.rejectKycDocument(documentId, payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: KYC_KEYS.lists() });
       queryClient.invalidateQueries({ queryKey: KYC_KEYS.documents(variables.payload.customerId) });
@@ -64,10 +72,8 @@ export const useRejectKycDocument = () => {
     },
     onError: (error: any) => {
       addToast(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Failed to reject document",
-        "error"
+        error?.response?.data?.message || error?.message || "Failed to reject document",
+        "error",
       );
     },
   });

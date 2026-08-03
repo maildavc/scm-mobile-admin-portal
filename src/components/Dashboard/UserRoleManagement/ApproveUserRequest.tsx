@@ -164,11 +164,7 @@ const ApproveUserRequest: React.FC<ApproveUserRequestProps> = ({
 
           <DetailCard title="User Permissions">
             {permissions.map((permission, index) => (
-              <DetailRow
-                key={index}
-                label={permission.label}
-                value={permission.value}
-              />
+              <DetailRow key={index} label={permission.label} value={permission.value} />
             ))}
           </DetailCard>
         </div>

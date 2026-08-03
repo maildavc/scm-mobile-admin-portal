@@ -25,9 +25,7 @@ const RemoveIntegrationModal: React.FC<RemoveIntegrationModalProps> = ({
 }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="max-w-[480px] p-6">
-      <h2 className="text-xl font-bold text-[#101828] mb-2">
-        {title}
-      </h2>
+      <h2 className="text-xl font-bold text-[#101828] mb-2">{title}</h2>
       <p className="text-sm text-[#475467] mb-8">
         {description} {integrationName}?
       </p>
@@ -35,20 +33,10 @@ const RemoveIntegrationModal: React.FC<RemoveIntegrationModalProps> = ({
       <div className="flex gap-3 justify-end items-center">
         <div className="flex justify-end gap-3 w-full">
           <div className="w-24">
-            <Button
-              text="Cancel"
-              variant="outline"
-              onClick={onClose}
-              className="text-sm"
-            />
+            <Button text="Cancel" variant="outline" onClick={onClose} className="text-sm" />
           </div>
           <div className="w-40">
-            <Button
-              text={actionText}
-              variant="primary"
-              onClick={onConfirm}
-              className="text-sm"
-            />
+            <Button text={actionText} variant="primary" onClick={onConfirm} className="text-sm" />
           </div>
         </div>
       </div>

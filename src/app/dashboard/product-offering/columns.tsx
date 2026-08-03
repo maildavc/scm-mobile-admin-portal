@@ -12,7 +12,7 @@ type Product = {
   name: string;
   type: string;
   size: string;
-  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval";
+  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval" | "Approved";
   updated: string;
 };
 
@@ -71,10 +71,7 @@ const OptionsButton = ({
   return (
     <>
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsOpen(false)} />
       )}
       <div className="relative" ref={menuRef}>
         <button
@@ -106,9 +103,7 @@ const OptionsButton = ({
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
               >
                 <item.icon size={18} className="text-[#2F3140]" />
-                <span className="text-sm text-[#2F3140] font-medium">
-                  {item.label}
-                </span>
+                <span className="text-sm text-[#2F3140] font-medium">{item.label}</span>
               </button>
             ))}
           </div>
@@ -141,16 +136,12 @@ export const productColumns: Column<Product>[] = [
   {
     header: <FilterableHeader>PRODUCT TYPE</FilterableHeader>,
     className: "w-[15%]",
-    render: (product) => (
-      <span className="text-sm text-[#2F3140] font-medium">{product.type}</span>
-    ),
+    render: (product) => <span className="text-sm text-[#2F3140] font-medium">{product.type}</span>,
   },
   {
     header: <FilterableHeader>PORTFOLIO SIZE</FilterableHeader>,
     className: "w-[15%]",
-    render: (product) => (
-      <span className="text-sm text-[#2F3140] font-bold">{product.size}</span>
-    ),
+    render: (product) => <span className="text-sm text-[#2F3140] font-bold">{product.size}</span>,
   },
   {
     header: <FilterableHeader>STATUS</FilterableHeader>,
@@ -161,9 +152,7 @@ export const productColumns: Column<Product>[] = [
     header: <FilterableHeader>LAST UPDATED ON</FilterableHeader>,
     className: "w-[15%]",
     render: (product) => (
-      <span className="text-sm text-[#2F3140] font-medium">
-        {product.updated}
-      </span>
+      <span className="text-sm text-[#2F3140] font-medium">{product.updated}</span>
     ),
   },
   {
@@ -205,16 +194,12 @@ export const createProductColumns = (
   {
     header: <FilterableHeader>PRODUCT TYPE</FilterableHeader>,
     className: "w-[15%]",
-    render: (product) => (
-      <span className="text-sm text-[#2F3140] font-medium">{product.type}</span>
-    ),
+    render: (product) => <span className="text-sm text-[#2F3140] font-medium">{product.type}</span>,
   },
   {
     header: <FilterableHeader>PORTFOLIO SIZE</FilterableHeader>,
     className: "w-[15%]",
-    render: (product) => (
-      <span className="text-sm text-[#2F3140] font-bold">{product.size}</span>
-    ),
+    render: (product) => <span className="text-sm text-[#2F3140] font-bold">{product.size}</span>,
   },
   {
     header: <FilterableHeader>STATUS</FilterableHeader>,
@@ -222,9 +207,7 @@ export const createProductColumns = (
     render: (product) => (
       <StatusBadge
         status={product.status}
-        displayLabel={
-          isApprover && product.status === "Active" ? "Approved" : undefined
-        }
+        displayLabel={isApprover && product.status === "Active" ? "Approved" : undefined}
       />
     ),
   },
@@ -232,9 +215,7 @@ export const createProductColumns = (
     header: <FilterableHeader>LAST UPDATED ON</FilterableHeader>,
     className: "w-[15%]",
     render: (product) => (
-      <span className="text-sm text-[#2F3140] font-medium">
-        {product.updated}
-      </span>
+      <span className="text-sm text-[#2F3140] font-medium">{product.updated}</span>
     ),
   },
   {

@@ -22,15 +22,15 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
   onReject,
   onBack,
 }) => {
-  const { data: documents = [], isLoading: isLoadingDocs } = useCustomerDocuments(request.customerId);
+  const { data: documents = [], isLoading: isLoadingDocs } = useCustomerDocuments(
+    request.customerId,
+  );
   const { mutate: approveDoc, isPending: isApproving } = useApproveKycDocument();
   const { mutate: rejectDoc, isPending: isRejecting } = useRejectKycDocument();
 
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-  const [viewStatus, setViewStatus] = useState<
-    "review" | "success" | "rejected"
-  >("review");
+  const [viewStatus, setViewStatus] = useState<"review" | "success" | "rejected">("review");
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
 
   // Handle global approval (e.g. from footer buttons or after document check)
@@ -42,8 +42,8 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
         onSuccess: () => {
           setIsApproveModalOpen(false);
           setViewStatus("success");
-        }
-      }
+        },
+      },
     );
   };
 
@@ -55,8 +55,8 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
         onSuccess: () => {
           setIsRejectModalOpen(false);
           setViewStatus("rejected");
-        }
-      }
+        },
+      },
     );
   };
 
@@ -86,9 +86,7 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
         <div className="mb-6">
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
-        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
-          KYC Verification Approved
-        </h2>
+        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">KYC Verification Approved</h2>
         <p className="text-sm text-[#707781] mb-8 text-center max-w-md">
           KYC verification was successfully approved.
         </p>
@@ -110,9 +108,7 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
         <div className="mb-6">
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
-        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
-          KYC Verification Rejected
-        </h2>
+        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">KYC Verification Rejected</h2>
         <p className="text-sm text-[#707781] mb-8 text-center max-w-md">
           KYC verification was successfully rejected.
         </p>
@@ -156,77 +152,82 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
       />
 
       <div className="bg-white rounded-lg border border-[#F4F4F5] p-6 max-w-4xl w-full">
-        <h3 className="text-base font-bold text-[#2F3140] mb-6">
-          KYC Documents
-        </h3>
+        <h3 className="text-base font-bold text-[#2F3140] mb-6">KYC Documents</h3>
 
         <div className="flex flex-col gap-4">
           {isLoadingDocs ? (
             <p className="text-sm text-gray-500">Loading documents...</p>
           ) : documents.length === 0 ? (
             <p className="text-sm text-gray-500">No documents found for this customer.</p>
-          ) : documents.map((doc) => {
-            const isPending = doc.status === "Pending";
-            const isApproved = doc.status === "Approved";
-            const isRejected = doc.status === "Rejected";
+          ) : (
+            documents.map((doc) => {
+              const isPending = doc.status === "Pending";
+              const isApproved = doc.status === "Approved";
+              const isRejected = doc.status === "Rejected";
 
-            return (
-              <div
-                key={doc.id}
-                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#F4F4F5] last:border-b-0 last:pb-0"
-              >
-                <div className="flex flex-col gap-1">
-                  <p className="text-xs text-[#707781]">{doc.documentType || "Document File"}</p>
-                  <p className="text-sm font-bold text-[#2F3140]">{doc.fileName || doc.id}</p>
-                  <p className="text-xs text-[#707781]">Added: {formatDateToMMMdyyyy(doc.createdAt)} {formatTimeTohmma(doc.createdAt)}</p>
-                </div>
+              return (
+                <div
+                  key={doc.id}
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#F4F4F5] last:border-b-0 last:pb-0"
+                >
+                  <div className="flex flex-col gap-1">
+                    <p className="text-xs text-[#707781]">{doc.documentType || "Document File"}</p>
+                    <p className="text-sm font-bold text-[#2F3140]">{doc.fileName || doc.id}</p>
+                    <p className="text-xs text-[#707781]">
+                      Added: {formatDateToMMMdyyyy(doc.createdAt)} {formatTimeTohmma(doc.createdAt)}
+                    </p>
+                  </div>
 
-                <div className="flex flex-wrap gap-3 items-center">
-                  <Button
-                    text="View File"
-                    variant="outline"
-                    onClick={() => console.log("View file", doc.id)}
-                    className="w-auto! px-6! py-2! font-semibold text-sm md:text-base"
-                  />
+                  <div className="flex flex-wrap gap-3 items-center">
+                    <Button
+                      text="View File"
+                      variant="outline"
+                      onClick={() => window.open(doc.filePath, "_blank", "noopener,noreferrer")}
+                      disabled={!doc.filePath}
+                      className="w-auto! px-6! py-2! font-semibold text-sm md:text-base"
+                    />
 
-                  {isPending && (
-                    <>
+                    {isPending && (
+                      <>
+                        <Button
+                          text={isRejecting && selectedDocId === doc.id ? "Rejecting..." : "Reject"}
+                          variant="outline"
+                          onClick={() => handleDocumentAction(doc.id, "Reject")}
+                          disabled={isRejecting || isApproving}
+                          className="w-auto! px-6! py-2! text-[#B2171E]! font-semibold text-sm md:text-base"
+                        />
+                        <Button
+                          text={
+                            isApproving && selectedDocId === doc.id ? "Approving..." : "Approve"
+                          }
+                          variant="outline"
+                          onClick={() => handleDocumentAction(doc.id, "Approve")}
+                          disabled={isRejecting || isApproving}
+                          className="w-auto! px-6! py-2! text-[#29C680]! font-semibold text-sm md:text-base"
+                        />
+                      </>
+                    )}
+
+                    {isApproved && (
                       <Button
-                        text={isRejecting && selectedDocId === doc.id ? "Rejecting..." : "Reject"}
+                        text="Approved"
                         variant="outline"
-                        onClick={() => handleDocumentAction(doc.id, "Reject")}
-                        disabled={isRejecting || isApproving}
-                        className="w-auto! px-6! py-2! text-[#B2171E]! font-semibold text-sm md:text-base"
-                      />
-                      <Button
-                        text={isApproving && selectedDocId === doc.id ? "Approving..." : "Approve"}
-                        variant="outline"
-                        onClick={() => handleDocumentAction(doc.id, "Approve")}
-                        disabled={isRejecting || isApproving}
                         className="w-auto! px-6! py-2! text-[#29C680]! font-semibold text-sm md:text-base"
                       />
-                    </>
-                  )}
+                    )}
 
-                  {isApproved && (
-                    <Button
-                      text="Approved"
-                      variant="outline"
-                      className="w-auto! px-6! py-2! text-[#29C680]! font-semibold text-sm md:text-base"
-                    />
-                  )}
-
-                  {isRejected && (
-                    <Button
-                      text="Rejected"
-                      variant="outline"
-                      className="w-auto! px-6! py-2! text-[#B2171E]! font-semibold text-sm md:text-base"
-                    />
-                  )}
+                    {isRejected && (
+                      <Button
+                        text="Rejected"
+                        variant="outline"
+                        className="w-auto! px-6! py-2! text-[#B2171E]! font-semibold text-sm md:text-base"
+                      />
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
     </div>

@@ -5,11 +5,17 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "outline";
 }
 
-const Button: React.FC<ButtonProps> = ({ text, className, disabled, variant = "primary", ...props }) => {
+const Button: React.FC<ButtonProps> = ({
+  text,
+  className,
+  disabled,
+  variant = "primary",
+  ...props
+}) => {
   const getVariantStyles = () => {
     switch (variant) {
       case "primary":
-        return `text-white ${disabled ? 'bg-[#b2171e33]' : 'bg-[#B2171E]'}`;
+        return `text-white ${disabled ? "bg-[#b2171e33]" : "bg-[#B2171E]"}`;
       case "secondary":
         return `text-white bg-[#2F3140]`;
       case "outline":

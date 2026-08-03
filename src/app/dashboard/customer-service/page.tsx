@@ -31,9 +31,7 @@ export default function CustomerService() {
             href="/dashboard/customer-service/new-request"
             className="flex items-center justify-between p-6 border-b border-gray-100 hover:bg-gray-50 transition-colors group cursor-pointer"
           >
-            <span className="font-medium text-[#2F3140]">
-              New Support Request
-            </span>
+            <span className="font-medium text-[#2F3140]">New Support Request</span>
             <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-gray-200 transition-colors">
               <RiChat3Line size={18} />
             </div>

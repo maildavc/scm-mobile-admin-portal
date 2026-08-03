@@ -47,12 +47,7 @@ const ApproveRoleRequest: React.FC<ApproveRoleRequestProps> = ({
     },
     {
       module: "User & Role management",
-      permissions: [
-        "Create User",
-        "Approve User",
-        "Create Role",
-        "Approve Role",
-      ],
+      permissions: ["Create User", "Approve User", "Create Role", "Approve Role"],
     },
     {
       module: "Audit Log",
@@ -163,20 +158,13 @@ const ApproveRoleRequest: React.FC<ApproveRoleRequestProps> = ({
               <div
                 key={index}
                 className={`flex justify-between py-3 ${
-                  index !== assignedPermissions.length - 1
-                    ? "border-b border-[#F4F4F5]"
-                    : ""
+                  index !== assignedPermissions.length - 1 ? "border-b border-[#F4F4F5]" : ""
                 }`}
               >
-                <div className="text-sm text-[#2F3140] w-1/2">
-                  {item.module}
-                </div>
+                <div className="text-sm text-[#2F3140] w-1/2">{item.module}</div>
                 <div className="space-y-1 text-right w-1/2">
                   {item.permissions.map((permission, pIndex) => (
-                    <div
-                      key={pIndex}
-                      className="text-sm text-[#707781] font-semibold"
-                    >
+                    <div key={pIndex} className="text-sm text-[#707781] font-semibold">
                       {permission}
                     </div>
                   ))}

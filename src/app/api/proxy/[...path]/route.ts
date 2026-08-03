@@ -1,205 +1,282 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  createCorrelationId,
+  decodeBackendBody,
+  encodeJsonRequest,
+  findAuthTokens,
+  getApiBaseUrl,
+  removeAuthTokens,
+} from "@/lib/server/apiTransport";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://10.114.0.3:5000";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-/* ------------------------------------------------------------------ */
-/*  fetch-based proxy – undici auto-decompresses br/gzip/deflate       */
-/* ------------------------------------------------------------------ */
+type RouteContext = { params: Promise<{ path: string[] }> };
+type ProxyBody = string | FormData | undefined;
 
-interface ProxyResult {
-  status: number;
-  contentType: string;
-  body: string;
+interface ForwardRequest {
+  method: string;
+  url: string;
+  headers: Record<string, string>;
+  body?: ProxyBody;
 }
 
-async function proxyFetch(
-  targetUrl: string,
-  method: string,
-  headers: Record<string, string>,
-  body?: string,
-): Promise<ProxyResult> {
-  const res = await fetch(targetUrl, {
-    method,
-    headers,
-    body: body || undefined,
-    cache: "no-store",
+const ACCESS_COOKIE = "accessToken";
+const REFRESH_COOKIE = "refreshToken";
+const REFRESH_PATH = process.env.AUTH_REFRESH_PATH || "/api/v1/auth/refresh";
+
+function isProduction() {
+  return process.env.NODE_ENV === "production";
+}
+
+function setAuthCookies(response: NextResponse, accessToken: string, refreshToken?: string) {
+  response.cookies.set(ACCESS_COOKIE, accessToken, {
+    httpOnly: true,
+    secure: isProduction(),
+    sameSite: "strict",
+    path: "/",
+    maxAge: 24 * 60 * 60,
   });
-
-  const buffer = await res.arrayBuffer();
-  const text = new TextDecoder().decode(buffer);
-
-  return {
-    status: res.status,
-    contentType: res.headers.get("content-type") || "application/octet-stream",
-    body: text,
-  };
+  if (refreshToken) {
+    response.cookies.set(REFRESH_COOKIE, refreshToken, {
+      httpOnly: true,
+      secure: isProduction(),
+      sameSite: "strict",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60,
+    });
+  }
 }
 
-/* ------------------------------------------------------------------ */
-/*  Shared helpers                                                     */
-/* ------------------------------------------------------------------ */
+function clearAuthCookies(response: NextResponse) {
+  response.cookies.set(ACCESS_COOKIE, "", {
+    httpOnly: true,
+    secure: isProduction(),
+    sameSite: "strict",
+    path: "/",
+    maxAge: 0,
+  });
+  response.cookies.set(REFRESH_COOKIE, "", {
+    httpOnly: true,
+    secure: isProduction(),
+    sameSite: "strict",
+    path: "/",
+    maxAge: 0,
+  });
+}
+
+function buildTargetUrl(request: NextRequest, path: string[]) {
+  const target = new URL(`${getApiBaseUrl()}/${path.join("/")}`);
+  request.nextUrl.searchParams.forEach((value, key) => {
+    target.searchParams.append(key.charAt(0).toUpperCase() + key.slice(1), value);
+  });
+  return target.toString();
+}
 
 function buildHeaders(
   request: NextRequest,
-  includeContentType = false,
+  accessToken?: string,
+  contentType?: string,
 ): Record<string, string> {
   const headers: Record<string, string> = {
-    "User-Agent": "SCM-Admin-Proxy/1.0",
     Accept: "*/*",
     "Accept-Encoding": "gzip, deflate, br",
-    Connection: "keep-alive",
+    "User-Agent": "SCM-Admin-Proxy/2.0",
+    "X-Correlation-ID": createCorrelationId(request.headers.get("X-Correlation-ID")),
   };
 
-  if (includeContentType) {
-    headers["Content-Type"] = "application/json";
-  }
-
-  const auth = request.headers.get("Authorization");
-  if (auth) headers["Authorization"] = auth;
-
-  const correlationId = request.headers.get("X-Correlation-ID");
-  if (correlationId) headers["X-Correlation-ID"] = correlationId;
-
+  if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+  if (contentType) headers["Content-Type"] = contentType;
   return headers;
 }
 
-function toNextResponse(result: ProxyResult): NextResponse {
-  return new NextResponse(result.body, {
-    status: result.status,
-    headers: { "Content-Type": result.contentType },
+async function prepareBody(
+  request: NextRequest,
+): Promise<{ body: ProxyBody; contentType?: string }> {
+  if (["GET", "HEAD"].includes(request.method)) return { body: undefined };
+
+  const incomingType = request.headers.get("content-type") || "";
+  if (incomingType.includes("multipart/form-data")) {
+    return { body: await request.formData() };
+  }
+
+  const text = await request.text();
+  if (!text) return { body: undefined };
+
+  try {
+    return {
+      body: encodeJsonRequest(JSON.parse(text)),
+      contentType: "application/json",
+    };
+  } catch {
+    return {
+      body: encodeJsonRequest(text),
+      contentType: "application/json",
+    };
+  }
+}
+
+async function forward({ method, url, headers, body }: ForwardRequest) {
+  return fetch(url, {
+    method,
+    headers,
+    body,
+    cache: "no-store",
+    redirect: "manual",
   });
 }
 
-/* ------------------------------------------------------------------ */
-/*  Route handlers                                                     */
-/* ------------------------------------------------------------------ */
-
-// ─── POST ────────────────────────────────────────────────────────────────────
-export async function POST(
+async function refreshAccessToken(
   request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> },
-) {
-  const { path } = await params;
-  const targetUrl = `${API_BASE_URL}/${path.join("/")}`;
-  const contentType = request.headers.get("content-type") || "";
-  const isMultipart = contentType.includes("multipart/form-data");
+): Promise<{ accessToken: string; refreshToken?: string } | null> {
+  const refreshToken = request.cookies.get(REFRESH_COOKIE)?.value;
+  if (!refreshToken) return null;
 
   try {
-    let body: string;
-    const headers = buildHeaders(request, !isMultipart);
+    const response = await fetch(`${getApiBaseUrl()}${REFRESH_PATH}`, {
+      method: "POST",
+      headers: buildHeaders(request, undefined, "application/json"),
+      body: encodeJsonRequest({ refreshToken }),
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
 
-    if (isMultipart) {
-      // Forward the original content-type (with boundary) and raw body
-      headers["Content-Type"] = contentType;
-      const buffer = await request.arrayBuffer();
-      body = new TextDecoder().decode(buffer);
-    } else {
-      body = await request.text();
-    }
-
-    const result = await proxyFetch(targetUrl, "POST", headers, body);
-    return toNextResponse(result);
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Proxy request failed", details: String(error) },
-      { status: 502 },
-    );
+    const decoded = decodeBackendBody(await response.text());
+    return findAuthTokens(decoded.data);
+  } catch {
+    return null;
   }
 }
 
-// ─── GET ─────────────────────────────────────────────────────────────────────
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> },
+function createClientResponse(
+  decoded: ReturnType<typeof decodeBackendBody>,
+  status: number,
+  backendContentType: string | null,
 ) {
-  const { path } = await params;
-  const search = request.nextUrl.search;
-  const targetUrl = `${API_BASE_URL}/${path.join("/")}${search}`;
-
-  try {
-    const result = await proxyFetch(targetUrl, "GET", buildHeaders(request));
-    return toNextResponse(result);
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Proxy request failed", details: String(error) },
-      { status: 502 },
-    );
+  if (decoded.isJson) {
+    return NextResponse.json(decoded.data, { status });
   }
+  return new NextResponse(String(decoded.data), {
+    status,
+    headers: {
+      "Content-Type": backendContentType || "text/plain; charset=utf-8",
+    },
+  });
 }
 
-// ─── PUT ─────────────────────────────────────────────────────────────────────
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> },
-) {
-  const { path } = await params;
-  const targetUrl = `${API_BASE_URL}/${path.join("/")}`;
-  const contentType = request.headers.get("content-type") || "";
-  const isMultipart = contentType.includes("multipart/form-data");
+async function handle(request: NextRequest, context: RouteContext) {
+  const { path } = await context.params;
+  const normalizedPath = path.join("/");
+  const isLogin = normalizedPath === "api/v1/auth/login";
+  const isLogout = normalizedPath === "api/v1/auth/logout";
+  const isValidPath =
+    normalizedPath.startsWith("api/v1/") &&
+    path.every(
+      (segment) => segment !== "." && segment !== ".." && /^[a-zA-Z0-9._-]+$/.test(segment),
+    );
+  if (!isValidPath) {
+    return NextResponse.json({ message: "Invalid API path." }, { status: 400 });
+  }
 
-  try {
-    let body: string;
-    const headers = buildHeaders(request, !isMultipart);
-
-    if (isMultipart) {
-      headers["Content-Type"] = contentType;
-      const buffer = await request.arrayBuffer();
-      body = new TextDecoder().decode(buffer);
-    } else {
-      body = await request.text();
-    }
-
-    const result = await proxyFetch(targetUrl, "PUT", headers, body);
-    return toNextResponse(result);
-  } catch (error) {
+  const origin = request.headers.get("origin");
+  if (
+    !["GET", "HEAD", "OPTIONS"].includes(request.method) &&
+    origin &&
+    origin !== request.nextUrl.origin
+  ) {
     return NextResponse.json(
-      { error: "Proxy request failed", details: String(error) },
-      { status: 502 },
+      { message: "Cross-origin API requests are not allowed." },
+      { status: 403 },
     );
   }
-}
-
-// ─── DELETE ──────────────────────────────────────────────────────────────────
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> },
-) {
-  const { path } = await params;
-  const targetUrl = `${API_BASE_URL}/${path.join("/")}`;
 
   try {
-    const result = await proxyFetch(targetUrl, "DELETE", buildHeaders(request));
-    return toNextResponse(result);
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Proxy request failed", details: String(error) },
-      { status: 502 },
-    );
-  }
-}
-
-// ─── PATCH ───────────────────────────────────────────────────────────────────
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> },
-) {
-  const { path } = await params;
-  const targetUrl = `${API_BASE_URL}/${path.join("/")}`;
-  const body = await request.text();
-
-  try {
-    const result = await proxyFetch(
-      targetUrl,
-      "PATCH",
-      buildHeaders(request, true),
+    const { body, contentType } = await prepareBody(request);
+    const targetUrl = buildTargetUrl(request, path);
+    let accessToken = request.cookies.get(ACCESS_COOKIE)?.value;
+    let backendResponse = await forward({
+      method: request.method,
+      url: targetUrl,
+      headers: buildHeaders(request, accessToken, contentType),
       body,
+    });
+
+    let refreshedTokens: Awaited<ReturnType<typeof refreshAccessToken>> = null;
+    if (
+      backendResponse.status === 401 &&
+      !isLogin &&
+      !isLogout &&
+      normalizedPath !== REFRESH_PATH.replace(/^\/+/, "")
+    ) {
+      refreshedTokens = await refreshAccessToken(request);
+      if (refreshedTokens) {
+        accessToken = refreshedTokens.accessToken;
+        backendResponse = await forward({
+          method: request.method,
+          url: targetUrl,
+          headers: buildHeaders(request, accessToken, contentType),
+          body,
+        });
+      }
+    }
+
+    const decoded = decodeBackendBody(await backendResponse.text());
+    const loginTokens = isLogin ? findAuthTokens(decoded.data) : null;
+    const safeDecoded = loginTokens
+      ? { ...decoded, data: removeAuthTokens(decoded.data) }
+      : decoded;
+    const clientResponse = createClientResponse(
+      safeDecoded,
+      backendResponse.status,
+      backendResponse.headers.get("content-type"),
     );
-    return toNextResponse(result);
+
+    if (loginTokens) {
+      setAuthCookies(clientResponse, loginTokens.accessToken, loginTokens.refreshToken);
+    } else if (refreshedTokens) {
+      setAuthCookies(clientResponse, refreshedTokens.accessToken, refreshedTokens.refreshToken);
+    }
+
+    if (isLogout || backendResponse.status === 401) {
+      clearAuthCookies(clientResponse);
+    }
+
+    clientResponse.headers.set(
+      "X-Correlation-ID",
+      backendResponse.headers.get("X-Correlation-ID") ||
+        request.headers.get("X-Correlation-ID") ||
+        "",
+    );
+    clientResponse.headers.set("Cache-Control", "no-store");
+    return clientResponse;
   } catch (error) {
-    return NextResponse.json(
-      { error: "Proxy request failed", details: String(error) },
-      { status: 502 },
+    const correlationId = createCorrelationId(request.headers.get("X-Correlation-ID"));
+    console.error("API proxy failure", {
+      correlationId,
+      method: request.method,
+      path: request.nextUrl.pathname,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    const response = NextResponse.json(
+      {
+        message: "The upstream service is unavailable.",
+        correlationId,
+      },
+      {
+        status: 502,
+        headers: {
+          "Cache-Control": "no-store",
+          "X-Correlation-ID": correlationId,
+        },
+      },
     );
+    if (isLogout) clearAuthCookies(response);
+    return response;
   }
 }
+
+export const GET = handle;
+export const POST = handle;
+export const PUT = handle;
+export const PATCH = handle;
+export const DELETE = handle;

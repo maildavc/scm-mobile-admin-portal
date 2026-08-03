@@ -1,20 +1,11 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import {
-  FiEye,
-  FiEyeOff,
-  FiChevronDown,
-  FiCalendar,
-  FiClock,
-} from "react-icons/fi";
+import { FiEye, FiEyeOff, FiChevronDown, FiCalendar, FiClock } from "react-icons/fi";
 import Calendar from "./Calendar";
 import TimePicker from "./TimePicker";
 
-interface InputProps extends Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  "type"
-> {
+interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
   label: string;
   isPassword?: boolean;
   error?: boolean;
@@ -56,10 +47,7 @@ const Input: React.FC<InputProps> = ({
   };
 
   const handleClickOutside = (event: MouseEvent) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target as Node)
-    ) {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
       setIsOpen(false);
       setIsCalendarOpen(false);
       setIsTimePickerOpen(false);
@@ -77,11 +65,7 @@ const Input: React.FC<InputProps> = ({
 
   const isLight = theme === "light";
 
-  const borderColor = error
-    ? "border-red-500"
-    : isLight
-      ? "border-gray-200"
-      : "border-white/10";
+  const borderColor = error ? "border-red-500" : isLight ? "border-gray-200" : "border-white/10";
 
   const bgColor = isLight ? "bg-white" : "bg-transparent";
   const textColor = isLight ? "text-[#2F3140]" : "text-white";
@@ -156,154 +140,148 @@ const Input: React.FC<InputProps> = ({
 
   return (
     <div className="flex flex-col">
-    <div
-      className={`relative w-full border rounded-xl px-4 py-3 transition-colors ${bgColor} ${borderColor} ${props.disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
-      ref={dropdownRef}
-    >
-      <div className="flex flex-col gap-0.5 pr-8">
-        <label className="text-xs font-semibold text-[#707781] mb-1">
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
+      <div
+        className={`relative w-full border rounded-xl px-4 py-3 transition-colors ${bgColor} ${borderColor} ${props.disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
+        ref={dropdownRef}
+      >
+        <div className="flex flex-col gap-0.5 pr-8">
+          <label className="text-xs font-semibold text-[#707781] mb-1">
+            {label} {required && <span className="text-red-500">*</span>}
+          </label>
 
-        {type === "select" ? (
-          <>
-            <div
-              className={`w-full bg-transparent text-sm ${selectedOption ? textColor : "text-[#707781]"} focus:outline-none font-medium cursor-pointer`}
-              onClick={() => !props.disabled && setIsOpen(!isOpen)}
-            >
-              {selectedOption
-                ? selectedOption.label
-                : props.placeholder || "Select Option"}
-            </div>
-
-            {isOpen && !props.disabled && (
-              <div className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white border border-gray-100 rounded-xl shadow-xl z-50 py-1 max-h-60 overflow-auto">
-                {options?.map((opt) => (
-                  <div
-                    key={opt.value}
-                    className={`px-4 py-2.5 text-sm hover:bg-gray-50 cursor-pointer text-[#2F3140] transition-colors ${currentValue === opt.value ? "bg-gray-50 font-medium" : ""}`}
-                    onClick={() => handleSelect(opt.value)}
-                  >
-                    {opt.label}
-                  </div>
-                ))}
+          {type === "select" ? (
+            <>
+              <div
+                className={`w-full bg-transparent text-sm ${selectedOption ? textColor : "text-[#707781]"} focus:outline-none font-medium cursor-pointer`}
+                onClick={() => !props.disabled && setIsOpen(!isOpen)}
+              >
+                {selectedOption ? selectedOption.label : props.placeholder || "Select Option"}
               </div>
-            )}
-          </>
-        ) : type === "file" ? (
-          <>
-            <div
-              className={`w-full bg-transparent text-sm ${selectedFileName ? textColor : "text-[#707781]"} focus:outline-none font-medium cursor-pointer`}
-              onClick={handleFileClick}
-            >
-              {selectedFileName || props.placeholder || "Upload Image"}
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-              aria-label={label}
-            />
-          </>
-        ) : type === "date" ? (
-          <>
-            <div
-              className={`w-full bg-transparent text-sm ${props.value ? textColor : "text-[#707781]"} focus:outline-none font-medium cursor-pointer`}
-              onClick={handleDateClick}
-            >
-              {props.value
-                ? formatDisplayDate(String(props.value))
-                : props.placeholder || "DD/MM/YYYY"}
-            </div>
-            {isCalendarOpen && !props.disabled && (
-              <Calendar
-                selectedDate={String(props.value || "")}
-                onDateSelect={handleDateSelect}
-                onClose={() => setIsCalendarOpen(false)}
-              />
-            )}
-          </>
-        ) : type === "time" ? (
-          <>
-            <div
-              className={`w-full bg-transparent text-sm ${props.value ? textColor : "text-[#707781]"} focus:outline-none font-medium cursor-pointer`}
-              onClick={handleTimeClick}
-            >
-              {props.value
-                ? String(props.value)
-                : props.placeholder || "00:00 AM"}
-            </div>
-            {isTimePickerOpen && !props.disabled && (
-              <TimePicker
-                selectedTime={String(props.value || "")}
-                onTimeSelect={handleTimeSelect}
-                onClose={() => setIsTimePickerOpen(false)}
-              />
-            )}
-          </>
-        ) : (
-          <input
-            {...props}
-            type={inputType}
-            className={`w-full bg-transparent text-sm ${textColor} focus:outline-none ${placeholderColor} font-medium`}
-          />
-        )}
-      </div>
 
-      {isPassword ? (
-        <button
-          type="button"
-          onClick={togglePasswordVisibility}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none"
-        >
-          {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
-        </button>
-      ) : type === "file" ? (
-        <button
-          type="button"
-          onClick={handleFileClick}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none cursor-pointer transition-colors"
-        >
-          {rightIcon}
-        </button>
-      ) : type === "select" ? (
-        <button
-          type="button"
-          onClick={() => !props.disabled && setIsOpen(!isOpen)}
-          className={`absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none cursor-pointer transition-all duration-200 ${isOpen ? "rotate-180" : ""}`}
-          aria-label="Toggle dropdown"
-        >
-          <FiChevronDown size={18} />
-        </button>
-      ) : type === "date" ? (
-        <button
-          type="button"
-          aria-label="Open date picker"
-          onClick={handleDateClick}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none cursor-pointer"
-        >
-          <FiCalendar size={18} />
-        </button>
-      ) : type === "time" ? (
-        <button
-          type="button"
-          aria-label="Open time picker"
-          onClick={handleTimeClick}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none cursor-pointer"
-        >
-          <FiClock size={18} />
-        </button>
-      ) : rightIcon ? (
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[#707781]">
-          {rightIcon}
+              {isOpen && !props.disabled && (
+                <div className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white border border-gray-100 rounded-xl shadow-xl z-50 py-1 max-h-60 overflow-auto">
+                  {options?.map((opt) => (
+                    <div
+                      key={opt.value}
+                      className={`px-4 py-2.5 text-sm hover:bg-gray-50 cursor-pointer text-[#2F3140] transition-colors ${currentValue === opt.value ? "bg-gray-50 font-medium" : ""}`}
+                      onClick={() => handleSelect(opt.value)}
+                    >
+                      {opt.label}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : type === "file" ? (
+            <>
+              <div
+                className={`w-full bg-transparent text-sm ${selectedFileName ? textColor : "text-[#707781]"} focus:outline-none font-medium cursor-pointer`}
+                onClick={handleFileClick}
+              >
+                {selectedFileName || props.placeholder || "Upload Image"}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+                aria-label={label}
+              />
+            </>
+          ) : type === "date" ? (
+            <>
+              <div
+                className={`w-full bg-transparent text-sm ${props.value ? textColor : "text-[#707781]"} focus:outline-none font-medium cursor-pointer`}
+                onClick={handleDateClick}
+              >
+                {props.value
+                  ? formatDisplayDate(String(props.value))
+                  : props.placeholder || "DD/MM/YYYY"}
+              </div>
+              {isCalendarOpen && !props.disabled && (
+                <Calendar
+                  selectedDate={String(props.value || "")}
+                  onDateSelect={handleDateSelect}
+                  onClose={() => setIsCalendarOpen(false)}
+                />
+              )}
+            </>
+          ) : type === "time" ? (
+            <>
+              <div
+                className={`w-full bg-transparent text-sm ${props.value ? textColor : "text-[#707781]"} focus:outline-none font-medium cursor-pointer`}
+                onClick={handleTimeClick}
+              >
+                {props.value ? String(props.value) : props.placeholder || "00:00 AM"}
+              </div>
+              {isTimePickerOpen && !props.disabled && (
+                <TimePicker
+                  selectedTime={String(props.value || "")}
+                  onTimeSelect={handleTimeSelect}
+                  onClose={() => setIsTimePickerOpen(false)}
+                />
+              )}
+            </>
+          ) : (
+            <input
+              {...props}
+              type={inputType}
+              className={`w-full bg-transparent text-sm ${textColor} focus:outline-none ${placeholderColor} font-medium`}
+            />
+          )}
         </div>
-      ) : null}
-    </div>
-    {errorMessage && (
-      <p className="mt-1 text-xs text-red-500">{errorMessage}</p>
-    )}
+
+        {isPassword ? (
+          <button
+            type="button"
+            onClick={togglePasswordVisibility}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none"
+          >
+            {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+          </button>
+        ) : type === "file" ? (
+          <button
+            type="button"
+            onClick={handleFileClick}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none cursor-pointer transition-colors"
+          >
+            {rightIcon}
+          </button>
+        ) : type === "select" ? (
+          <button
+            type="button"
+            onClick={() => !props.disabled && setIsOpen(!isOpen)}
+            className={`absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none cursor-pointer transition-all duration-200 ${isOpen ? "rotate-180" : ""}`}
+            aria-label="Toggle dropdown"
+          >
+            <FiChevronDown size={18} />
+          </button>
+        ) : type === "date" ? (
+          <button
+            type="button"
+            aria-label="Open date picker"
+            onClick={handleDateClick}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none cursor-pointer"
+          >
+            <FiCalendar size={18} />
+          </button>
+        ) : type === "time" ? (
+          <button
+            type="button"
+            aria-label="Open time picker"
+            onClick={handleTimeClick}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none cursor-pointer"
+          >
+            <FiClock size={18} />
+          </button>
+        ) : rightIcon ? (
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[#707781]">
+            {rightIcon}
+          </div>
+        ) : null}
+      </div>
+      {errorMessage && <p className="mt-1 text-xs text-red-500">{errorMessage}</p>}
     </div>
   );
 };

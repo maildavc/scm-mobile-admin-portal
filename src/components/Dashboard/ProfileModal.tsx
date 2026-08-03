@@ -32,9 +32,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
             <BiUser size={28} />
           </div>
           <div className="flex flex-col gap-1">
-            <h2 className="text-sm font-semibold text-[#2F3140]">
-              {displayName}
-            </h2>
+            <h2 className="text-sm font-semibold text-[#2F3140]">{displayName}</h2>
             <p className="text-[#707781] text-xs">Permission Name Here</p>
             <button className="flex items-center gap-1 text-[#B2171E] font-medium text-xs mt-1 w-fit">
               Manage Profile <PiCaretDown size={12} />
@@ -44,9 +42,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
 
         {/* Permissions Section */}
         <div>
-          <h3 className="font-bold text-[#2F3140] mb-6 text-base">
-            User Permissions
-          </h3>
+          <h3 className="font-bold text-[#2F3140] mb-6 text-base">User Permissions</h3>
 
           <div className="flex flex-col gap-4">
             {PERMISSIONS.map((permission, index) => (
@@ -54,12 +50,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
                 key={index}
                 className="flex items-center justify-between py-2 border-b border-gray-50 pb-4"
               >
-                <span className="text-[#2F3140] text-sm md:text-base">
-                  {permission.label}
-                </span>
-                <span className="text-[#707781] text-sm md:text-base">
-                  {permission.module}
-                </span>
+                <span className="text-[#2F3140] text-sm md:text-base">{permission.label}</span>
+                <span className="text-[#707781] text-sm md:text-base">{permission.module}</span>
               </div>
             ))}
           </div>

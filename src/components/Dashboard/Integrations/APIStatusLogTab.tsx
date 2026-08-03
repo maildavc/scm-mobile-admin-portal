@@ -25,7 +25,14 @@ const columns: Column<IntegrationLogDto>[] = [
     className: "w-[25%]",
     render: (item) => (
       <div>
-        <p className="font-bold text-[#2F3140] text-sm">{new Date(item.timestamp).toLocaleDateString("en-GB") + " " + new Date(item.timestamp).toLocaleTimeString("en-GB", { hour:'2-digit', minute:'2-digit' })}</p>
+        <p className="font-bold text-[#2F3140] text-sm">
+          {new Date(item.timestamp).toLocaleDateString("en-GB") +
+            " " +
+            new Date(item.timestamp).toLocaleTimeString("en-GB", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+        </p>
         <p className="text-[#707781] text-xs">{item.performedBy || "System"}</p>
       </div>
     ),
@@ -33,26 +40,31 @@ const columns: Column<IntegrationLogDto>[] = [
   {
     header: <FilterableHeader>API STATUS</FilterableHeader>,
     className: "w-[25%]",
-    render: (item) => <StatusBadge status={(item.logLevel === "Error" || item.logLevel === "Critical" ? "Fatal" : item.logLevel === "Warning" ? "Shortage" : "Active") as "Active" | "Fatal" | "Shortage" | "Failed"} displayLabel={item.logLevel || "Info"} />,
+    render: (item) => (
+      <StatusBadge
+        status={
+          (item.logLevel === "Error" || item.logLevel === "Critical"
+            ? "Fatal"
+            : item.logLevel === "Warning"
+              ? "Shortage"
+              : "Active") as "Active" | "Fatal" | "Shortage" | "Failed"
+        }
+        displayLabel={item.logLevel || "Info"}
+      />
+    ),
   },
   {
-    header: (
-      <span className="text-xs text-[#2F3140] uppercase font-bold">
-        DETAILS
-      </span>
-    ),
+    header: <span className="text-xs text-[#2F3140] uppercase font-bold">DETAILS</span>,
     className: "w-[50%]",
     render: (item) => (
-      <span className="text-sm text-[#2F3140] font-bold">
-        {item.details || item.action || ""}
-      </span>
+      <span className="text-sm text-[#2F3140] font-bold">{item.details || item.action || ""}</span>
     ),
   },
 ];
 
 const APIStatusLogTab: React.FC<APIStatusLogTabProps> = ({ integrationId }) => {
   const itemsPerPage = 10;
-  
+
   const { data: logsResponse } = useIntegrationLogs(integrationId, {
     Page: 1,
     PageSize: itemsPerPage,
@@ -64,18 +76,8 @@ const APIStatusLogTab: React.FC<APIStatusLogTabProps> = ({ integrationId }) => {
     <div className="flex flex-col gap-6">
       {/* Action Buttons */}
       <div className="flex flex-col md:flex-row gap-4">
-        <ActionButton
-          label="Download Table as PDF"
-          actionText="Download"
-          onClick={() => console.log("Download PDF")}
-          fullWidth
-        />
-        <ActionButton
-          label="Export Table as CSV"
-          actionText="Export"
-          onClick={() => console.log("Export CSV")}
-          fullWidth
-        />
+        <ActionButton label="Download Table as PDF" actionText="Download" fullWidth />
+        <ActionButton label="Export Table as CSV" actionText="Export" fullWidth />
       </div>
 
       {/* Table - ignoring pagination controls since Table doesn't seem to have totalItems natively yet, or we'll fix it if we check Table.tsx soon */}

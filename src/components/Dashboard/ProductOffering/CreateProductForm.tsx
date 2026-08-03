@@ -14,7 +14,7 @@ type Product = {
   name: string;
   type: string;
   size: string;
-  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval";
+  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval" | "Approved";
   updated: string;
 };
 
@@ -30,22 +30,18 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
   initialData,
 }) => {
   const isEditing = !!initialData;
-  const [formData, setFormData] = useState<Record<string, string | File>>(
-    () => {
-      if (initialData) {
-        return {
-          "Product Name": initialData.name,
-          "Instrument Type": initialData.type,
-        };
-      }
-      return {} as Record<string, string | File>;
-    },
-  );
+  const [formData, setFormData] = useState<Record<string, string | File>>(() => {
+    if (initialData) {
+      return {
+        "Product Name": initialData.name,
+        "Instrument Type": initialData.type,
+      };
+    }
+    return {} as Record<string, string | File>;
+  });
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const { data: detailRes, isLoading: isLoadingDetail } = useProductDetail(
-    initialData?.id || ""
-  );
+  const { data: detailRes, isLoading: isLoadingDetail } = useProductDetail(initialData?.id || "");
 
   useEffect(() => {
     if (isEditing && detailRes?.value?.data) {
@@ -54,8 +50,8 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
         ...prev,
         "Product Name": pd?.productName || initialData?.name || "",
         "Instrument Type": pd?.instrumentType || initialData?.type || "",
-        "Issuer": pd?.issuer || "",
-        "Sector": pd?.sector || "",
+        Issuer: pd?.issuer || "",
+        Sector: pd?.sector || "",
         "Selling Price": fd?.sellingPrice?.toString() || "",
         "Available Volume": fd?.availableVolume?.toString() || "",
         "Interest or returns Percentage": fd?.interestOrReturnsPercentage?.toString() || "",
@@ -67,7 +63,7 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
         "Early Liquidation Penalty?": fd?.earlyLiquidationPenalty || "",
         "WHT Amount": fd?.whtAmount?.toString() || "",
         "Applicable Tax": fd?.applicableTax?.toString() || "",
-        "Source": intg?.source || "",
+        Source: intg?.source || "",
       }));
     }
   }, [detailRes, isEditing, initialData]);
@@ -76,9 +72,7 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
   const requiredFields = useMemo(
     () =>
       FORM_SECTIONS.flatMap((section) =>
-        section.fields
-          .filter((field) => field.required)
-          .map((field) => field.label),
+        section.fields.filter((field) => field.required).map((field) => field.label),
       ),
     [],
   );
@@ -125,7 +119,7 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
     let issuersLogoBase64 = "";
     const logoFile = formData["Issuers Logo"];
     if (logoFile instanceof File) {
-      // The base64 string includes 'data:image/png;base64,...' 
+      // The base64 string includes 'data:image/png;base64,...'
       // The backend will receive it as a string
       issuersLogoBase64 = await fileToBase64(logoFile);
     } else if (typeof logoFile === "string" && logoFile.startsWith("data:")) {
@@ -140,24 +134,25 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
         issuer: formData["Issuer"] as string,
         sector: formData["Sector"] as string,
         description: "", // added to match new DTO requirements
-        issuersLogo: issuersLogoBase64
+        issuersLogo: issuersLogoBase64,
       },
       financialInformation: {
         sellingPrice: parseFloat(formData["Selling Price"] as string) || 0,
         availableVolume: parseInt(formData["Available Volume"] as string, 10) || 0,
-        interestOrReturnsPercentage: parseFloat(formData["Interest or returns Percentage"] as string) || 0,
+        interestOrReturnsPercentage:
+          parseFloat(formData["Interest or returns Percentage"] as string) || 0,
         minimumInvestmentAmount: parseFloat(formData["Minimum Investment Amount"] as string) || 0,
         maximumInvestmentAmount: parseFloat(formData["Maximum Investment Amount"] as string) || 0,
-        settlementDate: formData["Settlement Date"] 
-          ? new Date(formData["Settlement Date"] as string).toISOString() 
+        settlementDate: formData["Settlement Date"]
+          ? new Date(formData["Settlement Date"] as string).toISOString()
           : new Date().toISOString(),
         // Mapping liquidation info into financialInformation per new payload structure
         allowForEarlyLiquidation: formData["Allow for Early Liquidation"] === "yes",
         earlyLiquidationPeriod: (formData["Early Liquidation Period"] as string) || "",
         earlyLiquidationPenalty: (formData["Early Liquidation Penalty?"] as string) || "",
         whtAmount: parseFloat(formData["WHT Amount"] as string) || 0,
-        applicableTax: parseFloat(formData["Applicable Tax"] as string) || 0
-      }
+        applicableTax: parseFloat(formData["Applicable Tax"] as string) || 0,
+      },
     };
 
     try {
@@ -175,10 +170,7 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
       }
       setShowSuccess(true);
     } catch {
-      addToast(
-        isEditing ? "Failed to update product" : "Failed to create product",
-        "error",
-      );
+      addToast(isEditing ? "Failed to update product" : "Failed to create product", "error");
     }
   };
 
@@ -200,19 +192,13 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
         <div className="mb-6">
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
-        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
-          Product Creation Successful
-        </h2>
+        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">Product Creation Successful</h2>
         <p className="text-sm text-[#707781] mb-8 text-center">
           Product creation was successfully sent for approver confirmation.
         </p>
         <div className="flex gap-4">
           <div className=" w-56">
-            <Button
-              text="Create Another Product"
-              variant="outline"
-              onClick={handleCreateAnother}
-            />
+            <Button text="Create Another Product" variant="outline" onClick={handleCreateAnother} />
           </div>
           <div className="w-32">
             <Button text="Done" variant="primary" onClick={handleDone} />
@@ -226,9 +212,7 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
     <div className="flex flex-col gap-8 pb-8">
       {FORM_SECTIONS.map((section, index) => (
         <section key={index}>
-          <h3 className="text-sm font-bold text-[#2F3140] mb-1">
-            {section.title}
-          </h3>
+          <h3 className="text-sm font-bold text-[#2F3140] mb-1">{section.title}</h3>
           <p className="text-xs text-[#707781] mb-4">{section.description}</p>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {section.fields.map((field, fieldIndex) => (
@@ -240,35 +224,24 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
                 type={field.type}
                 options={field.options}
                 required={field.required}
-                rightIcon={
-                  field.hasUploadIcon ? <FiUploadCloud size={18} /> : undefined
-                }
+                rightIcon={field.hasUploadIcon ? <FiUploadCloud size={18} /> : undefined}
                 readOnly={field.readOnly}
                 className={field.className}
                 value={(formData[field.label] as string) || ""}
                 onChange={(e) => handleInputChange(field.label, e.target.value)}
                 onFileChange={
-                  field.type === "file"
-                    ? (file) => handleFileChange(field.label, file)
-                    : undefined
+                  field.type === "file" ? (file) => handleFileChange(field.label, file) : undefined
                 }
               />
             ))}
             {section.hasCustomContent && (
               <div className="border border-[#00A85A] bg-white rounded-xl p-3 flex items-center gap-3">
                 <div className="">
-                  <Image
-                    src="/abbey.svg"
-                    alt="abbey Logo"
-                    width={30}
-                    height={30}
-                  />
+                  <Image src="/abbey.svg" alt="abbey Logo" width={30} height={30} />
                 </div>
                 <div>
                   <p className="text-xs font-bold text-[#2F3140]">Abbeys BD</p>
-                  <p className="text-[10px] text-[#707781]">
-                    Abbey Mortgage Bank PLC
-                  </p>
+                  <p className="text-[10px] text-[#707781]">Abbey Mortgage Bank PLC</p>
                 </div>
               </div>
             )}

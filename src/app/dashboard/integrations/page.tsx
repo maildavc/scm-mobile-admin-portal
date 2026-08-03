@@ -14,7 +14,12 @@ import { columns } from "./columns";
 import ConnectNewIntegration from "@/components/Dashboard/Integrations/ConnectNewIntegration";
 import ViewIntegration from "@/components/Dashboard/Integrations/ViewIntegration";
 import { IntegrationDto, IntegrationType, CreateIntegrationRequestDto } from "@/types/integration";
-import { useIntegrations, useCreateIntegration, useUpdateIntegration, useDisconnectIntegration } from "@/hooks/useIntegration";
+import {
+  useIntegrations,
+  useCreateIntegration,
+  useUpdateIntegration,
+  useDisconnectIntegration,
+} from "@/hooks/useIntegration";
 
 import RemoveIntegrationModal from "@/components/Dashboard/Integrations/RemoveIntegrationModal";
 import Button from "@/components/Button";
@@ -24,12 +29,11 @@ const IntegrationsPage = () => {
   const [view, setView] = React.useState<
     "overview" | "connect-new" | "view-integration" | "success"
   >("overview");
-  const [selectedIntegration, setSelectedIntegration] =
-    React.useState<IntegrationDto | null>(null);
+  const [selectedIntegration, setSelectedIntegration] = React.useState<IntegrationDto | null>(null);
   const [showRemoveModal, setShowRemoveModal] = React.useState(false);
   const [modalAction, setModalAction] = React.useState<"disconnect" | null>(null);
   const [actionIntegration, setActionIntegration] = React.useState<IntegrationDto | null>(null);
-  
+
   const page = 1;
   const itemsPerPage = PAGE_CONFIG.itemsPerPage;
 
@@ -37,7 +41,7 @@ const IntegrationsPage = () => {
     Page: page,
     PageSize: itemsPerPage,
   });
-  
+
   const createIntegration = useCreateIntegration();
   const updateIntegration = useUpdateIntegration();
   const disconnectIntegration = useDisconnectIntegration();
@@ -127,7 +131,7 @@ const IntegrationsPage = () => {
         onSuccess: () => {
           setShowRemoveModal(false);
           setView("success");
-        }
+        },
       });
     }
   };
@@ -159,7 +163,7 @@ const IntegrationsPage = () => {
                     ? {
                         name: selectedIntegration.name || "",
                         description: selectedIntegration.description || "",
-                        clientUrl: selectedIntegration.endpointUrl || "", 
+                        clientUrl: selectedIntegration.endpointUrl || "",
                         clientSecretKey: "", // Typically we wouldn't fetch the existing secret
                         username: "",
                         password: "",
@@ -174,8 +178,6 @@ const IntegrationsPage = () => {
                   }
                 }}
                 onTestConnection={(data) => {
-                  console.log("Test/Save Connection", data);
-                  
                   // Construct payload using the backend's expected schema
                   const payload: CreateIntegrationRequestDto = {
                     name: data.name,
@@ -196,14 +198,14 @@ const IntegrationsPage = () => {
                       {
                         onSuccess: () => {
                           setView("view-integration");
-                        }
-                      }
+                        },
+                      },
                     );
                   } else {
                     createIntegration.mutate(payload, {
                       onSuccess: () => {
                         setView("overview");
-                      }
+                      },
                     });
                   }
                 }}
@@ -217,12 +219,7 @@ const IntegrationsPage = () => {
             ) : view === "success" ? (
               <div className="flex flex-col items-center justify-center py-20">
                 <div className="mb-6">
-                  <Image
-                    src="/success.svg"
-                    alt="Success"
-                    width={80}
-                    height={80}
-                  />
+                  <Image src="/success.svg" alt="Success" width={80} height={80} />
                 </div>
                 <h3 className="text-lg font-semibold text-[#2F3140] mb-2">
                   Integration disconnected
@@ -246,18 +243,8 @@ const IntegrationsPage = () => {
               <div className="flex flex-col gap-6">
                 {/* Action Buttons */}
                 <div className="flex flex-col md:flex-row gap-4">
-                  <ActionButton
-                    label="Download Table as PDF"
-                    actionText="Download"
-                    onClick={() => console.log("Download PDF")}
-                    fullWidth
-                  />
-                  <ActionButton
-                    label="Export Table as CSV"
-                    actionText="Export"
-                    onClick={() => console.log("Export CSV")}
-                    fullWidth
-                  />
+                  <ActionButton label="Download Table as PDF" actionText="Download" fullWidth />
+                  <ActionButton label="Export Table as CSV" actionText="Export" fullWidth />
                 </div>
 
                 {/* Table */}
@@ -265,9 +252,9 @@ const IntegrationsPage = () => {
                   <Table
                     data={integrationData}
                     columns={columns(
-                      handleViewIntegration, 
-                      handleEditIntegration, 
-                      handleDisconnectIntegration
+                      handleViewIntegration,
+                      handleEditIntegration,
+                      handleDisconnectIntegration,
                     )}
                     itemsPerPage={itemsPerPage}
                     isLoading={isLoading}

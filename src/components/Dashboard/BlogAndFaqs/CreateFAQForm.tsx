@@ -15,9 +15,9 @@ interface CreateFAQFormProps {
 
 const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel, initialData }) => {
   const [showSuccess, setShowSuccess] = useState(false);
-  
+
   const { data: faqDetails } = useFAQDetails(initialData?.id || "");
-  
+
   const [formData, setFormData] = useState({
     faqQuestion: initialData?.question || "",
     category: initialData?.category?.toString() || "",
@@ -28,7 +28,7 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel, initialData }) 
 
   React.useEffect(() => {
     if (faqDetails?.answer) {
-      setFormData(prev => ({ ...prev, faqAnswer: faqDetails.answer }));
+      setFormData((prev) => ({ ...prev, faqAnswer: faqDetails.answer }));
     }
   }, [faqDetails?.answer]);
 
@@ -60,9 +60,12 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel, initialData }) 
       };
 
       if (initialData) {
-        updateFaq.mutate({ id: initialData.id, payload }, {
-          onSuccess: () => setShowSuccess(true),
-        });
+        updateFaq.mutate(
+          { id: initialData.id, payload },
+          {
+            onSuccess: () => setShowSuccess(true),
+          },
+        );
       } else {
         createFaq.mutate(payload, {
           onSuccess: () => setShowSuccess(true),
@@ -86,8 +89,6 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel, initialData }) 
       faqAnswer: "",
     });
   };
-
-
 
   const categoryOptions = [
     { value: "1", label: "General" },
@@ -117,7 +118,9 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel, initialData }) 
           {initialData ? "FAQ Updated Successfully" : "FAQ Creation Successfully"}
         </h2>
         <p className="text-sm text-[#707781] mb-8 text-center">
-          {initialData ? "Your FAQ was successfully updated." : "FAQ creation was successfully sent for approver confirmation."}
+          {initialData
+            ? "Your FAQ was successfully updated."
+            : "FAQ creation was successfully sent for approver confirmation."}
         </p>
         <div className="flex gap-4">
           <div className="w-42">
@@ -145,9 +148,7 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel, initialData }) 
     <div className="bg-white rounded-lg pb-10">
       {/* Audience / Scheduling Section */}
       <div className="mb-8">
-        <h3 className="text-base font-bold text-[#2F3140] mb-1">
-          Audience / Scheduling
-        </h3>
+        <h3 className="text-base font-bold text-[#2F3140] mb-1">Audience / Scheduling</h3>
         <p className="text-xs text-gray-500">
           Tell us the content of this FAQ and when it should go live
         </p>
@@ -206,88 +207,61 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel, initialData }) 
 
       {/* Rich Text Editor Toolbar */}
       <div className="mb-4 flex items-center gap-3 p-1 border border-gray-200 rounded-lg bg-white">
-        <select aria-label="Font family" className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none">
+        <select
+          aria-label="Font family"
+          className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none"
+        >
           <option>Roboto</option>
         </select>
-        <select aria-label="Text style" className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none">
+        <select
+          aria-label="Text style"
+          className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none"
+        >
           <option>Normal</option>
         </select>
-        <select aria-label="Font size" className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none">
+        <select
+          aria-label="Font size"
+          className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none"
+        >
           <option>16</option>
         </select>
         <div className="h-5 w-px bg-gray-300" />
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
           <strong className="text-sm">B</strong>
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
           <em className="text-sm">I</em>
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
           <u className="text-sm">U</u>
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           S
         </button>
         <div className="h-5 w-px bg-gray-300" />
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           •
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           1.
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           ⇥
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           ⇤
         </button>
         <div className="h-5 w-px bg-gray-300" />
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           x₂
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           x²
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           🔗
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           🖼
         </button>
       </div>
@@ -309,7 +283,15 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel, initialData }) 
         </div>
         <div className="w-40">
           <Button
-            text={initialData ? (updateFaq.isPending ? "Updating..." : "Update FAQ") : (createFaq.isPending ? "Submitting..." : "Create FAQ")}
+            text={
+              initialData
+                ? updateFaq.isPending
+                  ? "Updating..."
+                  : "Update FAQ"
+                : createFaq.isPending
+                  ? "Submitting..."
+                  : "Create FAQ"
+            }
             variant="primary"
             onClick={handleCreateFAQ}
             disabled={!isFormValid() || createFaq.isPending || updateFaq.isPending}

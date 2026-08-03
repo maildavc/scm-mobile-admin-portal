@@ -59,28 +59,19 @@ export default function Table<T>({
           <tbody>
             {isLoading ? (
               <tr>
-                <td
-                  colSpan={columns.length}
-                  className="py-10 text-center text-gray-500"
-                >
+                <td colSpan={columns.length} className="py-10 text-center text-gray-500">
                   Loading data...
                 </td>
               </tr>
             ) : currentData.length === 0 ? (
               <tr>
-                <td
-                  colSpan={columns.length}
-                  className="py-10 text-center text-gray-500"
-                >
+                <td colSpan={columns.length} className="py-10 text-center text-gray-500">
                   No data available.
                 </td>
               </tr>
             ) : (
               currentData.map((item, rowIdx) => (
-                <tr
-                  key={rowIdx}
-                  className="group transition-colors border-b border-[#F4F4F5]"
-                >
+                <tr key={rowIdx} className="group transition-colors border-b border-[#F4F4F5]">
                   {columns.map((col, colIdx) => (
                     <td
                       key={colIdx}

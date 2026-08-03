@@ -1,51 +1,112 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { FiDownload } from "react-icons/fi";
 import { EMAIL_BACKGROUND_COLORS } from "@/constants/notificationService/notificationService";
 import EmailPreview from "./EmailPreview";
+import {
+  useNotificationSettings,
+  useUpdateNotificationSettings,
+} from "@/hooks/useNotification";
+import { useAuthStore } from "@/stores/authStore";
+import { useToastStore } from "@/stores/toastStore";
 
 interface NotificationSettingsProps {
   onSuccess: () => void;
   onCancel: () => void;
 }
 
+const fileToBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+
 const NotificationSettings: React.FC<NotificationSettingsProps> = ({
   onSuccess,
   onCancel,
 }) => {
-  const [formData, setFormData] = useState({
-    logo: null as File | null,
-    backgroundColor: "#F8F9FB",
-  });
+  const userId = useAuthStore((s) => s.user?.id);
+  const addToast = useToastStore((s) => s.addToast);
+  const { data: settings, isLoading } = useNotificationSettings();
+  const { mutateAsync: updateSettings, isPending } = useUpdateNotificationSettings();
 
-  const handleInputChange = (
-    field: "logo" | "backgroundColor",
-    value: File | null | string
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState("/previewlogo.svg");
+  const [backgroundColor, setBackgroundColor] = useState("#F2F5F8");
+  const [companyName, setCompanyName] = useState("SCM Admin");
+  const [existingLogoUrl, setExistingLogoUrl] = useState("/assets/logo.svg");
+
+  useEffect(() => {
+    const branding = settings?.brandingSettings;
+    if (!branding) return;
+
+    setExistingLogoUrl(branding.logoUrl || "/assets/logo.svg");
+    setLogoPreview(branding.logoUrl || "/previewlogo.svg");
+    setBackgroundColor(branding.brandColor || "#F2F5F8");
+    setCompanyName(branding.companyName || "SCM Admin");
+  }, [settings]);
+
+  useEffect(() => {
+    if (!logoFile) return;
+
+    const objectUrl = URL.createObjectURL(logoFile);
+    setLogoPreview(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [logoFile]);
+
+  const colorOptions = useMemo(
+    () =>
+      EMAIL_BACKGROUND_COLORS.map((color) => ({
+        value: color.value,
+        label: (
+          <div className="flex items-center gap-2">
+            <div
+              className="w-4 h-4 rounded border border-gray-300"
+              style={{ backgroundColor: color.value }}
+            />
+            <span>
+              {color.value} ({color.name})
+            </span>
+          </div>
+        ),
+      })),
+    [],
+  );
+
+  const handleSave = async () => {
+    if (!userId) {
+      addToast("You must be logged in to update notification settings", "error");
+      return;
+    }
+
+    try {
+      const logoUrl = logoFile ? await fileToBase64(logoFile) : existingLogoUrl;
+      await updateSettings({
+        userId,
+        brandingSettings: {
+          logoUrl,
+          brandColor: backgroundColor,
+          companyName,
+        },
+      });
+      onSuccess();
+    } catch {
+      // Toast is handled by the mutation hook.
+    }
   };
 
-  const handleFileChange = (file: File | null) => {
-    handleInputChange("logo", file);
-  };
-
-  const colorOptions = EMAIL_BACKGROUND_COLORS.map((color) => ({
-    value: color.value,
-    label: (
-      <div className="flex items-center gap-2">
-        <div
-          className="w-4 h-4 rounded border border-gray-300"
-          style={{ backgroundColor: color.value }}
-        ></div>
-        <span>
-          {color.value} ({color.name})
-        </span>
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20 text-gray-400">
+        Loading notification settings...
       </div>
-    ),
-  }));
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg pb-10">
@@ -54,11 +115,10 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           Edit Your Email Notification Template
         </h3>
         <p className="text-xs text-gray-500">
-          Tell us who this notification is intended for
+          Update the logo and background colour used for email notifications
         </p>
       </div>
 
-      {/* Inputs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
         <Input
           label="Email Logo"
@@ -67,7 +127,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           required
           placeholder="IMG87654323456"
           rightIcon={<FiDownload size={18} />}
-          onFileChange={handleFileChange}
+          onFileChange={setLogoFile}
           className="border-green-500"
         />
         <Input
@@ -76,28 +136,24 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           theme="light"
           required
           options={colorOptions}
-          value={formData.backgroundColor}
-          onChange={(e) => handleInputChange("backgroundColor", e.target.value)}
+          value={backgroundColor}
+          onChange={(e) => setBackgroundColor(e.target.value)}
           placeholder="Select Color"
         />
       </div>
 
-      {/* Preview Area */}
-      <EmailPreview backgroundColor={formData.backgroundColor} />
+      <EmailPreview backgroundColor={backgroundColor} logoSrc={logoPreview} />
 
-      {/* Footer Buttons */}
       <div className="flex justify-end gap-3 pt-4">
         <div className="w-32">
-          <Button text="Cancel" variant="outline" onClick={onCancel} />
+          <Button text="Cancel" variant="outline" onClick={onCancel} disabled={isPending} />
         </div>
         <div className="w-48">
           <Button
-            text="Save Changes"
+            text={isPending ? "Saving..." : "Save Changes"}
             variant="primary"
-            onClick={() => {
-              console.log("Saving settings", formData);
-              onSuccess();
-            }}
+            onClick={handleSave}
+            disabled={isPending || !userId}
           />
         </div>
       </div>

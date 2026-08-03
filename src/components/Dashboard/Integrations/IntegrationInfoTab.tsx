@@ -56,19 +56,16 @@ const IntegrationInfoTab: React.FC<IntegrationInfoTabProps> = ({
             }
           >
             <DetailRow label="Integration name" value={displayData.name || "N/A"} />
-            <DetailRow
-              label="Description"
-              value={displayData.description || "No description"}
-            />
-            <DetailRow
-              label="Client URL"
-              value={displayData.endpointUrl || "N/A"}
-            />
+            <DetailRow label="Description" value={displayData.description || "No description"} />
+            <DetailRow label="Client URL" value={displayData.endpointUrl || "N/A"} />
             <div className="flex justify-between items-center py-2 border-b border-[#F4F4F5]">
-              <span className="text-sm text-[#2F3140]">
-                Connection Status
-              </span>
-              <StatusBadge status={(displayData.statusName || "Pending") as "Active" | "Fatal" | "Shortage" | "Failed"} />
+              <span className="text-sm text-[#2F3140]">Connection Status</span>
+              <StatusBadge
+                status={
+                  (displayData.statusName || "Pending") as
+                    "Active" | "Fatal" | "Shortage" | "Failed"
+                }
+              />
             </div>
           </DetailCard>
         </div>
@@ -76,9 +73,7 @@ const IntegrationInfoTab: React.FC<IntegrationInfoTabProps> = ({
         {/* Right Column - Subscribed Products */}
         <div className="w-full lg:w-1/2">
           <div className="border rounded-xl p-6 border-[#F4F4F5] h-full">
-            <h3 className="text-sm font-bold text-[#2F3140] mb-6">
-              All subscribed products
-            </h3>
+            <h3 className="text-sm font-bold text-[#2F3140] mb-6">All subscribed products</h3>
             <div className="space-y-4">
               {subscribedProducts.map((product, index) => (
                 <div

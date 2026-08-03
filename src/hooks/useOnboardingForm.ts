@@ -19,8 +19,7 @@ export const useOnboardingForm = () => {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
   const [newPasswordTouched, setNewPasswordTouched] = useState(false);
-  const [confirmNewPasswordTouched, setConfirmNewPasswordTouched] =
-    useState(false);
+  const [confirmNewPasswordTouched, setConfirmNewPasswordTouched] = useState(false);
 
   // API mutations
   const loginMutation = useLogin();
@@ -53,16 +52,10 @@ export const useOnboardingForm = () => {
   const hasMinLength = newPassword.length >= 6;
 
   const isNewPasswordComplexityValid =
-    hasSmallLetter &&
-    hasCapitalLetter &&
-    hasNumber &&
-    hasSpecialChar &&
-    hasMinLength;
+    hasSmallLetter && hasCapitalLetter && hasNumber && hasSpecialChar && hasMinLength;
 
-  const isConfirmPasswordValid =
-    confirmNewPassword === newPassword && confirmNewPassword !== "";
-  const confirmPasswordError =
-    confirmNewPasswordTouched && !isConfirmPasswordValid;
+  const isConfirmPasswordValid = confirmNewPassword === newPassword && confirmNewPassword !== "";
+  const confirmPasswordError = confirmNewPasswordTouched && !isConfirmPasswordValid;
 
   const isStep2Valid = isNewPasswordComplexityValid && isConfirmPasswordValid;
 
@@ -79,7 +72,7 @@ export const useOnboardingForm = () => {
           }
           // If no password change needed, useLogin hook handles redirect
         },
-      }
+      },
     );
   };
 
@@ -107,7 +100,7 @@ export const useOnboardingForm = () => {
           setNewPasswordTouched(false);
           setConfirmNewPasswordTouched(false);
         },
-      }
+      },
     );
   };
 

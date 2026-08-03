@@ -27,20 +27,10 @@ const ApproveModal: React.FC<ApproveModalProps> = ({
 
         <div className="flex justify-end gap-4 w-full">
           <div className="w-32">
-            <Button
-              text="Cancel"
-              variant="outline"
-              onClick={onClose}
-              className=""
-            />
+            <Button text="Cancel" variant="outline" onClick={onClose} className="" />
           </div>
           <div className="w-40">
-            <Button
-              text="Yes, Approve"
-              variant="primary"
-              onClick={onApprove}
-              className=""
-            />
+            <Button text="Yes, Approve" variant="primary" onClick={onApprove} className="" />
           </div>
         </div>
       </div>

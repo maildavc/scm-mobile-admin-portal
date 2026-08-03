@@ -74,10 +74,7 @@ const OptionsButton = ({
   return (
     <>
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsOpen(false)} />
       )}
       <div className="relative" ref={menuRef}>
         <button
@@ -95,10 +92,7 @@ const OptionsButton = ({
                 onClick={() => {
                   if (item.label === "Edit User Details" && onEditUser) {
                     onEditUser(user);
-                  } else if (
-                    item.label === "Deactivate User" &&
-                    onDeactivateUser
-                  ) {
+                  } else if (item.label === "Deactivate User" && onDeactivateUser) {
                     onDeactivateUser(user);
                   } else if (
                     (item.label === "View User" ||
@@ -114,9 +108,7 @@ const OptionsButton = ({
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
               >
                 <item.icon size={18} className="text-[#2F3140]" />
-                <span className="text-sm text-[#2F3140] font-medium">
-                  {item.label}
-                </span>
+                <span className="text-sm text-[#2F3140] font-medium">{item.label}</span>
               </button>
             ))}
           </div>
@@ -130,11 +122,7 @@ export const userColumns: Column<User>[] = [
   {
     header: (
       <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          className="rounded border-gray-300"
-          aria-label="Select all users"
-        />
+        <input type="checkbox" className="rounded border-gray-300" aria-label="Select all users" />
         <span className="uppercase text-[#2F3140]">USER (5)</span>
       </div>
     ),
@@ -156,21 +144,15 @@ export const userColumns: Column<User>[] = [
   {
     header: <FilterableHeader>ROLE NAME</FilterableHeader>,
     className: "w-[15%]",
-    render: (user) => (
-      <span className="text-sm text-[#2F3140] font-bold">{user.roleName}</span>
-    ),
+    render: (user) => <span className="text-sm text-[#2F3140] font-bold">{user.roleName}</span>,
   },
   {
     header: <FilterableHeader>ROLE TYPE</FilterableHeader>,
     className: "w-[15%]",
     render: (user) => (
       <div className="flex flex-col">
-        <span className="text-sm text-[#2F3140] font-bold">
-          {user.roleType}
-        </span>
-        {user.roleExpiry && (
-          <span className="text-xs text-[#707781]">{user.roleExpiry}</span>
-        )}
+        <span className="text-sm text-[#2F3140] font-bold">{user.roleType}</span>
+        {user.roleExpiry && <span className="text-xs text-[#707781]">{user.roleExpiry}</span>}
       </div>
     ),
   },
@@ -182,9 +164,7 @@ export const userColumns: Column<User>[] = [
   {
     header: <FilterableHeader>LAST UPDATED ON</FilterableHeader>,
     className: "w-[20%]",
-    render: (user) => (
-      <span className="text-sm text-[#2F3140] font-medium">{user.updated}</span>
-    ),
+    render: (user) => <span className="text-sm text-[#2F3140] font-medium">{user.updated}</span>,
   },
   {
     header: (
@@ -207,11 +187,7 @@ export const createUserColumns = (
   {
     header: (
       <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          className="rounded border-gray-300"
-          aria-label="Select all users"
-        />
+        <input type="checkbox" className="rounded border-gray-300" aria-label="Select all users" />
         <span className="uppercase text-[#2F3140]">{`USER (${userCount ?? 0})`}</span>
       </div>
     ),

@@ -7,16 +7,9 @@ interface TabsProps {
   className?: string;
 }
 
-const Tabs: React.FC<TabsProps> = ({
-  tabs,
-  activeTab,
-  onTabChange,
-  className = "",
-}) => {
+const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onTabChange, className = "" }) => {
   return (
-    <div
-      className={`flex gap-4 overflow-x-auto pb-2 scrollbar-hide ${className}`}
-    >
+    <div className={`flex gap-4 overflow-x-auto pb-2 scrollbar-hide ${className}`}>
       {tabs.map((tab) => (
         <button
           key={tab}

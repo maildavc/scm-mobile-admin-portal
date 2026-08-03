@@ -53,15 +53,11 @@ const DepartmentInfoTab: React.FC<DepartmentInfoTabProps> = ({
               <div
                 key={index}
                 className={`flex justify-between py-3 ${
-                  index !== assignedUsers.length - 1
-                    ? "border-b border-[#F4F4F5]"
-                    : ""
+                  index !== assignedUsers.length - 1 ? "border-b border-[#F4F4F5]" : ""
                 }`}
               >
                 <div className="text-sm text-[#2F3140]">{user.name}</div>
-                <div className="text-sm text-[#707781] font-semibold">
-                  {user.role}
-                </div>
+                <div className="text-sm text-[#707781] font-semibold">{user.role}</div>
               </div>
             ))}
           </DetailCard>
@@ -70,18 +66,10 @@ const DepartmentInfoTab: React.FC<DepartmentInfoTabProps> = ({
         {/* Action buttons */}
         <div className="flex justify-end gap-4 mt-8 pt-6">
           <div className="w-40">
-            <Button
-              text="Deactivate User"
-              variant="outline"
-              onClick={onDeactivate}
-            />
+            <Button text="Deactivate User" variant="outline" onClick={onDeactivate} />
           </div>
           <div className="w-56">
-            <Button
-              text="Edit User Info & Role"
-              variant="primary"
-              onClick={onEdit}
-            />
+            <Button text="Edit User Info & Role" variant="primary" onClick={onEdit} />
           </div>
         </div>
       </div>

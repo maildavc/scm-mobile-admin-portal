@@ -33,7 +33,9 @@ const ChatList: React.FC<ChatListProps> = ({ selectedChatId, onSelectChat, chats
               <div className="flex items-start gap-3">
                 <div
                   className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 border ${
-                    selectedChatId === chat.id ? "bg-white border-[#D6D6D6]" : "bg-white border-[#D6D6D6]"
+                    selectedChatId === chat.id
+                      ? "bg-white border-[#D6D6D6]"
+                      : "bg-white border-[#D6D6D6]"
                   }`}
                 >
                   <FiUser className="text-gray-400" size={24} />

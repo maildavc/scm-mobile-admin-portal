@@ -72,12 +72,8 @@ const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
   return (
     <div className="bg-white rounded-lg flex flex-col">
       <div className="mb-8">
-        <h2 className="text-xl font-bold text-[#2F3140]">
-          Audience / Targeting
-        </h2>
-        <p className="text-sm text-[#707781] mt-1">
-          Tell us who this notification is intended for
-        </p>
+        <h2 className="text-xl font-bold text-[#2F3140]">Audience / Targeting</h2>
+        <p className="text-sm text-[#707781] mt-1">Tell us who this notification is intended for</p>
       </div>
 
       <div className="flex-1 flex flex-col items-center">
@@ -87,12 +83,7 @@ const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
           className="w-24 h-24 rounded-full bg-[#1A1C29] flex items-center justify-center mb-12 cursor-pointer overflow-hidden relative transition-opacity hover:opacity-90"
         >
           {imagePreview ? (
-            <Image
-              src={imagePreview}
-              alt="Preview"
-              fill
-              className="object-cover"
-            />
+            <Image src={imagePreview} alt="Preview" fill className="object-cover" />
           ) : (
             <FiImage size={32} className="text-white" />
           )}

@@ -4,25 +4,33 @@ import React, { useState, useMemo } from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Image from "next/image";
-import { useCreateDepartment } from "@/hooks/useUserManagement";
+import { useCreateDepartment, useUpdateDepartment } from "@/hooks/useUserManagement";
 import { useAuthStore } from "@/stores/authStore";
 
 interface CreateDepartmentFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
+  initialData?: {
+    id: string;
+    name: string;
+    description?: string;
+  } | null;
 }
 
 const CreateDepartmentForm: React.FC<CreateDepartmentFormProps> = ({
   onSuccess,
   onCancel,
+  initialData,
 }) => {
-  const [departmentName, setDepartmentName] = useState("");
-  const [description, setDescription] = useState("");
+  const isEditing = Boolean(initialData);
+  const [departmentName, setDepartmentName] = useState(initialData?.name ?? "");
+  const [description, setDescription] = useState(initialData?.description ?? "");
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [nameError, setNameError] = useState("");
 
   const createDepartment = useCreateDepartment();
+  const updateDepartment = useUpdateDepartment();
   const user = useAuthStore((s) => s.user);
   const organization = useAuthStore((s) => s.organization);
 
@@ -40,7 +48,7 @@ const CreateDepartmentForm: React.FC<CreateDepartmentFormProps> = ({
         organizationId: organization?.id,
         createdBy: user?.id,
       };
-      createDepartment.mutate(payload, {
+      const mutationOptions = {
         onSuccess: () => {
           setShowSuccess(true);
         },
@@ -60,7 +68,22 @@ const CreateDepartmentForm: React.FC<CreateDepartmentFormProps> = ({
             setErrorMsg(msg);
           }
         },
-      });
+      };
+
+      if (isEditing) {
+        updateDepartment.mutate(
+          {
+            id: initialData!.id,
+            data: {
+              name: payload.name,
+              description: payload.description,
+            },
+          },
+          mutationOptions,
+        );
+      } else {
+        createDepartment.mutate(payload, mutationOptions);
+      }
     }
   };
 
@@ -84,27 +107,25 @@ const CreateDepartmentForm: React.FC<CreateDepartmentFormProps> = ({
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
         <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
-          Department Creation Successful
+          Department {isEditing ? "Update" : "Creation"} Successful
         </h2>
         <p className="text-sm text-[#707781] mb-8 text-center">
-          Department creation was successfully sent for approver confirmation.
+          Department {isEditing ? "update" : "creation"} was successfully sent for approver
+          confirmation.
         </p>
         <div className="flex gap-4">
           <div className="w-56">
-            <Button
-              text="Create Another Department"
-              variant="outline"
-              onClick={handleCreateAnother}
-              className="text-sm"
-            />
+            {!isEditing ? (
+              <Button
+                text="Create Another Department"
+                variant="outline"
+                onClick={handleCreateAnother}
+                className="text-sm"
+              />
+            ) : null}
           </div>
           <div className="w-32">
-            <Button
-              text="Done"
-              variant="primary"
-              onClick={handleDone}
-              className="text-sm"
-            />
+            <Button text="Done" variant="primary" onClick={handleDone} className="text-sm" />
           </div>
         </div>
       </div>
@@ -120,12 +141,8 @@ const CreateDepartmentForm: React.FC<CreateDepartmentFormProps> = ({
       )}
       {/* Department Information Section */}
       <section>
-        <h3 className="text-base font-bold text-[#2F3140] mb-1">
-          Department Information
-        </h3>
-        <p className="text-sm text-[#707781] mb-6">
-          Tell us about this department
-        </p>
+        <h3 className="text-base font-bold text-[#2F3140] mb-1">Department Information</h3>
+        <p className="text-sm text-[#707781] mb-6">Tell us about this department</p>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Input
             label="Department Name"
@@ -156,20 +173,19 @@ const CreateDepartmentForm: React.FC<CreateDepartmentFormProps> = ({
       {/* Action Buttons */}
       <div className="flex justify-end gap-4 mt-8 pt-4">
         <div className="w-32">
-          <Button
-            text="Cancel"
-            variant="outline"
-            onClick={onCancel}
-            className="text-sm"
-          />
+          <Button text="Cancel" variant="outline" onClick={onCancel} className="text-sm" />
         </div>
         <div className="w-40">
           <Button
             text={
-              createDepartment.isPending ? "Creating..." : "Create Department"
+              createDepartment.isPending || updateDepartment.isPending
+                ? "Saving..."
+                : isEditing
+                  ? "Save Department"
+                  : "Create Department"
             }
             variant="primary"
-            disabled={!isFormValid || createDepartment.isPending}
+            disabled={!isFormValid || createDepartment.isPending || updateDepartment.isPending}
             onClick={handleCreateDepartment}
             className="text-sm"
           />

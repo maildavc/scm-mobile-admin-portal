@@ -46,7 +46,7 @@ export const FORM_SECTIONS: FormSection[] = [
         options: [
           { value: "tbill", label: "Treasury Bill" },
           { value: "Equity", label: "Equity" },
-          { value: "TreasuryBill", label: "Treasury Bill" }
+          { value: "TreasuryBill", label: "Treasury Bill" },
         ],
       },
       {
@@ -56,7 +56,7 @@ export const FORM_SECTIONS: FormSection[] = [
         required: true,
         options: [
           { value: "issuer1", label: "Issuer 1" },
-          { value: "Tech Solutions", label: "Tech Solutions" }
+          { value: "Tech Solutions", label: "Tech Solutions" },
         ],
       },
       {
@@ -66,7 +66,7 @@ export const FORM_SECTIONS: FormSection[] = [
         required: true,
         options: [
           { value: "finance", label: "Finance" },
-          { value: "Software", label: "Software" }
+          { value: "Software", label: "Software" },
         ],
       },
       {

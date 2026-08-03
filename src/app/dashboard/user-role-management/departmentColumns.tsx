@@ -70,10 +70,7 @@ const OptionsButton = ({
   return (
     <>
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsOpen(false)} />
       )}
       <div className="relative" ref={menuRef}>
         <button
@@ -106,9 +103,7 @@ const OptionsButton = ({
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
               >
                 <item.icon size={18} className="text-[#2F3140]" />
-                <span className="text-sm text-[#2F3140] font-medium">
-                  {item.label}
-                </span>
+                <span className="text-sm text-[#2F3140] font-medium">{item.label}</span>
               </button>
             ))}
           </div>
@@ -142,9 +137,7 @@ export const departmentColumns: Column<Department>[] = [
     header: <FilterableHeader>MEMBERS ASSIGNED</FilterableHeader>,
     className: "w-[20%]",
     render: (department) => (
-      <span className="text-sm text-[#2F3140] font-bold">
-        {department.members}
-      </span>
+      <span className="text-sm text-[#2F3140] font-bold">{department.members}</span>
     ),
   },
   {
@@ -156,9 +149,7 @@ export const departmentColumns: Column<Department>[] = [
     header: <FilterableHeader>LAST UPDATED ON</FilterableHeader>,
     className: "w-[20%]",
     render: (department) => (
-      <span className="text-sm text-[#2F3140] font-medium">
-        {department.updated}
-      </span>
+      <span className="text-sm text-[#2F3140] font-medium">{department.updated}</span>
     ),
   },
   {

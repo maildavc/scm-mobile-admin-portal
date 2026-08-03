@@ -10,11 +10,7 @@ interface ViewIntegrationProps {
   onEdit?: () => void;
 }
 
-const ViewIntegration: React.FC<ViewIntegrationProps> = ({
-  integration,
-  onRemove,
-  onEdit,
-}) => {
+const ViewIntegration: React.FC<ViewIntegrationProps> = ({ integration, onRemove, onEdit }) => {
   const [activeTab, setActiveTab] = useState("Integration Info");
 
   const tabs = ["Integration Info", "API Status Log"];
@@ -25,16 +21,12 @@ const ViewIntegration: React.FC<ViewIntegrationProps> = ({
       <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
       {activeTab === "Integration Info" ? (
-        <IntegrationInfoTab
-          integration={integration}
-          onRemove={onRemove}
-          onEdit={onEdit}
-        />
+        <IntegrationInfoTab integration={integration} onRemove={onRemove} onEdit={onEdit} />
       ) : activeTab === "API Status Log" ? (
         <APIStatusLogTab integrationId={integration.id} />
       ) : (
         <div className="flex items-center justify-center h-64 text-gray-500">
-          {activeTab} view coming soon
+          Unable to display the selected integration tab.
         </div>
       )}
     </div>

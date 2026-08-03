@@ -77,7 +77,7 @@ export const kycService = {
     // The endpoint theoretically accepts pagination ?Page=1&Limit=100
     const { data } = await apiClient.get<BackendEnvelope<CustomerDocumentsResponseDto>>(
       `/api/v1/customers/${customerId}/documents`,
-      { params: { page: 1, limit: 100 } }
+      { params: { page: 1, limit: 100 } },
     );
     // Unwrap based on CustomerDocumentsResponseDto wrapper
     if (data.value && Array.isArray(data.value.data)) {
@@ -89,23 +89,23 @@ export const kycService = {
 
   approveKycDocument: async (
     documentId: string,
-    payload: ApproveKYCDocumentCommand
+    payload: ApproveKYCDocumentCommand,
   ): Promise<KYCActionResult> => {
     const { data } = await apiClient.put<BackendEnvelope<KYCActionResult>>(
       `/api/v1/kyc/documents/${documentId}/approve`,
-      payload
+      payload,
     );
     return data.value ?? (data as unknown as KYCActionResult);
   },
 
   rejectKycDocument: async (
     documentId: string,
-    payload: RejectKYCDocumentCommand
+    payload: RejectKYCDocumentCommand,
   ): Promise<KYCActionResult> => {
     const { data } = await apiClient.put<BackendEnvelope<KYCActionResult>>(
       `/api/v1/kyc/documents/${documentId}/reject`,
-      payload
+      payload,
     );
     return data.value ?? (data as unknown as KYCActionResult);
-  }
+  },
 };

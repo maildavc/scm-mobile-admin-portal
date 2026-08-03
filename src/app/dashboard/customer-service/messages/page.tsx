@@ -45,11 +45,11 @@ export default function Messages() {
           <div className="flex-1 flex flex-col md:flex-row gap-4 md:gap-6 min-h-0">
             {/* Sidebar List */}
             <div className="w-full md:w-120 shrink-0 h-64 md:h-full overflow-hidden">
-              <ChatList 
-                selectedChatId={selectedChatId} 
-                onSelectChat={setSelectedChatId} 
-                chats={data?.items || []} 
-                isLoading={isLoading} 
+              <ChatList
+                selectedChatId={selectedChatId}
+                onSelectChat={setSelectedChatId}
+                chats={data?.items || []}
+                isLoading={isLoading}
               />
             </div>
 

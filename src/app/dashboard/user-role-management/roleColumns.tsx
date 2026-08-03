@@ -69,10 +69,7 @@ const OptionsButton = ({
   return (
     <>
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsOpen(false)} />
       )}
       <div className="relative" ref={menuRef}>
         <button
@@ -105,9 +102,7 @@ const OptionsButton = ({
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
               >
                 <item.icon size={18} className="text-[#2F3140]" />
-                <span className="text-sm text-[#2F3140] font-medium">
-                  {item.label}
-                </span>
+                <span className="text-sm text-[#2F3140] font-medium">{item.label}</span>
               </button>
             ))}
           </div>
@@ -121,11 +116,7 @@ export const roleColumns: Column<Role>[] = [
   {
     header: (
       <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          className="rounded border-gray-300"
-          aria-label="Select all roles"
-        />
+        <input type="checkbox" className="rounded border-gray-300" aria-label="Select all roles" />
         <span className="uppercase text-[#2F3140]">ROLES (5)</span>
       </div>
     ),
@@ -145,9 +136,7 @@ export const roleColumns: Column<Role>[] = [
   {
     header: <FilterableHeader>LAST UPDATED ON</FilterableHeader>,
     className: "w-[20%]",
-    render: (role) => (
-      <span className="text-sm text-[#2F3140] font-medium">{role.updated}</span>
-    ),
+    render: (role) => <span className="text-sm text-[#2F3140] font-medium">{role.updated}</span>,
   },
   {
     header: (
@@ -169,11 +158,7 @@ export const createRoleColumns = (
   {
     header: (
       <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          className="rounded border-gray-300"
-          aria-label="Select all roles"
-        />
+        <input type="checkbox" className="rounded border-gray-300" aria-label="Select all roles" />
         <span className="uppercase text-[#2F3140]">{`ROLES (${roleCount ?? 0})`}</span>
       </div>
     ),

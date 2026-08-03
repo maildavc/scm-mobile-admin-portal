@@ -19,11 +19,7 @@ const TextArea: React.FC<TextAreaProps> = ({
 }) => {
   const isLight = theme === "light";
 
-  const borderColor = error
-    ? "border-red-500"
-    : isLight
-      ? "border-gray-200"
-      : "border-white/10";
+  const borderColor = error ? "border-red-500" : isLight ? "border-gray-200" : "border-white/10";
 
   const bgColor = isLight ? "bg-white" : "bg-transparent";
   const textColor = isLight ? "text-[#2F3140]" : "text-white";

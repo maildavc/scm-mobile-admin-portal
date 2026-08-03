@@ -1,16 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { productService } from "@/services/productService";
-import type {
-  ApproveProductPayload,
-  UpdateProductStatusPayload,
-} from "@/types/product";
+import type { ApproveProductPayload, UpdateProductStatusPayload } from "@/types/product";
 
 // ── Query Keys ───────────────────────────────────────────────────────
 export const productKeys = {
   all: ["products"] as const,
   lists: () => [...productKeys.all, "list"] as const,
-  list: (filters: Record<string, unknown>) =>
-    [...productKeys.lists(), filters] as const,
+  list: (filters: Record<string, unknown>) => [...productKeys.lists(), filters] as const,
   detail: (id: string) => [...productKeys.all, "detail", id] as const,
 };
 
@@ -45,13 +41,8 @@ export const useProductDetail = (productId: string) => {
 export const useApproveProduct = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      productId,
-      payload,
-    }: {
-      productId: string;
-      payload: ApproveProductPayload;
-    }) => productService.approveProduct(productId, payload),
+    mutationFn: ({ productId, payload }: { productId: string; payload: ApproveProductPayload }) =>
+      productService.approveProduct(productId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productKeys.all });
     },
@@ -93,13 +84,8 @@ export const useCreateProduct = () => {
 export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      productId,
-      payload,
-    }: {
-      productId: string;
-      payload: any;
-    }) => productService.updateProduct(productId, payload),
+    mutationFn: ({ productId, payload }: { productId: string; payload: any }) =>
+      productService.updateProduct(productId, payload),
     onSuccess: () => {
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: productKeys.all });

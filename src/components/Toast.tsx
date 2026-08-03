@@ -42,11 +42,7 @@ function ToastItem({
   }, [type]);
 
   const textColor =
-    type === "success"
-      ? "text-[#29C680]"
-      : type === "error"
-        ? "text-[#FFC6C5]"
-        : "";
+    type === "success" ? "text-[#29C680]" : type === "error" ? "text-[#FFC6C5]" : "";
 
   return (
     <div

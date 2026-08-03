@@ -40,24 +40,12 @@ const BlogNFaqContent: React.FC<BlogNFaqContentProps> = ({
 
         {/* Content Text */}
         <div className="space-y-4">
-          <h3 className="font-bold text-[#2F3140] text-base">
-            {heading}
-          </h3>
-          <p className="text-sm text-[#707781] leading-relaxed">
-            {paragraph1}
-          </p>
+          <h3 className="font-bold text-[#2F3140] text-base">{heading}</h3>
+          <p className="text-sm text-[#707781] leading-relaxed">{paragraph1}</p>
 
-          {subheading && (
-            <h4 className="font-bold text-[#2F3140] text-sm pt-2">
-              {subheading}
-            </h4>
-          )}
-          
-          {paragraph2 && (
-            <p className="text-sm text-[#707781] leading-relaxed">
-              {paragraph2}
-            </p>
-          )}
+          {subheading && <h4 className="font-bold text-[#2F3140] text-sm pt-2">{subheading}</h4>}
+
+          {paragraph2 && <p className="text-sm text-[#707781] leading-relaxed">{paragraph2}</p>}
         </div>
       </div>
     </div>

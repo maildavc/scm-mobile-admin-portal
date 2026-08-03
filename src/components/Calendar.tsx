@@ -9,11 +9,7 @@ interface CalendarProps {
   onClose: () => void;
 }
 
-const Calendar: React.FC<CalendarProps> = ({
-  selectedDate,
-  onDateSelect,
-  onClose,
-}) => {
+const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect, onClose }) => {
   const parseDate = (dateString?: string): Date => {
     if (!dateString) return new Date();
     const [year, month, day] = dateString.split("-").map(Number);
@@ -21,17 +17,14 @@ const Calendar: React.FC<CalendarProps> = ({
   };
 
   const [currentMonth, setCurrentMonth] = useState(
-    selectedDate ? parseDate(selectedDate) : new Date()
+    selectedDate ? parseDate(selectedDate) : new Date(),
   );
   const [showYearPicker, setShowYearPicker] = useState(false);
 
   const currentYear = currentMonth.getFullYear();
   const startYear = 1900;
   const endYear = new Date().getFullYear() + 10;
-  const years = Array.from(
-    { length: endYear - startYear + 1 },
-    (_, i) => startYear + i
-  );
+  const years = Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
 
   const yearGridRef = useRef<HTMLDivElement>(null);
 
@@ -39,7 +32,7 @@ const Calendar: React.FC<CalendarProps> = ({
   useEffect(() => {
     if (showYearPicker && yearGridRef.current) {
       const selectedBtn = yearGridRef.current.querySelector(
-        "[data-selected-year='true']"
+        "[data-selected-year='true']",
       ) as HTMLElement | null;
       selectedBtn?.scrollIntoView({ block: "center", behavior: "instant" });
     }
@@ -77,15 +70,11 @@ const Calendar: React.FC<CalendarProps> = ({
   };
 
   const handlePrevMonth = () => {
-    setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
-    );
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
   };
 
   const handleNextMonth = () => {
-    setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
-    );
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
 
   const handleYearSelect = (year: number) => {
@@ -94,11 +83,7 @@ const Calendar: React.FC<CalendarProps> = ({
   };
 
   const handleDateClick = (day: number) => {
-    const dateString = formatDate(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth(),
-      day
-    );
+    const dateString = formatDate(currentMonth.getFullYear(), currentMonth.getMonth(), day);
     onDateSelect(dateString);
     onClose();
   };
@@ -143,7 +128,7 @@ const Calendar: React.FC<CalendarProps> = ({
           }`}
         >
           {day}
-        </button>
+        </button>,
       );
     }
 

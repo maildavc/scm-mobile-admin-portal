@@ -7,12 +7,7 @@ interface ModalProps {
   className?: string;
 }
 
-const Modal: React.FC<ModalProps> = ({
-  isOpen,
-  onClose,
-  children,
-  className = "",
-}) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, className = "" }) => {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -29,10 +24,7 @@ const Modal: React.FC<ModalProps> = ({
   return (
     <div className="fixed inset-0 z-100 flex items-end md:items-center justify-center sm:p-4">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-[#000000]/64 transition-opacity"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-[#000000]/64 transition-opacity" onClick={onClose} />
 
       {/* Modal Content */}
       <div

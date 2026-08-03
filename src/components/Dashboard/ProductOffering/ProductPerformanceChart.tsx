@@ -4,12 +4,9 @@ interface ProductPerformanceChartProps {
   portfolioSize?: string;
 }
 
-const ProductPerformanceChart: React.FC<ProductPerformanceChartProps> = ({
-  portfolioSize,
-}) => {
+const ProductPerformanceChart: React.FC<ProductPerformanceChartProps> = ({ portfolioSize }) => {
   const dataPoints = [
-    500000, 650000, 820000, 800000, 790000, 700000, 550000, 420000, 250000,
-    120000, 100000, 130000,
+    500000, 650000, 820000, 800000, 790000, 700000, 550000, 420000, 250000, 120000, 100000, 130000,
   ];
   const labels = [
     "Jan",
@@ -27,12 +24,7 @@ const ProductPerformanceChart: React.FC<ProductPerformanceChartProps> = ({
   ];
   const yLabels = ["1M", "800k", "600k", "400k", "200k", "0"];
 
-  const generatePath = (
-    data: number[],
-    width: number,
-    height: number,
-    max: number,
-  ) => {
+  const generatePath = (data: number[], width: number, height: number, max: number) => {
     const points = data.map((val, i) => {
       const x = (i / (data.length - 1)) * width;
       const y = height - (val / max) * height;
@@ -51,24 +43,12 @@ const ProductPerformanceChart: React.FC<ProductPerformanceChartProps> = ({
       const p3 = points[i + 2];
 
       const cp1 = p0
-        ? [
-            p1[0] + (p2[0] - p0[0]) * smoothing,
-            p1[1] + (p2[1] - p0[1]) * smoothing,
-          ]
-        : [
-            p1[0] + (p2[0] - p1[0]) * smoothing,
-            p1[1] + (p2[1] - p1[1]) * smoothing,
-          ];
+        ? [p1[0] + (p2[0] - p0[0]) * smoothing, p1[1] + (p2[1] - p0[1]) * smoothing]
+        : [p1[0] + (p2[0] - p1[0]) * smoothing, p1[1] + (p2[1] - p1[1]) * smoothing];
 
       const cp2 = p3
-        ? [
-            p2[0] - (p3[0] - p1[0]) * smoothing,
-            p2[1] - (p3[1] - p1[1]) * smoothing,
-          ]
-        : [
-            p2[0] - (p2[0] - p1[0]) * smoothing,
-            p2[1] - (p2[1] - p1[1]) * smoothing,
-          ];
+        ? [p2[0] - (p3[0] - p1[0]) * smoothing, p2[1] - (p3[1] - p1[1]) * smoothing]
+        : [p2[0] - (p2[0] - p1[0]) * smoothing, p2[1] - (p2[1] - p1[1]) * smoothing];
 
       d += ` C ${cp1[0]},${cp1[1]} ${cp2[0]},${cp2[1]} ${p2[0]},${p2[1]}`;
     }
@@ -78,23 +58,14 @@ const ProductPerformanceChart: React.FC<ProductPerformanceChartProps> = ({
 
   const viewBoxWidth = 1000;
   const viewBoxHeight = 300;
-  const linePath = generatePath(
-    dataPoints,
-    viewBoxWidth,
-    viewBoxHeight,
-    1000000,
-  );
+  const linePath = generatePath(dataPoints, viewBoxWidth, viewBoxHeight, 1000000);
   const areaPath = `${linePath} L ${viewBoxWidth},${viewBoxHeight} L 0,${viewBoxHeight} Z`;
 
   return (
     <div className="pt-6 mb-8">
       <div className="mb-8">
-        <p className="text-[13px] text-[#707781] font-medium mb-1">
-          Portfolio size
-        </p>
-        <h2 className="text-lg font-semibold text-[#2F3140] mb-1">
-          {portfolioSize || "—"}
-        </h2>
+        <p className="text-[13px] text-[#707781] font-medium mb-1">Portfolio size</p>
+        <h2 className="text-lg font-semibold text-[#2F3140] mb-1">{portfolioSize || "—"}</h2>
       </div>
 
       <div className="flex gap-4">
@@ -116,9 +87,7 @@ const ProductPerformanceChart: React.FC<ProductPerformanceChartProps> = ({
                 <div
                   key={i}
                   className={`border-b ${
-                    i === yLabels.length - 1
-                      ? "border-gray-200"
-                      : "border-gray-100 border-dashed"
+                    i === yLabels.length - 1 ? "border-gray-200" : "border-gray-100 border-dashed"
                   }`}
                   style={{ height: "0px" }}
                 ></div>
@@ -133,13 +102,7 @@ const ProductPerformanceChart: React.FC<ProductPerformanceChartProps> = ({
                 className="w-full h-full overflow-visible"
               >
                 <defs>
-                  <linearGradient
-                    id="chartGradient"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
+                  <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#EF4444" stopOpacity="0.2" />
                     <stop offset="100%" stopColor="#EF4444" stopOpacity="0.0" />
                   </linearGradient>

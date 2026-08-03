@@ -29,10 +29,7 @@ interface StatusBadgeProps {
   displayLabel?: string; // Optional override for the displayed text
 }
 
-const statusStyles: Record<
-  StatusType,
-  { bg: string; border: string; text: string }
-> = {
+const statusStyles: Record<StatusType, { bg: string; border: string; text: string }> = {
   Active: {
     bg: "bg-[#E7F6EC]",
     border: "border-[#036B26]/10",
@@ -139,37 +136,25 @@ const getStatusIcon = (status: StatusType) => {
     case "Inactive":
       return <BsPauseCircleFill className="" size={14} color="#A4A4A4" />;
     case "Awaiting Approval":
-      return (
-        <BsFillExclamationCircleFill className="" size={14} color="#E3A300" />
-      );
+      return <BsFillExclamationCircleFill className="" size={14} color="#E3A300" />;
     case "Completed":
       return <GoCheckCircleFill className="" size={14} color="#00A85A" />;
     case "Pending Verification":
-      return (
-        <BsFillExclamationCircleFill className="" size={14} color="#E3A300" />
-      );
+      return <BsFillExclamationCircleFill className="" size={14} color="#E3A300" />;
     case "Failed":
       return <BsFillStopCircleFill className="" size={14} color="#f17a63" />;
     case "Fatal":
       return <BsFillStopCircleFill className="" size={14} color="#F17A63" />;
     case "Shortage":
-      return (
-        <BsFillExclamationCircleFill className="" size={14} color="#E3A300" />
-      );
+      return <BsFillExclamationCircleFill className="" size={14} color="#E3A300" />;
     case "Sent":
       return <GoCheckCircleFill className="" size={14} color="#00A85A" />;
     case "Sending":
-      return (
-        <BsFillExclamationCircleFill className="" size={14} color="#E3A300" />
-      );
+      return <BsFillExclamationCircleFill className="" size={14} color="#E3A300" />;
     case "AwaitingApproval":
-      return (
-        <BsFillExclamationCircleFill className="" size={14} color="#E3A300" />
-      );
+      return <BsFillExclamationCircleFill className="" size={14} color="#E3A300" />;
     case "Scheduled":
-      return (
-        <BsFillExclamationCircleFill className="" size={14} color="#3730A3" />
-      );
+      return <BsFillExclamationCircleFill className="" size={14} color="#3730A3" />;
     case "Cancelled":
       return <BsPauseCircleFill className="" size={14} color="#A4A4A4" />;
     case "Draft":
@@ -185,19 +170,14 @@ const getStatusIcon = (status: StatusType) => {
   }
 };
 
-export const StatusBadge: React.FC<StatusBadgeProps> = ({
-  status,
-  displayLabel,
-}) => {
+export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, displayLabel }) => {
   const fallbackStyle = {
     bg: "bg-[#FEF6E7]",
     border: "border-[#865503]/10",
     text: "text-black",
   };
   const isKnownStatus = status in statusStyles;
-  const styles = isKnownStatus
-    ? statusStyles[status as StatusType]
-    : fallbackStyle;
+  const styles = isKnownStatus ? statusStyles[status as StatusType] : fallbackStyle;
 
   return (
     <span

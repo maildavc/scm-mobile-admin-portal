@@ -87,10 +87,7 @@ const OptionsButton = ({
   return (
     <>
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsOpen(false)} />
       )}
       <div className="relative" ref={menuRef}>
         <button
@@ -109,9 +106,7 @@ const OptionsButton = ({
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
               >
                 <item.icon size={18} className="text-[#2F3140]" />
-                <span className="text-sm text-[#2F3140] font-medium">
-                  {item.label}
-                </span>
+                <span className="text-sm text-[#2F3140] font-medium">{item.label}</span>
               </button>
             ))}
           </div>
@@ -123,10 +118,22 @@ const OptionsButton = ({
 
 // Map a numeric status to a StatusBadge-compatible string
 function resolveStatus(statusName: string | null, status: number): StatusType {
-  if (statusName && statusName in {
-    Draft: 1, AwaitingApproval: 1, Approved: 1, Rejected: 1, Scheduled: 1,
-    Sending: 1, Sent: 1, Failed: 1, Cancelled: 1
-  }) return statusName as StatusType;
+  if (
+    statusName &&
+    statusName in
+      {
+        Draft: 1,
+        AwaitingApproval: 1,
+        Approved: 1,
+        Rejected: 1,
+        Scheduled: 1,
+        Sending: 1,
+        Sent: 1,
+        Failed: 1,
+        Cancelled: 1,
+      }
+  )
+    return statusName as StatusType;
   const map: Record<number, StatusType> = {
     1: "Draft",
     2: "AwaitingApproval",
@@ -155,16 +162,12 @@ export const createNotificationColumns = (
             className="rounded border-gray-300"
             aria-label="Select all notifications"
           />
-          <span className="uppercase text-[#2F3140]">
-            NOTIFICATION ({totalCount})
-          </span>
+          <span className="uppercase text-[#2F3140]">NOTIFICATION ({totalCount})</span>
         </div>
       ),
       className: "w-[25%]",
       render: (notification) => (
-        <span className="font-bold text-[#2F3140] text-sm">
-          {notification.title}
-        </span>
+        <span className="font-bold text-[#2F3140] text-sm">{notification.title}</span>
       ),
     },
     {
@@ -189,9 +192,7 @@ export const createNotificationColumns = (
       header: <FilterableHeader>TYPE</FilterableHeader>,
       className: "w-[10%]",
       render: (notification) => (
-        <span className="text-sm text-[#2F3140] font-medium">
-          {notification.typeName || "-"}
-        </span>
+        <span className="text-sm text-[#2F3140] font-medium">{notification.typeName || "-"}</span>
       ),
     },
   ];
@@ -213,10 +214,7 @@ export const createNotificationColumns = (
         className: "w-[15%]",
         render: (notification) => (
           <StatusBadge
-            status={resolveStatus(
-              notification.statusName,
-              notification.status as number
-            )}
+            status={resolveStatus(notification.statusName, notification.status as number)}
           />
         ),
       },
@@ -242,10 +240,7 @@ export const createNotificationColumns = (
       className: "w-[15%]",
       render: (notification) => (
         <StatusBadge
-          status={resolveStatus(
-            notification.statusName,
-            notification.status as number
-          )}
+          status={resolveStatus(notification.statusName, notification.status as number)}
         />
       ),
     },
@@ -259,9 +254,7 @@ export const createNotificationColumns = (
       ),
     },
     {
-      header: (
-        <div className="text-xs text-[#2F3140] uppercase">DELIVERED</div>
-      ),
+      header: <div className="text-xs text-[#2F3140] uppercase">DELIVERED</div>,
       className: "w-[10%]",
       render: (notification) => (
         <span className="text-sm text-[#2F3140] font-medium">

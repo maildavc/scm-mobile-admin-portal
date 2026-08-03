@@ -4,14 +4,7 @@ import { Column } from "@/components/Dashboard/Table";
 import { StatusBadge, StatusType } from "@/components/Dashboard/StatusBadge";
 import { TbFilterEdit } from "react-icons/tb";
 import { HiMenu } from "react-icons/hi";
-import {
-  FiEye,
-  FiEdit3,
-  FiUser,
-  FiCheck,
-  FiTrash2,
-  FiBox,
-} from "react-icons/fi";
+import { FiEye, FiEdit3, FiUser, FiCheck, FiTrash2, FiBox } from "react-icons/fi";
 import { useState, useRef, useEffect } from "react";
 
 import { Customer } from "@/types/customer";
@@ -71,10 +64,7 @@ const OptionsButton = ({
   return (
     <>
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsOpen(false)} />
       )}
       <div className="relative" ref={menuRef}>
         <button
@@ -106,9 +96,7 @@ const OptionsButton = ({
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
               >
                 <item.icon size={18} className="text-[#2F3140]" />
-                <span className="text-sm text-[#2F3140] font-medium">
-                  {item.label}
-                </span>
+                <span className="text-sm text-[#2F3140] font-medium">{item.label}</span>
               </button>
             ))}
           </div>
@@ -139,9 +127,7 @@ export const customerColumns: Column<Customer>[] = [
           </div>
           <div>
             <p className="font-bold text-[#2F3140] text-sm">{customer.name}</p>
-            <p className="text-[#707781] text-xs">
-              {(customer as any).tier || "Tier 1 User"}
-            </p>
+            <p className="text-[#707781] text-xs">{(customer as any).tier || "Tier 1 User"}</p>
           </div>
         </div>
       </div>
@@ -213,12 +199,8 @@ export const createCustomerColumns = (
                 <FiUser size={20} color="#2F3140" />
               </div>
               <div>
-                <p className="font-bold text-[#2F3140] text-sm">
-                  {customer.name}
-                </p>
-                <p className="text-[#707781] text-xs">
-                  {(customer as any).tier || "Tier 1 User"}
-                </p>
+                <p className="font-bold text-[#2F3140] text-sm">{customer.name}</p>
+                <p className="text-[#707781] text-xs">{(customer as any).tier || "Tier 1 User"}</p>
               </div>
             </div>
           </div>

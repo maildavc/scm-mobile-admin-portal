@@ -39,9 +39,7 @@ interface PasswordCriteriaListProps {
   };
 }
 
-export const PasswordCriteriaList: React.FC<PasswordCriteriaListProps> = ({
-  criteria,
-}) => {
+export const PasswordCriteriaList: React.FC<PasswordCriteriaListProps> = ({ criteria }) => {
   return (
     <div className="flex flex-col gap-3 py-2">
       <CriteriaItem isValid={criteria.hasSmallLetter} label="1 small letter" />

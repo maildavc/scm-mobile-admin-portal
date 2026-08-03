@@ -13,7 +13,7 @@ type Product = {
   name: string;
   type: string;
   size: string;
-  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval";
+  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval" | "Approved";
   updated: string;
 };
 
@@ -30,9 +30,7 @@ const ViewProductRequest: React.FC<ViewProductRequestProps> = ({
 }) => {
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-  const [viewStatus, setViewStatus] = useState<
-    "review" | "success" | "rejected"
-  >("review");
+  const [viewStatus, setViewStatus] = useState<"review" | "success" | "rejected">("review");
 
   const { data: detailRes, isLoading } = useProductDetail(product.id);
   const approveProduct = useApproveProduct();
@@ -78,15 +76,13 @@ const ViewProductRequest: React.FC<ViewProductRequestProps> = ({
         },
         {
           label: "Settlement Date",
-          value: detail.financialDetails.settlementDate ? new Date(
-            detail.financialDetails.settlementDate,
-          ).toLocaleDateString() : "N/A",
+          value: detail.financialDetails.settlementDate
+            ? new Date(detail.financialDetails.settlementDate).toLocaleDateString()
+            : "N/A",
         },
         {
           label: "Allow for Early Liquidation",
-          value: detail.financialDetails.allowForEarlyLiquidation
-            ? "Yes"
-            : "No",
+          value: detail.financialDetails.allowForEarlyLiquidation ? "Yes" : "No",
         },
         {
           label: "Early Liquidation Period",
@@ -136,9 +132,7 @@ const ViewProductRequest: React.FC<ViewProductRequestProps> = ({
         <div className="mb-6">
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
-        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
-          Product Approved Successfully
-        </h2>
+        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">Product Approved Successfully</h2>
         <p className="text-sm text-[#707781] mb-8 text-center">
           Product was successfully approved.
         </p>
@@ -160,9 +154,7 @@ const ViewProductRequest: React.FC<ViewProductRequestProps> = ({
         <div className="mb-6">
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
-        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
-          Product Rejected
-        </h2>
+        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">Product Rejected</h2>
         <p className="text-sm text-[#707781] mb-8 text-center">
           Product was successfully rejected.
         </p>
@@ -226,22 +218,14 @@ const ViewProductRequest: React.FC<ViewProductRequestProps> = ({
         {/* Product Details Card */}
         <DetailCard title="Product Details">
           {productDetails.map((detail) => (
-            <DetailRow
-              key={detail.label}
-              label={detail.label}
-              value={detail.value}
-            />
+            <DetailRow key={detail.label} label={detail.label} value={detail.value} />
           ))}
         </DetailCard>
 
         {/* Financial Details Card */}
         <DetailCard title="Financial Details">
           {financialDetails.map((detail) => (
-            <DetailRow
-              key={detail.label}
-              label={detail.label}
-              value={detail.value}
-            />
+            <DetailRow key={detail.label} label={detail.label} value={detail.value} />
           ))}
         </DetailCard>
       </div>

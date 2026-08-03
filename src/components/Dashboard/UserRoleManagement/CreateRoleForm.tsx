@@ -21,16 +21,10 @@ interface CreateRoleFormProps {
 
 import { PERMISSION_MODULES } from "@/constants/userRoleManagement/createRole";
 
-const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
-  onSuccess,
-  onCancel,
-  editRole,
-}) => {
+const CreateRoleForm: React.FC<CreateRoleFormProps> = ({ onSuccess, onCancel, editRole }) => {
   const [roleName, setRoleName] = useState(editRole?.name || "");
   const [description, setDescription] = useState(editRole?.description || "");
-  const [selectedPermissions, setSelectedPermissions] = useState<
-    Record<string, boolean>
-  >({});
+  const [selectedPermissions, setSelectedPermissions] = useState<Record<string, boolean>>({});
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [nameError, setNameError] = useState("");
@@ -53,9 +47,7 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
     if (isFormValid) {
       setErrorMsg("");
       setNameError("");
-      const permissions = Object.keys(selectedPermissions).filter(
-        (k) => selectedPermissions[k],
-      );
+      const permissions = Object.keys(selectedPermissions).filter((k) => selectedPermissions[k]);
 
       const payload = {
         name: roleName.trim(),
@@ -141,11 +133,7 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
         </p>
         <div className="flex gap-4">
           <div className="w-56">
-            <Button
-              text="Create Another Role"
-              variant="outline"
-              onClick={handleCreateAnother}
-            />
+            <Button text="Create Another Role" variant="outline" onClick={handleCreateAnother} />
           </div>
           <div className="w-32">
             <Button text="Done" variant="primary" onClick={handleDone} />
@@ -166,9 +154,7 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
       )}
       {/* Role Information Section */}
       <section>
-        <h3 className="text-base font-bold text-[#2F3140] mb-1">
-          Role Information
-        </h3>
+        <h3 className="text-base font-bold text-[#2F3140] mb-1">Role Information</h3>
         <p className="text-sm text-[#707781] mb-6">Tell us about this role</p>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Input
@@ -199,12 +185,8 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
 
       {/* Assign Permission Section */}
       <section>
-        <h3 className="text-base font-bold text-[#2F3140] mb-1">
-          Assign Permission
-        </h3>
-        <p className="text-sm text-[#707781] mb-6">
-          Select what permissions this role should have
-        </p>
+        <h3 className="text-base font-bold text-[#2F3140] mb-1">Assign Permission</h3>
+        <p className="text-sm text-[#707781] mb-6">Select what permissions this role should have</p>
         <div className="bg-[#F9F9F9] rounded-xl p-8">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-10 gap-x-4">
             {PERMISSION_MODULES.map((module) => (

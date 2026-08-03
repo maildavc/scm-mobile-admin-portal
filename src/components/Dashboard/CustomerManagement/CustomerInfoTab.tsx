@@ -12,11 +12,7 @@ interface CustomerInfoTabProps {
   onDeactivate?: () => void;
 }
 
-const CustomerInfoTab: React.FC<CustomerInfoTabProps> = ({
-  customer,
-  onEdit,
-  onDeactivate,
-}) => {
+const CustomerInfoTab: React.FC<CustomerInfoTabProps> = ({ customer, onEdit, onDeactivate }) => {
   const customerInfoRows = [
     { label: "Customer Name", value: customer.name || "—" },
     { label: "Email", value: customer.email || "—" },
@@ -50,9 +46,7 @@ const CustomerInfoTab: React.FC<CustomerInfoTabProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Customer Information */}
         <div className="border rounded-xl p-6 border-[#F4F4F5]">
-          <h3 className="text-sm font-semibold text-[#2F3140] mb-6">
-            Customer Information
-          </h3>
+          <h3 className="text-sm font-semibold text-[#2F3140] mb-6">Customer Information</h3>
 
           {/* Avatar */}
           <div className="flex justify-center mb-6">
@@ -75,9 +69,7 @@ const CustomerInfoTab: React.FC<CustomerInfoTabProps> = ({
               <span className="text-sm text-[#2F3140]">Account Status</span>
               <StatusBadge
                 status={(customer.status || "Awaiting Approval") as StatusType}
-                displayLabel={
-                  !customer.status ? "Awaiting Approval" : undefined
-                }
+                displayLabel={!customer.status ? "Awaiting Approval" : undefined}
               />
             </div>
             <div className="flex justify-between items-center py-2">
@@ -92,14 +84,11 @@ const CustomerInfoTab: React.FC<CustomerInfoTabProps> = ({
 
         {/* Profile Information — fields not yet returned by API */}
         <div className="border rounded-xl p-6 border-[#F4F4F5]">
-          <h3 className="text-sm font-semibold text-[#2F3140] mb-6">
-            Profile Information
-          </h3>
+          <h3 className="text-sm font-semibold text-[#2F3140] mb-6">Profile Information</h3>
           <div className="flex flex-col items-center justify-center py-12 text-center text-[#707781]">
             <BiUser size={40} className="mb-3 opacity-30" />
             <p className="text-sm">
-              Extended profile details (BVN, NIN, address) are not yet available
-              from the backend.
+              Extended profile details (BVN, NIN, address) are not yet available from the backend.
             </p>
           </div>
         </div>
@@ -141,9 +130,7 @@ const DetailRow = ({
     className={`flex justify-between items-start py-2 ${!isLast ? "border-b border-[#F4F4F5]" : ""}`}
   >
     <span className="text-sm text-[#2F3140]">{label}</span>
-    <span className="text-sm text-[#707781] font-medium text-right max-w-[60%]">
-      {value}
-    </span>
+    <span className="text-sm text-[#707781] font-medium text-right max-w-[60%]">{value}</span>
   </div>
 );
 

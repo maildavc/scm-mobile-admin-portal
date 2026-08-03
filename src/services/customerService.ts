@@ -18,9 +18,7 @@ type BackendEnvelope<T> = {
 };
 
 export const customerService = {
-  getCustomers: async (
-    params: GetCustomersParams,
-  ): Promise<GetCustomersResponse> => {
+  getCustomers: async (params: GetCustomersParams): Promise<GetCustomersResponse> => {
     const { data } = await apiClient.get<BackendEnvelope<GetCustomersResponse>>(
       "/api/v1/customers",
       { params },
@@ -29,21 +27,18 @@ export const customerService = {
     return data.value ?? (data as unknown as GetCustomersResponse);
   },
 
-  createCustomer: async (
-    payload: CreateCustomerRequest,
-  ): Promise<SingleCustomerResponse> => {
-    const { data } = await apiClient.post<
-      BackendEnvelope<SingleCustomerResponse>
-    >("/api/v1/customers", payload);
+  createCustomer: async (payload: CreateCustomerRequest): Promise<SingleCustomerResponse> => {
+    const { data } = await apiClient.post<BackendEnvelope<SingleCustomerResponse>>(
+      "/api/v1/customers",
+      payload,
+    );
     return data.value ?? (data as unknown as SingleCustomerResponse);
   },
 
-  getCustomerDetails: async (
-    customerId: string,
-  ): Promise<SingleCustomerResponse> => {
-    const { data } = await apiClient.get<
-      BackendEnvelope<SingleCustomerResponse>
-    >(`/api/v1/customers/${customerId}`);
+  getCustomerDetails: async (customerId: string): Promise<SingleCustomerResponse> => {
+    const { data } = await apiClient.get<BackendEnvelope<SingleCustomerResponse>>(
+      `/api/v1/customers/${customerId}`,
+    );
     return data.value ?? (data as unknown as SingleCustomerResponse);
   },
 
@@ -51,9 +46,10 @@ export const customerService = {
     customerId: string,
     payload: UpdateCustomerRequest,
   ): Promise<SingleCustomerResponse> => {
-    const { data } = await apiClient.put<
-      BackendEnvelope<SingleCustomerResponse>
-    >(`/api/v1/customers/${customerId}`, payload);
+    const { data } = await apiClient.put<BackendEnvelope<SingleCustomerResponse>>(
+      `/api/v1/customers/${customerId}`,
+      payload,
+    );
     return data.value ?? (data as unknown as SingleCustomerResponse);
   },
 
@@ -61,43 +57,38 @@ export const customerService = {
     customerId: string,
     action: "approve" | "reject",
   ): Promise<SingleCustomerResponse> => {
-    const { data } = await apiClient.patch<
-      BackendEnvelope<SingleCustomerResponse>
-    >(`/api/v1/customers/${customerId}/approve`, {
-      customerId,
-      action,
-    });
+    const { data } = await apiClient.patch<BackendEnvelope<SingleCustomerResponse>>(
+      `/api/v1/customers/${customerId}/approve`,
+      {
+        customerId,
+        action,
+      },
+    );
     return data.value ?? (data as unknown as SingleCustomerResponse);
   },
 
-  resendEmailVerification: async (
-    customerId: string,
-  ): Promise<SimpleActionResponse> => {
-    const { data } = await apiClient.post<
-      BackendEnvelope<SimpleActionResponse>
-    >(`/api/v1/customers/${customerId}/resend-email-verification`);
+  resendEmailVerification: async (customerId: string): Promise<SimpleActionResponse> => {
+    const { data } = await apiClient.post<BackendEnvelope<SimpleActionResponse>>(
+      `/api/v1/customers/${customerId}/resend-email-verification`,
+    );
     return data.value ?? (data as unknown as SimpleActionResponse);
   },
 
-  resetCustomerPassword: async (
-    customerId: string,
-  ): Promise<SimpleActionResponse> => {
-    const { data } = await apiClient.post<
-      BackendEnvelope<SimpleActionResponse>
-    >(`/api/v1/customers/${customerId}/reset-password`);
+  resetCustomerPassword: async (customerId: string): Promise<SimpleActionResponse> => {
+    const { data } = await apiClient.post<BackendEnvelope<SimpleActionResponse>>(
+      `/api/v1/customers/${customerId}/reset-password`,
+    );
     return data.value ?? (data as unknown as SimpleActionResponse);
   },
 
-  deactivateCustomer: async (
-    customerId: string,
-    reason: string,
-  ): Promise<SimpleActionResponse> => {
-    const { data } = await apiClient.patch<
-      BackendEnvelope<SimpleActionResponse>
-    >(`/api/v1/customers/${customerId}/deactivate`, {
-      customerId,
-      reason,
-    });
+  deactivateCustomer: async (customerId: string, reason: string): Promise<SimpleActionResponse> => {
+    const { data } = await apiClient.patch<BackendEnvelope<SimpleActionResponse>>(
+      `/api/v1/customers/${customerId}/deactivate`,
+      {
+        customerId,
+        reason,
+      },
+    );
     return data.value ?? (data as unknown as SimpleActionResponse);
   },
 
@@ -105,12 +96,13 @@ export const customerService = {
     customerId: string,
     productIds: string[],
   ): Promise<SimpleActionResponse> => {
-    const { data } = await apiClient.patch<
-      BackendEnvelope<SimpleActionResponse>
-    >(`/api/v1/customers/${customerId}/products`, {
-      customerId,
-      productIds,
-    });
+    const { data } = await apiClient.patch<BackendEnvelope<SimpleActionResponse>>(
+      `/api/v1/customers/${customerId}/products`,
+      {
+        customerId,
+        productIds,
+      },
+    );
     return data.value ?? (data as unknown as SimpleActionResponse);
   },
 };

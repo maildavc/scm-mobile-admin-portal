@@ -25,9 +25,7 @@ const ViewBlogRequest: React.FC<ViewBlogRequestProps> = ({
 }) => {
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-  const [viewStatus, setViewStatus] = useState<
-    "review" | "success" | "rejected"
-  >("review");
+  const [viewStatus, setViewStatus] = useState<"review" | "success" | "rejected">("review");
 
   const { data: detailData, isLoading } = useBlogDetails(blogPost.id);
   const approveAction = useBlogAction("approve");
@@ -39,7 +37,7 @@ const ViewBlogRequest: React.FC<ViewBlogRequestProps> = ({
     setIsApproveModalOpen(false);
     approveAction.mutate(
       { id: blogPost.id, action: "approve" },
-      { onSuccess: () => setViewStatus("success") }
+      { onSuccess: () => setViewStatus("success") },
     );
   };
 
@@ -47,7 +45,7 @@ const ViewBlogRequest: React.FC<ViewBlogRequestProps> = ({
     setIsRejectModalOpen(false);
     rejectAction.mutate(
       { id: blogPost.id, action: "reject" },
-      { onSuccess: () => setViewStatus("rejected") }
+      { onSuccess: () => setViewStatus("rejected") },
     );
   };
 

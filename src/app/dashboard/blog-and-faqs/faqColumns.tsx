@@ -25,11 +25,7 @@ export const createFAQColumns = (
   {
     header: (
       <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          className="rounded border-gray-300"
-          aria-label="Select all FAQs"
-        />
+        <input type="checkbox" className="rounded border-gray-300" aria-label="Select all FAQs" />
         <span className="uppercase text-[#2F3140]">FAQ ({totalCount})</span>
       </div>
     ),
@@ -40,7 +36,9 @@ export const createFAQColumns = (
           <p className="font-bold text-[#2F3140] text-sm leading-tight line-clamp-2">
             {faq.question}
           </p>
-          <p className="text-[10px] text-[#707781] mt-1">{faq.authorName || faq.createdBy || "-"}</p>
+          <p className="text-[10px] text-[#707781] mt-1">
+            {faq.authorName || faq.createdBy || "-"}
+          </p>
         </div>
       </div>
     ),
@@ -71,18 +69,25 @@ export const createFAQColumns = (
     className: "w-[20%]",
     render: (faq) => {
       const displayStatus = faq.statusName || String(faq.status);
-      return <StatusBadge status={displayStatus as "Draft" | "Approved" | "Rejected" | "Awaiting Approval" | "Published" | "Archived"} />;
+      return (
+        <StatusBadge
+          status={
+            displayStatus as
+              "Draft" | "Approved" | "Rejected" | "Awaiting Approval" | "Published" | "Archived"
+          }
+        />
+      );
     },
   },
   {
     header: <span className="uppercase text-[#2F3140]">ACTION</span>,
     className: "w-[10%]",
     render: (faq) => (
-      <OptionsButton 
-        faq={faq} 
-        isApprover={isApprover} 
-        onViewFAQ={onViewFAQ} 
-        onEditFAQ={onEditFAQ} 
+      <OptionsButton
+        faq={faq}
+        isApprover={isApprover}
+        onViewFAQ={onViewFAQ}
+        onEditFAQ={onEditFAQ}
       />
     ),
   },
@@ -169,10 +174,7 @@ const OptionsButton = ({
   return (
     <>
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsOpen(false)} />
       )}
       <div className="relative" ref={menuRef}>
         <button
@@ -191,9 +193,7 @@ const OptionsButton = ({
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
               >
                 <item.icon size={18} className="text-[#2F3140]" />
-                <span className="text-sm text-[#2F3140] font-medium">
-                  {item.label}
-                </span>
+                <span className="text-sm text-[#2F3140] font-medium">{item.label}</span>
               </button>
             ))}
           </div>

@@ -1,11 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  DetailCard,
-  DetailRow,
-  DetailSubheading,
-} from "@/components/Dashboard/SharedDetails";
+import { DetailCard, DetailRow, DetailSubheading } from "@/components/Dashboard/SharedDetails";
 import Button from "@/components/Button";
 
 interface RoleInfoTabProps {
@@ -20,11 +16,7 @@ interface RoleInfoTabProps {
   onDeactivate: () => void;
 }
 
-const RoleInfoTab: React.FC<RoleInfoTabProps> = ({
-  role,
-  onEdit,
-  onDeactivate,
-}) => {
+const RoleInfoTab: React.FC<RoleInfoTabProps> = ({ role, onEdit, onDeactivate }) => {
   const roleInfo = [
     { label: "Role Name", value: role.name },
     { label: "Role Description", value: role.description },
@@ -41,12 +33,7 @@ const RoleInfoTab: React.FC<RoleInfoTabProps> = ({
     },
     {
       module: "User & Role management",
-      permissions: [
-        "Create User",
-        "Approve User",
-        "Create Role",
-        "Approve Role",
-      ],
+      permissions: ["Create User", "Approve User", "Create Role", "Approve Role"],
     },
     {
       module: "Audit Log",
@@ -94,20 +81,13 @@ const RoleInfoTab: React.FC<RoleInfoTabProps> = ({
               <div
                 key={index}
                 className={`flex justify-between py-3 ${
-                  index !== assignedPermissions.length - 1
-                    ? "border-b border-[#F4F4F5]"
-                    : ""
+                  index !== assignedPermissions.length - 1 ? "border-b border-[#F4F4F5]" : ""
                 }`}
               >
-                <div className="text-sm text-[#2F3140] w-1/2">
-                  {item.module}
-                </div>
+                <div className="text-sm text-[#2F3140] w-1/2">{item.module}</div>
                 <div className="space-y-1 text-right w-1/2">
                   {item.permissions.map((permission, pIndex) => (
-                    <div
-                      key={pIndex}
-                      className="text-sm text-[#707781] font-semibold"
-                    >
+                    <div key={pIndex} className="text-sm text-[#707781] font-semibold">
                       {permission}
                     </div>
                   ))}
@@ -119,11 +99,7 @@ const RoleInfoTab: React.FC<RoleInfoTabProps> = ({
           {/* Right Column: Assigned Users */}
           <DetailCard title="Assigned Users">
             {assignedUsers.map((user, index) => (
-              <DetailRow
-                key={index}
-                label={user.name}
-                value={user.department}
-              />
+              <DetailRow key={index} label={user.name} value={user.department} />
             ))}
           </DetailCard>
         </div>

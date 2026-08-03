@@ -1,8 +1,5 @@
 import apiClient from "@/lib/axios";
-import type {
-  GetAuditLogsParams,
-  AuditLogListResponse,
-} from "@/types/auditLog";
+import type { GetAuditLogsParams, AuditLogListResponse } from "@/types/auditLog";
 
 // Backend wraps responses: { isSuccess, isFailure, value: <actual payload>, error, errors }
 type BackendEnvelope<T> = {
@@ -18,9 +15,7 @@ export const auditLogService = {
    * GET /api/v1/audit-logs
    * Returns a paginated, filterable list of audit log entries.
    */
-  getAuditLogs: async (
-    params: GetAuditLogsParams,
-  ): Promise<AuditLogListResponse> => {
+  getAuditLogs: async (params: GetAuditLogsParams): Promise<AuditLogListResponse> => {
     const { data } = await apiClient.get<BackendEnvelope<AuditLogListResponse>>(
       "/api/v1/audit-logs",
       { params },

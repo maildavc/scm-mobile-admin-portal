@@ -1,11 +1,4 @@
-import {
-  FiUsers,
-  FiSettings,
-  FiFile,
-  FiCheckCircle,
-  FiShield,
-  FiLink2,
-} from "react-icons/fi";
+import { FiUsers, FiSettings, FiFile, FiCheckCircle, FiShield, FiLink2 } from "react-icons/fi";
 import { RiChat3Line } from "react-icons/ri";
 import { SidebarMenuItem } from "@/components/Dashboard/Sidebar";
 
@@ -79,5 +72,3 @@ export const SUMMARY_CARDS = [
     value: "20",
   },
 ];
-
-

@@ -17,10 +17,7 @@ interface ApproveDepartmentRequestProps {
   };
   onBack: () => void;
   onApprove?: (department: ApproveDepartmentRequestProps["department"]) => void;
-  onReject?: (
-    department: ApproveDepartmentRequestProps["department"],
-    reason: string,
-  ) => void;
+  onReject?: (department: ApproveDepartmentRequestProps["department"], reason: string) => void;
 }
 
 const ApproveDepartmentRequest: React.FC<ApproveDepartmentRequestProps> = ({

@@ -22,12 +22,7 @@ interface ViewUserProps {
   onDeactivate?: (user: any) => void;
 }
 
-const ViewUser: React.FC<ViewUserProps> = ({
-  user,
-  onBack,
-  onEdit,
-  onDeactivate,
-}) => {
+const ViewUser: React.FC<ViewUserProps> = ({ user, onBack, onEdit, onDeactivate }) => {
   const [activeTab, setActiveTab] = useState("User Info");
 
   return (
@@ -42,11 +37,7 @@ const ViewUser: React.FC<ViewUserProps> = ({
 
       <div className="flex-1 overflow-y-auto">
         {activeTab === "User Info" && (
-          <UserInfoTab
-            user={user}
-            onEdit={onEdit}
-            onDeactivate={onDeactivate}
-          />
+          <UserInfoTab user={user} onEdit={onEdit} onDeactivate={onDeactivate} />
         )}
 
         {activeTab === "Activity Log" && <ActivityLogTab />}

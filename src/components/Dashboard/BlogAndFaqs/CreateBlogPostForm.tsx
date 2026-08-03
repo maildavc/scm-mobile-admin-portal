@@ -13,16 +13,15 @@ interface CreateBlogPostFormProps {
   initialData?: BlogListDto | null;
 }
 
-const CreateBlogPostForm: React.FC<CreateBlogPostFormProps> = ({
-  onCancel,
-  initialData,
-}) => {
+const CreateBlogPostForm: React.FC<CreateBlogPostFormProps> = ({ onCancel, initialData }) => {
   const [showSuccess, setShowSuccess] = useState(false);
-  
+
   // Fetch full details if editing, so we can pre-fill the content body
-  const { data: blogDetailsResponse, isLoading: isLoadingDetails } = useBlogDetails(initialData?.id || "");
+  const { data: blogDetailsResponse, isLoading: isLoadingDetails } = useBlogDetails(
+    initialData?.id || "",
+  );
   const blogDetails = blogDetailsResponse?.data;
-  
+
   const [formData, setFormData] = useState({
     blogTitle: initialData?.title || "",
     audienceType: initialData?.audienceType || "",
@@ -34,7 +33,7 @@ const CreateBlogPostForm: React.FC<CreateBlogPostFormProps> = ({
   // Update content once details are fetched
   React.useEffect(() => {
     if (blogDetails?.content) {
-      setFormData(prev => ({ ...prev, blogBody: blogDetails.content }));
+      setFormData((prev) => ({ ...prev, blogBody: blogDetails.content }));
     }
   }, [blogDetails?.content]);
 
@@ -43,8 +42,7 @@ const CreateBlogPostForm: React.FC<CreateBlogPostFormProps> = ({
   };
 
   const isFormValid = () => {
-    const { blogTitle, audienceType, whenLive, scheduledDate, blogBody } =
-      formData;
+    const { blogTitle, audienceType, whenLive, scheduledDate, blogBody } = formData;
     if (!blogTitle || !audienceType || !blogBody) return false;
     if (whenLive === "scheduled" && !scheduledDate) return false;
     return true;
@@ -64,13 +62,16 @@ const CreateBlogPostForm: React.FC<CreateBlogPostFormProps> = ({
           formData.whenLive === "scheduled" && formData.scheduledDate
             ? new Date(formData.scheduledDate).toISOString()
             : undefined,
-        category: "General", 
+        category: "General",
       };
 
       if (initialData) {
-        updateBlog.mutate({ id: initialData.id, payload }, {
-          onSuccess: () => setShowSuccess(true),
-        });
+        updateBlog.mutate(
+          { id: initialData.id, payload },
+          {
+            onSuccess: () => setShowSuccess(true),
+          },
+        );
       } else {
         createBlog.mutate(payload, {
           onSuccess: () => setShowSuccess(true),
@@ -113,9 +114,7 @@ const CreateBlogPostForm: React.FC<CreateBlogPostFormProps> = ({
         <div className="mb-6">
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
-        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
-          Blog Creation Successfully
-        </h2>
+        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">Blog Creation Successfully</h2>
         <p className="text-sm text-[#707781] mb-8 text-center">
           Blog creation was successfully sent for approver confirmation.
         </p>
@@ -145,9 +144,7 @@ const CreateBlogPostForm: React.FC<CreateBlogPostFormProps> = ({
     <div className="bg-white rounded-lg pb-10">
       {/* Audience / Scheduling Section */}
       <div className="mb-8">
-        <h3 className="text-base font-bold text-[#2F3140] mb-1">
-          Audience / Scheduling
-        </h3>
+        <h3 className="text-base font-bold text-[#2F3140] mb-1">Audience / Scheduling</h3>
         <p className="text-xs text-gray-500">
           Tell us the content of this FAQ and when it should go live
         </p>
@@ -200,9 +197,7 @@ const CreateBlogPostForm: React.FC<CreateBlogPostFormProps> = ({
 
       {/* Blog Creator Section */}
       <div className="mb-8">
-        <h3 className="text-base font-bold text-[#2F3140] mb-1">
-          Blog Creator
-        </h3>
+        <h3 className="text-base font-bold text-[#2F3140] mb-1">Blog Creator</h3>
         <p className="text-xs text-gray-500">Enter blog details</p>
       </div>
 
@@ -227,78 +222,42 @@ const CreateBlogPostForm: React.FC<CreateBlogPostFormProps> = ({
           <option>16</option>
         </select>
         <div className="h-5 w-px bg-gray-300" />
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
           <strong className="text-sm">B</strong>
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
           <em className="text-sm">I</em>
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
           <u className="text-sm">U</u>
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           S
         </button>
         <div className="h-5 w-px bg-gray-300" />
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           •
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           1.
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           ⇥
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           ⇤
         </button>
         <div className="h-5 w-px bg-gray-300" />
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           x₂
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           x²
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           🔗
         </button>
-        <button
-          type="button"
-          className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-        >
+        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
           🖼
         </button>
       </div>

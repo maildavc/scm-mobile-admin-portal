@@ -6,8 +6,7 @@ import type { GetAuditLogsParams } from "@/types/auditLog";
 export const auditLogKeys = {
   all: ["auditLogs"] as const,
   lists: () => [...auditLogKeys.all, "list"] as const,
-  list: (filters: Record<string, unknown>) =>
-    [...auditLogKeys.lists(), filters] as const,
+  list: (filters: Record<string, unknown>) => [...auditLogKeys.lists(), filters] as const,
 };
 
 // ── GET /api/v1/audit-logs ─────────────────────────────────────────────────

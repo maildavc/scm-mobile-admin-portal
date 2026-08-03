@@ -19,10 +19,7 @@ interface CreateNotificationFormProps {
   onCancel: () => void;
 }
 
-const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
-  onSuccess,
-  onCancel,
-}) => {
+const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({ onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
     title: "",
     recipientType: "",
@@ -42,22 +39,21 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const toOptions = (items: string[]) =>
-    items.map((item) => ({ label: item, value: item }));
+  const toOptions = (items: string[]) => items.map((item) => ({ label: item, value: item }));
 
   // Map UI channel label → backend integer enum
   const channelMap: Record<string, NotificationChannel> = {
-    Email: NotificationChannel.Email,          // 1
-    SMS: NotificationChannel.SMS,              // 2
+    Email: NotificationChannel.Email, // 1
+    SMS: NotificationChannel.SMS, // 2
     "Push Notification": NotificationChannel.Push, // 3
-    "In-App": NotificationChannel.InApp,       // 4
+    "In-App": NotificationChannel.InApp, // 4
   };
 
   // Map UI recipient type label → backend integer enum
   const recipientTypeMap: Record<string, RecipientType> = {
-    "All Users": RecipientType.AllUsers,        // 1
-    Vendor: RecipientType.Vendor,              // 2
-    Customer: RecipientType.Customer,          // 3
+    "All Users": RecipientType.AllUsers, // 1
+    Vendor: RecipientType.Vendor, // 2
+    Customer: RecipientType.Customer, // 3
     "Specific Users": RecipientType.SpecificUsers, // 4
   };
 
@@ -84,7 +80,7 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
         allowReply: formData.allowReply === "Yes",
         replyToEmail: formData.allowReply === "Yes" ? formData.replyToEmail : undefined,
       },
-      { onSuccess }
+      { onSuccess },
     );
   };
 
@@ -93,9 +89,7 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Audience / Targeting */}
         <section>
-          <h3 className="text-sm font-bold text-[#2F3140] mb-1">
-            Audience / Targeting
-          </h3>
+          <h3 className="text-sm font-bold text-[#2F3140] mb-1">Audience / Targeting</h3>
           <p className="text-xs text-gray-500 mb-6">
             Tell us who this notification is intended for
           </p>
@@ -118,9 +112,7 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
                 required
                 options={toOptions(RECIPIENT_TYPES)}
                 value={formData.recipientType}
-                onChange={(e) =>
-                  handleInputChange("recipientType", e.target.value)
-                }
+                onChange={(e) => handleInputChange("recipientType", e.target.value)}
                 placeholder="Select Option"
               />
               <Input
@@ -150,9 +142,7 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
         {/* Notification Creator */}
         <section>
           <div className="flex justify-between items-center mb-1">
-            <h3 className="text-sm font-bold text-[#2F3140]">
-              Notification Creator
-            </h3>
+            <h3 className="text-sm font-bold text-[#2F3140]">Notification Creator</h3>
             <button
               type="button"
               onClick={() => setIsPreviewOpen(true)}
@@ -161,9 +151,7 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
               <FiEye /> View Notification
             </button>
           </div>
-          <p className="text-xs text-gray-500 mb-6">
-            Assign a role to this user
-          </p>
+          <p className="text-xs text-gray-500 mb-6">Assign a role to this user</p>
 
           {/* Rich Text Editor Toolbar */}
           <div className="mb-4 flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white">
@@ -186,17 +174,62 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
             <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
               <u className="text-sm">U</u>
             </button>
-            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">S</button>
+            <button
+              type="button"
+              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
+            >
+              S
+            </button>
             <div className="h-5 w-px bg-gray-300" />
-            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">•</button>
-            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">1.</button>
-            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">⇥</button>
-            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">⇤</button>
+            <button
+              type="button"
+              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
+            >
+              •
+            </button>
+            <button
+              type="button"
+              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
+            >
+              1.
+            </button>
+            <button
+              type="button"
+              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
+            >
+              ⇥
+            </button>
+            <button
+              type="button"
+              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
+            >
+              ⇤
+            </button>
             <div className="h-5 w-px bg-gray-300" />
-            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">x₂</button>
-            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">x²</button>
-            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">🔗</button>
-            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">🖼</button>
+            <button
+              type="button"
+              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
+            >
+              x₂
+            </button>
+            <button
+              type="button"
+              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
+            >
+              x²
+            </button>
+            <button
+              type="button"
+              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
+            >
+              🔗
+            </button>
+            <button
+              type="button"
+              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
+            >
+              🖼
+            </button>
           </div>
 
           <TextArea
@@ -229,9 +262,7 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
               theme="light"
               required
               value={formData.replyToEmail}
-              onChange={(e) =>
-                handleInputChange("replyToEmail", e.target.value)
-              }
+              onChange={(e) => handleInputChange("replyToEmail", e.target.value)}
               rightIcon={<FiLink2 size={18} />}
             />
           </div>
@@ -239,9 +270,7 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({
 
         {/* Scheduling & Delivery */}
         <section>
-          <h3 className="text-sm font-bold text-[#2F3140] mb-1">
-            Scheduling & Delivery
-          </h3>
+          <h3 className="text-sm font-bold text-[#2F3140] mb-1">Scheduling & Delivery</h3>
           <p className="text-xs text-gray-500 mb-6">
             When do you want this notification to be sent?
           </p>

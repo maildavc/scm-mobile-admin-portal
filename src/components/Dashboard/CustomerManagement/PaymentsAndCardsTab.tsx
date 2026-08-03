@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import Button from "../../Button";
 import { FiArrowUpRight, FiArrowDownLeft, FiFileText } from "react-icons/fi";
+import { runTableExportAction } from "@/components/Dashboard/ActionButton";
 
 interface SavedCard {
   id: string;
@@ -32,7 +32,7 @@ const ActionCard = ({
 }: {
   title: string;
   actionText: string;
-  onClick: () => void;
+  onClick?: () => void;
 }) => (
   <div className="flex-1 bg-white border border-[#F4F4F5] rounded-xl p-4 flex items-center justify-between">
     <div className="flex items-center gap-4">
@@ -42,7 +42,7 @@ const ActionCard = ({
       <div>
         <p className="text-sm text-[#707781] mb-1">{title}</p>
         <button
-          onClick={onClick}
+          onClick={() => (onClick ? onClick() : runTableExportAction(title))}
           className="text-xs text-[#B2171E] font-medium bg-[#FDE4E5] px-2 py-0.5 rounded"
         >
           {actionText}
@@ -56,34 +56,18 @@ interface PaymentsAndCardsTabProps {
   mode?: "view" | "approval";
 }
 
-const PaymentsAndCardsTab: React.FC<PaymentsAndCardsTabProps> = ({
-  mode = "view",
-}) => {
-  const handleDeleteCard = (cardId: string) => {
-    console.log("Delete card:", cardId);
-  };
-
+const PaymentsAndCardsTab: React.FC<PaymentsAndCardsTabProps> = ({ mode = "view" }) => {
   return (
     <div>
       <div className="flex flex-col md:flex-row gap-4 mb-8">
-        <ActionCard
-          title="Download Table as PDF"
-          actionText="Download"
-          onClick={() => console.log("Download PDF")}
-        />
-        <ActionCard
-          title="Export Table as CSV"
-          actionText="Export"
-          onClick={() => console.log("Export CSV")}
-        />
+        <ActionCard title="Download Table as PDF" actionText="Download" />
+        <ActionCard title="Export Table as CSV" actionText="Export" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Saved Cards Section */}
         <div className="bg-white rounded-lg border border-[#F4F4F5] p-6 h-fit">
-          <h3 className="text-base font-bold text-[#2F3140] mb-6">
-            Saved Cards
-          </h3>
+          <h3 className="text-base font-bold text-[#2F3140] mb-6">Saved Cards</h3>
 
           <div className="flex flex-col gap-4">
             {SAVED_CARDS.length > 0 ? (
@@ -94,9 +78,7 @@ const PaymentsAndCardsTab: React.FC<PaymentsAndCardsTabProps> = ({
                 >
                   <div className="flex flex-col gap-1">
                     <p className="text-xs text-[#707781]">{card.type}</p>
-                    <p className="text-sm font-bold text-[#2F3140]">
-                      {card.last4}
-                    </p>
+                    <p className="text-sm font-bold text-[#2F3140]">{card.last4}</p>
                     <p className="text-xs text-[#707781]">{`Added: ${card.addedDate}`}</p>
                   </div>
 
@@ -105,13 +87,6 @@ const PaymentsAndCardsTab: React.FC<PaymentsAndCardsTabProps> = ({
                       <span className="px-4 py-1.5 bg-[#F4F4F5] text-[#2F3140] text-xs font-bold rounded-lg block text-center min-w-[80px]">
                         Deleted
                       </span>
-                    ) : mode === "view" ? (
-                      <Button
-                        text="Delete card"
-                        variant="outline"
-                        onClick={() => handleDeleteCard(card.id)}
-                        className="!w-auto !px-6 !py-2 !bg-[#F4F4F5]"
-                      />
                     ) : null}
                   </div>
                 </div>
@@ -127,9 +102,7 @@ const PaymentsAndCardsTab: React.FC<PaymentsAndCardsTabProps> = ({
         {/* Payment History Section - Only show in view mode */}
         {mode === "view" && (
           <div className="bg-white rounded-lg border border-[#F4F4F5] p-6">
-            <h3 className="text-base font-bold text-[#2F3140] mb-6">
-              Payment History
-            </h3>
+            <h3 className="text-base font-bold text-[#2F3140] mb-6">Payment History</h3>
 
             <div className="flex flex-col gap-6">
               {PAYMENTS_HISTORY.length > 0 ? (
@@ -141,9 +114,7 @@ const PaymentsAndCardsTab: React.FC<PaymentsAndCardsTabProps> = ({
                     <div className="flex gap-3">
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center bg-[#F4F4F5] flex-shrink-0 ${
-                          transaction.type === "debit"
-                            ? "text-[#B2171E]"
-                            : "text-[#00C070]"
+                          transaction.type === "debit" ? "text-[#B2171E]" : "text-[#00C070]"
                         }`}
                       >
                         {transaction.type === "debit" ? (
@@ -154,23 +125,15 @@ const PaymentsAndCardsTab: React.FC<PaymentsAndCardsTabProps> = ({
                       </div>
 
                       <div className="flex flex-col gap-0.5">
-                        <p className="text-sm font-bold text-[#2F3140]">
-                          {transaction.title}
-                        </p>
-                        <p className="text-xs text-[#707781]">
-                          {transaction.description}
-                        </p>
-                        <p className="text-xs text-[#707781]">
-                          {transaction.date}
-                        </p>
+                        <p className="text-sm font-bold text-[#2F3140]">{transaction.title}</p>
+                        <p className="text-xs text-[#707781]">{transaction.description}</p>
+                        <p className="text-xs text-[#707781]">{transaction.date}</p>
                       </div>
                     </div>
 
                     <span
                       className={`text-sm font-bold whitespace-nowrap ${
-                        transaction.type === "debit"
-                          ? "text-[#B2171E]"
-                          : "text-[#00C070]"
+                        transaction.type === "debit" ? "text-[#B2171E]" : "text-[#00C070]"
                       }`}
                     >
                       {transaction.amount}

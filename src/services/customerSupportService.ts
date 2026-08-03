@@ -59,41 +59,39 @@ type BackendEnvelope<T> = {
 export const customerSupportService = {
   getSupportConversations: async (
     page: number = 1,
-    search?: string
+    search?: string,
   ): Promise<SupportConversationListResponse> => {
     const { data } = await apiClient.get<BackendEnvelope<SupportConversationListResponse>>(
       "/api/v1/support-requests/messages",
-      { params: { page, search } }
+      { params: { page, search } },
     );
     return data.value ?? (data as unknown as SupportConversationListResponse);
   },
 
   getConversationMessages: async (
-    conversationId: string
+    conversationId: string,
   ): Promise<ConversationMessagesResponse> => {
     const { data } = await apiClient.get<BackendEnvelope<ConversationMessagesResponse>>(
-      `/api/v1/support-requests/${conversationId}/messages`
+      `/api/v1/support-requests/${conversationId}/messages`,
     );
     return data.value ?? (data as unknown as ConversationMessagesResponse);
   },
 
-  sendMessage: async (
-    command: SendMessageCommand
-  ): Promise<SupportMessage> => {
+  sendMessage: async (command: SendMessageCommand): Promise<SupportMessage> => {
     const { data } = await apiClient.post<BackendEnvelope<SupportMessage>>(
       `/api/v1/support-requests/${command.conversationId}/messages`,
-      command
+      command,
     );
     return data.value ?? (data as unknown as SupportMessage);
   },
 
   createSupportRequest: async (
-    command: CreateSupportRequestCommand
+    command: CreateSupportRequestCommand,
   ): Promise<SupportConversation> => {
     const { data } = await apiClient.post<BackendEnvelope<SupportConversation>>(
       "/api/v1/support-requests",
-      command
+      command,
     );
     return data.value ?? (data as unknown as SupportConversation);
-  }
+  },
 };

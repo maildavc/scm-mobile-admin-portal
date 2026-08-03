@@ -22,7 +22,7 @@ import { formatDateToMMMdyyyy } from "@/utils/dateFormatter";
 const KYCVerificationPage = () => {
   const [viewRequest, setViewRequest] = useState<KYCRequest | null>(null);
   const isApprover = useAuthStore((s) => s.isApprover);
-  
+
   const { data: rawRequests, isLoading } = useKycRequests();
 
   const handleViewRequest = (request: KYCRequest) => {
@@ -44,9 +44,7 @@ const KYCVerificationPage = () => {
   }[] = [...getBreadcrumbs()];
 
   if (viewRequest) {
-    const kycCrumbIndex = breadcrumbs.findIndex(
-      (b) => b.label === "KYC Verification",
-    );
+    const kycCrumbIndex = breadcrumbs.findIndex((b) => b.label === "KYC Verification");
     if (kycCrumbIndex !== -1) {
       // Remove href and add onClick
       breadcrumbs[kycCrumbIndex] = {
@@ -69,7 +67,7 @@ const KYCVerificationPage = () => {
       // Map API status to StatusBadge supported strings
       let statusStr = req.statusName;
       if (statusStr === "Pending") statusStr = "Pending Verification";
-      
+
       return {
         id: req.id,
         customerId: req.customerId || "",
@@ -126,18 +124,8 @@ const KYCVerificationPage = () => {
 
                 {/* Action Buttons */}
                 <div className="flex flex-col md:flex-row gap-4">
-                  <ActionButton
-                    label="Download Table as PDF"
-                    actionText="Download"
-                    onClick={() => console.log("Download PDF")}
-                    fullWidth
-                  />
-                  <ActionButton
-                    label="Export Table as CSV"
-                    actionText="Export"
-                    onClick={() => console.log("Export CSV")}
-                    fullWidth
-                  />
+                  <ActionButton label="Download Table as PDF" actionText="Download" fullWidth />
+                  <ActionButton label="Export Table as CSV" actionText="Export" fullWidth />
                 </div>
 
                 {/* Table */}

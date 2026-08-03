@@ -46,13 +46,7 @@ const OptionsButton = ({
     };
   }, [isOpen]);
 
-  const ReconfigureIcon = ({
-    size = 20,
-    className,
-  }: {
-    size?: number;
-    className?: string;
-  }) => (
+  const ReconfigureIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
     <Image
       src="/reconfigure.svg"
       alt="Reconfigure"
@@ -71,10 +65,7 @@ const OptionsButton = ({
   return (
     <>
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsOpen(false)} />
       )}
       <div className="relative" ref={menuRef}>
         <button
@@ -96,9 +87,7 @@ const OptionsButton = ({
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
               >
                 <item.icon size={20} className="text-[#2F3140]" />
-                <span className="text-sm text-[#2F3140] font-medium">
-                  {item.label}
-                </span>
+                <span className="text-sm text-[#2F3140] font-medium">{item.label}</span>
               </button>
             ))}
           </div>
@@ -111,16 +100,12 @@ const OptionsButton = ({
 export const columns = (
   onView?: (item: IntegrationDto) => void,
   onReconfigure?: (item: IntegrationDto) => void,
-  onDisconnect?: (item: IntegrationDto) => void
+  onDisconnect?: (item: IntegrationDto) => void,
 ): Column<IntegrationDto>[] => [
   {
     header: (
       <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          className="rounded border-gray-300"
-          aria-label="Select all"
-        />
+        <input type="checkbox" className="rounded border-gray-300" aria-label="Select all" />
         <span className="uppercase text-[#2F3140]">INTEGRATION</span>
       </div>
     ),
@@ -148,7 +133,9 @@ export const columns = (
     className: "w-[15%]",
     render: (item) => (
       <div className="flex">
-        <StatusBadge status={(item.statusName || "Pending") as "Active" | "Fatal" | "Shortage" | "Failed"} />
+        <StatusBadge
+          status={(item.statusName || "Pending") as "Active" | "Fatal" | "Shortage" | "Failed"}
+        />
       </div>
     ),
   },
@@ -157,7 +144,12 @@ export const columns = (
     className: "w-[15%]",
     render: (item) => (
       <span className="text-sm font-bold text-[#2F3140]">
-        {new Date(item.createdAt).toLocaleDateString("en-GB") + " " + new Date(item.createdAt).toLocaleTimeString("en-GB", { hour:'2-digit', minute:'2-digit' })}
+        {new Date(item.createdAt).toLocaleDateString("en-GB") +
+          " " +
+          new Date(item.createdAt).toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
       </span>
     ),
   },
@@ -166,7 +158,16 @@ export const columns = (
     className: "w-[20%]",
     render: (item) => (
       <div>
-        <p className="font-bold text-[#2F3140] text-sm">{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString("en-GB") + " " + new Date(item.updatedAt).toLocaleTimeString("en-GB", { hour:'2-digit', minute:'2-digit' }) : "N/A"}</p>
+        <p className="font-bold text-[#2F3140] text-sm">
+          {item.updatedAt
+            ? new Date(item.updatedAt).toLocaleDateString("en-GB") +
+              " " +
+              new Date(item.updatedAt).toLocaleTimeString("en-GB", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "N/A"}
+        </p>
         <p className="text-[#707781] text-xs">{item.updatedBy || "System"}</p>
       </div>
     ),

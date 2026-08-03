@@ -13,9 +13,7 @@ import {
 } from "@/constants/notificationService/notificationService";
 import { createNotificationColumns } from "./columns";
 import { useAuthStore } from "@/stores/authStore";
-import {
-  useNotifications,
-} from "@/hooks/useNotification";
+import { useNotifications } from "@/hooks/useNotification";
 import { NotificationDto } from "@/types/notification";
 
 import CreateNotificationForm from "@/components/Dashboard/NotificationService/CreateNotificationForm";
@@ -24,8 +22,7 @@ import ViewNotificationRequest from "@/components/Dashboard/NotificationService/
 
 export default function NotificationService() {
   const [currentView, setCurrentView] = useState("Overview");
-  const [viewNotification, setViewNotification] =
-    useState<NotificationDto | null>(null);
+  const [viewNotification, setViewNotification] = useState<NotificationDto | null>(null);
   const isApprover = useAuthStore((s) => s.isApprover);
 
   const { data: notificationsRes, isLoading } = useNotifications({
@@ -67,9 +64,7 @@ export default function NotificationService() {
     setViewNotification(null);
   };
 
-  const breadcrumbs = getBreadcrumbs(
-    viewNotification ? viewNotification.title : currentView,
-  );
+  const breadcrumbs = getBreadcrumbs(viewNotification ? viewNotification.title : currentView);
 
   // Build dynamic stats from API or fall back to 0
   const currentStats = isApprover
@@ -102,11 +97,7 @@ export default function NotificationService() {
         },
       ];
 
-  const columns = createNotificationColumns(
-    isApprover,
-    handleViewNotification,
-    totalCount,
-  );
+  const columns = createNotificationColumns(isApprover, handleViewNotification, totalCount);
 
   return (
     <SidebarProvider>
@@ -115,10 +106,7 @@ export default function NotificationService() {
           <PageHeader title={PAGE_CONFIG.title} breadcrumbs={breadcrumbs} />
         </div>
         <div className="flex-1 flex h-full">
-          <Sidebar
-            menuItems={activeSidebarItems}
-            onItemClick={handleSidebarClick}
-          />
+          <Sidebar menuItems={activeSidebarItems} onItemClick={handleSidebarClick} />
 
           <main className="flex-1 p-8 bg-white overflow-hidden pt-4 overflow-y-auto">
             {viewNotification ? (
@@ -137,9 +125,7 @@ export default function NotificationService() {
                       value={stat.value}
                       showLink={false}
                       className={
-                        currentStats.length === 3 && index === 2
-                          ? "col-span-2 md:col-span-1"
-                          : ""
+                        currentStats.length === 3 && index === 2 ? "col-span-2 md:col-span-1" : ""
                       }
                     />
                   ))}
@@ -147,20 +133,10 @@ export default function NotificationService() {
 
                 <div className="flex justify-between items-center gap-3 mb-6">
                   <div className="flex-1">
-                    <ActionButton
-                      onClick={() => console.log("Download clicked")}
-                      label="Download Table as PDF"
-                      actionText="Download"
-                      fullWidth
-                    />
+                    <ActionButton label="Download Table as PDF" actionText="Download" fullWidth />
                   </div>
                   <div className="flex-1">
-                    <ActionButton
-                      onClick={() => console.log("Export clicked")}
-                      label="Export Table as CSV"
-                      actionText="Export"
-                      fullWidth
-                    />
+                    <ActionButton label="Export Table as CSV" actionText="Export" fullWidth />
                   </div>
                 </div>
 
@@ -188,7 +164,7 @@ export default function NotificationService() {
               />
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
-                {currentView} view coming soon
+                Unable to display the selected notification view.
               </div>
             )}
           </main>

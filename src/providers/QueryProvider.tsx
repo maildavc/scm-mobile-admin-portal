@@ -17,12 +17,8 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
             retry: 0,
           },
         },
-      })
+      }),
   );
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  );
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }

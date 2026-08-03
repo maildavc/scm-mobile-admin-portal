@@ -11,7 +11,7 @@ type Product = {
   name: string;
   type: string;
   size: string;
-  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval";
+  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval" | "Approved";
   updated: string;
 };
 
@@ -21,11 +21,7 @@ interface ViewProductProps {
   onDeactivate?: () => void;
 }
 
-const ViewProduct: React.FC<ViewProductProps> = ({
-  product,
-  onEdit,
-  onDeactivate,
-}) => {
+const ViewProduct: React.FC<ViewProductProps> = ({ product, onEdit, onDeactivate }) => {
   const [activeTab, setActiveTab] = useState("Product Info");
   const { data: detailRes, isLoading } = useProductDetail(product.id);
 
@@ -47,10 +43,7 @@ const ViewProduct: React.FC<ViewProductProps> = ({
           isLoading={isLoading}
         />
       ) : (
-        <ConfigurationTab
-          onDeactivate={onDeactivate}
-          portfolioSize={product.size}
-        />
+        <ConfigurationTab onDeactivate={onDeactivate} portfolioSize={product.size} />
       )}
     </div>
   );

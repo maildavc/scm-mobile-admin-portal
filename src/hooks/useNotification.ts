@@ -1,22 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  notificationService,
-  GetNotificationsParams,
-} from "@/services/notificationService";
+import { notificationService, GetNotificationsParams } from "@/services/notificationService";
 import {
   CreateNotificationRequestDto,
   UpdateNotificationRequestDto,
+  UpdateNotificationSettingsRequest,
 } from "@/types/notification";
 import { useToastStore } from "@/stores/toastStore";
 
 export const notificationKeys = {
   all: ["notifications"] as const,
   lists: () => [...notificationKeys.all, "list"] as const,
-  list: (params: GetNotificationsParams) =>
-    [...notificationKeys.lists(), params] as const,
+  list: (params: GetNotificationsParams) => [...notificationKeys.lists(), params] as const,
   details: () => [...notificationKeys.all, "detail"] as const,
   detail: (id: string) => [...notificationKeys.details(), id] as const,
   stats: () => [...notificationKeys.all, "stats"] as const,
+  settings: () => [...notificationKeys.all, "settings"] as const,
 };
 
 // --- Queries ---
@@ -42,6 +40,33 @@ export const useNotificationStats = () => {
   });
 };
 
+export const useNotificationSettings = () => {
+  return useQuery({
+    queryKey: notificationKeys.settings(),
+    queryFn: () => notificationService.getSettings(),
+  });
+};
+
+export const useUpdateNotificationSettings = () => {
+  const queryClient = useQueryClient();
+  const addToast = useToastStore((s) => s.addToast);
+
+  return useMutation({
+    mutationFn: (payload: UpdateNotificationSettingsRequest) =>
+      notificationService.updateSettings(payload),
+    onSuccess: (result) => {
+      addToast(result?.message || "Notification settings updated successfully", "success");
+      queryClient.invalidateQueries({ queryKey: notificationKeys.settings() });
+    },
+    onError: (error: { message?: string; response?: { data?: { message?: string } } }) => {
+      addToast(
+        error?.response?.data?.message || error?.message || "Failed to update notification settings",
+        "error",
+      );
+    },
+  });
+};
+
 // --- Mutations ---
 export const useCreateNotification = () => {
   const queryClient = useQueryClient();
@@ -56,10 +81,7 @@ export const useCreateNotification = () => {
       queryClient.invalidateQueries({ queryKey: notificationKeys.stats() });
     },
     onError: (error: { response?: { data?: { message?: string } } }) => {
-      addToast(
-        error?.response?.data?.message || "Failed to create notification",
-        "error"
-      );
+      addToast(error?.response?.data?.message || "Failed to create notification", "error");
     },
   });
 };
@@ -69,13 +91,8 @@ export const useUpdateNotification = () => {
   const addToast = useToastStore((s) => s.addToast);
 
   return useMutation({
-    mutationFn: ({
-      id,
-      payload,
-    }: {
-      id: string;
-      payload: UpdateNotificationRequestDto;
-    }) => notificationService.updateNotification(id, payload),
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateNotificationRequestDto }) =>
+      notificationService.updateNotification(id, payload),
     onSuccess: (_, variables) => {
       addToast("Notification updated successfully", "success");
       queryClient.invalidateQueries({
@@ -84,10 +101,7 @@ export const useUpdateNotification = () => {
       queryClient.invalidateQueries({ queryKey: notificationKeys.lists() });
     },
     onError: (error: { response?: { data?: { message?: string } } }) => {
-      addToast(
-        error?.response?.data?.message || "Failed to update notification",
-        "error"
-      );
+      addToast(error?.response?.data?.message || "Failed to update notification", "error");
     },
   });
 };
@@ -104,12 +118,7 @@ export const useNotificationAction = (actionName: string) => {
       notes,
     }: {
       id: string;
-      action:
-        | "submit"
-        | "approve"
-        | "reject"
-        | "send"
-        | "cancel";
+      action: "submit" | "approve" | "reject" | "send" | "cancel";
       reason?: string;
       notes?: string;
     }) => {
@@ -145,10 +154,7 @@ export const useNotificationAction = (actionName: string) => {
       queryClient.invalidateQueries({ queryKey: notificationKeys.stats() });
     },
     onError: (error: { response?: { data?: { message?: string } } }) => {
-      addToast(
-        error?.response?.data?.message || `Failed to ${actionName} notification`,
-        "error"
-      );
+      addToast(error?.response?.data?.message || `Failed to ${actionName} notification`, "error");
     },
   });
 };

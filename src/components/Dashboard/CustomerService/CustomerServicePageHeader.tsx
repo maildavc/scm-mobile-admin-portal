@@ -77,7 +77,7 @@ const CustomerServicePageHeader: React.FC<CustomerServicePageHeaderProps> = ({
           </div>
         </div>
       </div>
-      
+
       {/* Optional Children Content (e.g. Welcome message) */}
       {children && <div className="mt-16">{children}</div>}
     </div>

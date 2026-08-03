@@ -69,7 +69,7 @@ export const DEFAULT_PRODUCT_ASSIGNMENTS: ProductAssignment = {
   "treasury-bill": { buy: true, sell: true },
   "fixed-deposit": { buy: false, sell: true },
   "commercial-paper": { buy: false, sell: true },
-  "equities": { buy: false, sell: true },
+  equities: { buy: false, sell: true },
   "mutual-funds": { buy: true, sell: false },
   "ethical-investment": { buy: false, sell: true },
 };
@@ -78,7 +78,7 @@ export const EMPTY_PRODUCT_ASSIGNMENTS: ProductAssignment = {
   "treasury-bill": { buy: false, sell: false },
   "fixed-deposit": { buy: false, sell: false },
   "commercial-paper": { buy: false, sell: false },
-  "equities": { buy: false, sell: false },
+  equities: { buy: false, sell: false },
   "mutual-funds": { buy: false, sell: false },
   "ethical-investment": { buy: false, sell: false },
 };

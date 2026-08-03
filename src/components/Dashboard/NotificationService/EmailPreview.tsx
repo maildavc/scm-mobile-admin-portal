@@ -18,7 +18,7 @@ interface EmailPreviewProps {
 const EmailPreview: React.FC<EmailPreviewProps> = ({
   backgroundColor = "#F8F9FB",
   logoSrc = "/previewlogo.svg",
-  greeting = 'Hi {{firstName}},',
+  greeting = "Hi {{firstName}},",
   title = "Welcome to SCM Asset Plus — Invest in both Naira and USD",
   body = "We're here to guide you in making smart investments and achieving your financial dreams. Let's take the first step together toward a future of lasting prosperity",
   signature = "Regards,",
@@ -31,13 +31,13 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({
     >
       {/* Logo - Centered above card */}
       <div className="my-8 flex flex-col items-center">
-        <Image
-          src={logoSrc}
-          alt="Asset+ Logo"
-          width={120}
-          height={40}
-          className=""
-        />
+        {logoSrc.startsWith("blob:") || logoSrc.startsWith("data:") ? (
+          // Dynamic uploads are not static Next assets.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logoSrc} alt="Asset+ Logo" width={120} height={40} className="h-10 w-auto" />
+        ) : (
+          <Image src={logoSrc} alt="Asset+ Logo" width={120} height={40} unoptimized />
+        )}
       </div>
 
       {/* Content Card - White box */}
@@ -56,9 +56,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({
         <div className="">
           <p className="text-xs md:text-sm text-[#333333] px-5 md:px-0 mb-6 leading-relaxed">
             This email was sent to{" "}
-            <span className="text-[#B2171E] underline cursor-pointer">
-              useremail@eatfresh.com.
-            </span>{" "}
+            <span className="text-[#B2171E] underline cursor-pointer">useremail@eatfresh.com.</span>{" "}
             If this was sent in error, unsubscribe.
           </p>
         </div>

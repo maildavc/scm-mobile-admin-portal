@@ -91,16 +91,42 @@ export const useBlogAction = (actionName: string) => {
   const addToast = useToastStore((s) => s.addToast);
 
   return useMutation({
-    mutationFn: async ({ id, action, reason }: { id: string; action: "submit" | "approve" | "reject" | "publish" | "unpublish" | "feature" | "archive"; reason?: string }) => {
+    mutationFn: async ({
+      id,
+      action,
+      reason,
+    }: {
+      id: string;
+      action: "submit" | "approve" | "reject" | "publish" | "unpublish" | "feature" | "archive";
+      reason?: string;
+    }) => {
       switch (action) {
-        case "submit": return blogService.submitBlog(id);
-        case "approve": return blogService.approveBlog({ blogId: id, action: "Approve", reason: reason || "Approved", approvedBy: "System" });
-        case "reject": return blogService.rejectBlog({ blogId: id, action: "Reject", reason: reason || "Rejected", approvedBy: "System" });
-        case "publish": return blogService.publishBlog(id);
-        case "unpublish": return blogService.unpublishBlog(id);
-        case "feature": return blogService.featureBlog(id);
-        case "archive": return blogService.archiveBlog(id);
-        default: throw new Error("Invalid action");
+        case "submit":
+          return blogService.submitBlog(id);
+        case "approve":
+          return blogService.approveBlog({
+            blogId: id,
+            action: "Approve",
+            reason: reason || "Approved",
+            approvedBy: "System",
+          });
+        case "reject":
+          return blogService.rejectBlog({
+            blogId: id,
+            action: "Reject",
+            reason: reason || "Rejected",
+            approvedBy: "System",
+          });
+        case "publish":
+          return blogService.publishBlog(id);
+        case "unpublish":
+          return blogService.unpublishBlog(id);
+        case "feature":
+          return blogService.featureBlog(id);
+        case "archive":
+          return blogService.archiveBlog(id);
+        default:
+          throw new Error("Invalid action");
       }
     },
     onSuccess: (_, variables) => {

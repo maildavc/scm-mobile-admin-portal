@@ -6,11 +6,7 @@ export const columns: Column<AuditLogDto>[] = [
   {
     header: (
       <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          className="rounded border-gray-300"
-          aria-label="Select all"
-        />
+        <input type="checkbox" className="rounded border-gray-300" aria-label="Select all" />
         <span className="uppercase text-[#2F3140]">USER</span>
       </div>
     ),
@@ -27,36 +23,28 @@ export const columns: Column<AuditLogDto>[] = [
     header: "EVENT TYPE",
     className: "w-[15%]",
     render: (item) => (
-      <span className="text-sm text-[#2F3140] font-medium">
-        {item.eventType || "-"}
-      </span>
+      <span className="text-sm text-[#2F3140] font-medium">{item.eventType || "-"}</span>
     ),
   },
   {
     header: "ACTION",
     className: "w-[15%]",
     render: (item) => (
-      <span className="text-sm font-bold text-[#2F3140]">
-        {item.action || "-"}
-      </span>
+      <span className="text-sm font-bold text-[#2F3140]">{item.action || "-"}</span>
     ),
   },
   {
     header: "IP ADDRESS",
     className: "w-[15%]",
     render: (item) => (
-      <span className="text-sm font-bold text-[#2F3140]">
-        {item.ipAddress || "-"}
-      </span>
+      <span className="text-sm font-bold text-[#2F3140]">{item.ipAddress || "-"}</span>
     ),
   },
   {
     header: "STATUS",
     className: "w-[15%]",
     render: (item) => (
-      <span className="text-sm font-bold text-[#2F3140]">
-        {item.status || "-"}
-      </span>
+      <span className="text-sm font-bold text-[#2F3140]">{item.status || "-"}</span>
     ),
   },
   {

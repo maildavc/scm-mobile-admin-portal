@@ -5,9 +5,7 @@ interface ConfigurationTabProps {
   onDeactivate?: () => void;
 }
 
-const ConfigurationTab: React.FC<ConfigurationTabProps> = ({
-  onDeactivate,
-}) => {
+const ConfigurationTab: React.FC<ConfigurationTabProps> = ({ onDeactivate }) => {
   const configOptions = CONFIG_OPTIONS.map((option, index) => ({
     ...option,
     onClick: index === 2 ? onDeactivate : () => {},

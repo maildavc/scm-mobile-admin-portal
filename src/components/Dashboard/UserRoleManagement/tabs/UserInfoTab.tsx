@@ -21,11 +21,7 @@ interface UserInfoTabProps {
   onDeactivate?: (user: any) => void;
 }
 
-const UserInfoTab: React.FC<UserInfoTabProps> = ({
-  user,
-  onEdit,
-  onDeactivate,
-}) => {
+const UserInfoTab: React.FC<UserInfoTabProps> = ({ user, onEdit, onDeactivate }) => {
   const userInfo = [
     { label: "Name", value: user.name },
     { label: "Email Address", value: user.email },

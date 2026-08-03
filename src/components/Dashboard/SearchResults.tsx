@@ -17,11 +17,7 @@ interface SearchResultsProps {
   onClose?: () => void;
 }
 
-const SearchResults: React.FC<SearchResultsProps> = ({
-  results,
-  searchTerm,
-  onClose,
-}) => {
+const SearchResults: React.FC<SearchResultsProps> = ({ results, searchTerm, onClose }) => {
   const router = useRouter();
 
   if (results.length === 0) return null;
@@ -55,9 +51,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
       <div className="px-5 py-3 border-b border-gray-100">
         <p className="text-[#707781] text-sm">
           Search result for{" "}
-          <span className="font-semibold text-[#2F3140]">
-            &lsquo;{searchTerm}&rsquo;
-          </span>
+          <span className="font-semibold text-[#2F3140]">&lsquo;{searchTerm}&rsquo;</span>
         </p>
       </div>
       <div>

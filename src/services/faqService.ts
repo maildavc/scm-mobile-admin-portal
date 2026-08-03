@@ -25,10 +25,10 @@ export const faqService = {
 
   getFAQDetails: async (id: string): Promise<FAQDto> => {
     const { data } = await apiClient.get<any>(`/api/v1/faq/${id}`);
-    
+
     // Check if wrapped in standard envelope
     if (data.isSuccess !== undefined) {
-       return data.value || data.data;
+      return data.value || data.data;
     }
     return data.data || data;
   },
@@ -38,10 +38,7 @@ export const faqService = {
     return data;
   },
 
-  updateFAQ: async (
-    id: string,
-    payload: UpdateFAQRequestDto
-  ): Promise<any> => {
+  updateFAQ: async (id: string, payload: UpdateFAQRequestDto): Promise<any> => {
     const { data } = await apiClient.put(`/api/v1/faq/${id}`, payload);
     return data;
   },
@@ -81,7 +78,7 @@ export const faqService = {
   getDashboardStats: async (): Promise<FAQDashboardStatsDto> => {
     const { data } = await apiClient.get<any>(`/api/v1/faq/dashboard/stats`);
     if (data.isSuccess !== undefined) {
-       return data.value || data.data;
+      return data.value || data.data;
     }
     return data.data || data;
   },

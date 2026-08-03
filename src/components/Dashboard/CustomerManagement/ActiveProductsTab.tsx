@@ -6,10 +6,8 @@ import { Column } from "../Table";
 import { StatusBadge } from "../StatusBadge";
 import { TbFilterEdit } from "react-icons/tb";
 import { FiFileText } from "react-icons/fi";
-import {
-  ACTIVE_PRODUCTS,
-  Product,
-} from "@/constants/customerManagement/activeProducts";
+import { runTableExportAction } from "@/components/Dashboard/ActionButton";
+import { ACTIVE_PRODUCTS, Product } from "@/constants/customerManagement/activeProducts";
 
 const FilterableHeader = ({ children }: { children: string }) => (
   <div className="flex text-xs text-[#2F3140] items-center gap-2">
@@ -45,18 +43,14 @@ const getProductColumns = (mode: "view" | "approval"): Column<Product>[] => {
       header: <FilterableHeader>PRODUCT TYPE</FilterableHeader>,
       className: "w-[15%]",
       render: (product) => (
-        <span className="text-sm text-[#2F3140] font-medium">
-          {product.productType}
-        </span>
+        <span className="text-sm text-[#2F3140] font-medium">{product.productType}</span>
       ),
     },
     {
       header: <FilterableHeader>PORTFOLIO SIZE</FilterableHeader>,
       className: "w-[15%]",
       render: (product) => (
-        <span className="text-sm text-[#2F3140] font-medium">
-          {product.portfolioSize}
-        </span>
+        <span className="text-sm text-[#2F3140] font-medium">{product.portfolioSize}</span>
       ),
     },
     {
@@ -68,9 +62,7 @@ const getProductColumns = (mode: "view" | "approval"): Column<Product>[] => {
       header: <FilterableHeader>LAST UPDATED ON</FilterableHeader>,
       className: "w-[15%]",
       render: (product) => (
-        <span className="text-sm text-[#2F3140] font-medium">
-          {product.lastUpdated}
-        </span>
+        <span className="text-sm text-[#2F3140] font-medium">{product.lastUpdated}</span>
       ),
     },
   ];
@@ -98,7 +90,7 @@ const ActionCard = ({
 }: {
   title: string;
   actionText: string;
-  onClick: () => void;
+  onClick?: () => void;
 }) => (
   <div className="flex-1 bg-white border border-[#F4F4F5] rounded-xl p-4 flex items-center justify-between">
     <div className="flex items-center gap-4">
@@ -108,7 +100,7 @@ const ActionCard = ({
       <div>
         <p className="text-sm text-[#707781] mb-1">{title}</p>
         <button
-          onClick={onClick}
+          onClick={() => (onClick ? onClick() : runTableExportAction(title))}
           className="text-xs text-[#B2171E] font-medium bg-[#FDE4E5] px-2 py-0.5 rounded"
         >
           {actionText}
@@ -122,24 +114,14 @@ interface ActiveProductsTabProps {
   mode?: "view" | "approval";
 }
 
-const ActiveProductsTab: React.FC<ActiveProductsTabProps> = ({
-  mode = "view",
-}) => {
+const ActiveProductsTab: React.FC<ActiveProductsTabProps> = ({ mode = "view" }) => {
   const columns = React.useMemo(() => getProductColumns(mode), [mode]);
 
   return (
     <div>
       <div className="flex flex-col md:flex-row gap-4 mb-8">
-        <ActionCard
-          title="Download Table as PDF"
-          actionText="Download"
-          onClick={() => console.log("Download PDF")}
-        />
-        <ActionCard
-          title="Export Table as CSV"
-          actionText="Export"
-          onClick={() => console.log("Export CSV")}
-        />
+        <ActionCard title="Download Table as PDF" actionText="Download" />
+        <ActionCard title="Export Table as CSV" actionText="Export" />
       </div>
       <Table data={[]} columns={columns} />
       <div className="flex flex-col items-center justify-center py-12 text-[#707781] text-sm">

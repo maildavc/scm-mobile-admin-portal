@@ -1,9 +1,5 @@
 import apiClient from "@/lib/axios";
-import type {
-  User,
-  CreateUserRequest,
-  UpdateProfileRequest,
-} from "@/types/userManagement";
+import type { User, CreateUserRequest, UpdateProfileRequest } from "@/types/userManagement";
 import type { ChangePasswordRequest } from "@/types/auth";
 
 function formatDate(iso: string | undefined | null): string | null {
@@ -19,9 +15,7 @@ function formatDate(iso: string | undefined | null): string | null {
 }
 
 export const userService = {
-  getUsers: async (
-    params?: Record<string, any>,
-  ): Promise<User[]> => {
+  getUsers: async (params?: Record<string, any>): Promise<User[]> => {
     const { data } = await apiClient.get("/api/v1/users", { params });
 
     // After the axios interceptor decrypts, `data` is:
@@ -63,11 +57,7 @@ export const userService = {
     await apiClient.delete(`/api/v1/users/${id}`);
   },
 
-  approveUser: async (
-    id: string,
-    action: "approve" | "reject",
-    reason?: string,
-  ): Promise<void> => {
+  approveUser: async (id: string, action: "approve" | "reject", reason?: string): Promise<void> => {
     await apiClient.patch(`/api/v1/users/${id}/approve`, {
       userId: id,
       action,
@@ -87,15 +77,11 @@ export const userService = {
   uploadProfileImage: async (file: File): Promise<{ url: string }> => {
     const formData = new FormData();
     formData.append("file", file);
-    const { data } = await apiClient.post(
-      "/api/v1/users/profile/image/upload",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+    const { data } = await apiClient.post("/api/v1/users/profile/image/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
       },
-    );
+    });
     return data;
   },
 
@@ -103,17 +89,11 @@ export const userService = {
     await apiClient.put("/api/v1/users/password", payload);
   },
 
-  updateUserRole: async (
-    id: string,
-    payload: { roleId: string },
-  ): Promise<void> => {
+  updateUserRole: async (id: string, payload: { roleId: string }): Promise<void> => {
     await apiClient.put(`/api/v1/users/${id}/role`, payload);
   },
 
-  updateUserStatus: async (
-    id: string,
-    payload: { status: string },
-  ): Promise<void> => {
+  updateUserStatus: async (id: string, payload: { status: string }): Promise<void> => {
     await apiClient.put(`/api/v1/users/${id}/status`, payload);
   },
 

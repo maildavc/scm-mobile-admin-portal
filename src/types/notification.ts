@@ -168,3 +168,28 @@ export interface NotificationDashboardStatsDto {
   notificationsThisWeek: number;
   notificationsThisMonth: number;
 }
+
+export interface NotificationBrandingSettings {
+  logoUrl: string;
+  brandColor: string;
+  companyName: string;
+}
+
+export interface NotificationSettingsDto {
+  emailSettings?: Record<string, unknown>;
+  smsSettings?: Record<string, unknown>;
+  pushSettings?: Record<string, unknown>;
+  brandingSettings?: NotificationBrandingSettings;
+  defaultSettings?: Record<string, unknown>;
+}
+
+export interface UpdateNotificationSettingsRequest {
+  userId: string;
+  brandingSettings: NotificationBrandingSettings;
+}
+
+export interface NotificationSettingsActionResult {
+  success: boolean;
+  message: string;
+  errors?: string[];
+}

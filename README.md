@@ -1,36 +1,120 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SCM Admin
 
-## Getting Started
+SCM Capital's internal operations portal for products, customers, users and
+roles, KYC, support, integrations, notifications, content, and audit activity.
 
-First, run the development server:
+## Architecture
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+The application uses Next.js App Router and follows this request path:
+
+```text
+page/component → React Query hook → domain service → Axios
+  → same-origin /api/proxy route → encrypted .NET API
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The browser never receives backend bearer tokens or API encryption keys.
+`/api/proxy` stores access and refresh tokens in secure httpOnly cookies,
+converts camelCase JSON to the backend's PascalCase contract, encrypts request
+bodies, decrypts responses, and retries one request after a successful token
+refresh.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The primary business workflow is maker-checker:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. An Initiator creates or edits a record and submits it.
+2. An Approver reviews the pending request.
+3. The Approver approves or rejects it with a reason.
 
-## Learn More
+## Requirements
 
-To learn more about Next.js, take a look at the following resources:
+- Node.js 20+
+- npm
+- Access to the SCM backend API
+- A 16-byte AES key and IV supplied by the backend team
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Configuration
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Copy `.env.example` to `.env.local`:
 
-## Deploy on Vercel
+```powershell
+Copy-Item .env.example .env.local
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Required server-only variables:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Variable            | Purpose                            |
+| ------------------- | ---------------------------------- |
+| `API_BASE_URL`      | Base URL of the .NET API           |
+| `API_AES_KEY`       | 16-byte AES-128-CBC key            |
+| `API_AES_IV`        | 16-byte AES initialization vector  |
+| `AUTH_REFRESH_PATH` | Optional refresh endpoint override |
+
+Never rename these to `NEXT_PUBLIC_*`; public variables are embedded into the
+browser bundle.
+
+## Development
+
+```bash
+npm ci
+npm run dev
+```
+
+Open `http://localhost:3000`.
+
+Useful checks:
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run format:check
+npm run build
+```
+
+## Tests
+
+Unit tests use Vitest:
+
+```bash
+npm test
+```
+
+## Deployment
+
+The repository retains its existing Docker and Docker Compose configuration:
+
+```bash
+docker compose up --build
+```
+
+Environment configuration is managed separately for each deployment target.
+
+## Repository map
+
+```text
+src/app/          routes, layouts, error boundary, and API proxy
+src/components/   shared and module-specific UI
+src/hooks/        React Query queries and mutations
+src/services/     backend API operations
+src/lib/          browser HTTP client and server transport
+src/stores/       Zustand auth and toast state
+src/types/        domain DTOs
+src/constants/    navigation, form and feature configuration
+```
+
+For an end-to-end code trace, start with:
+
+1. `src/app/layout.tsx`
+2. `middleware.ts`
+3. `src/stores/authStore.ts`
+4. `src/lib/axios.ts`
+5. `src/app/api/proxy/[...path]/route.ts`
+6. A feature page, hook, and service such as Customer Management
+
+## Security notes
+
+- Tokens are httpOnly, secure in production, same-site cookies.
+- Backend encryption and key conversion happen only on the server.
+- The proxy uses a fixed configured upstream; clients cannot choose a target.
+- Login responses are scrubbed before reaching browser JavaScript.
+- Do not commit `.env`, credentials, API tokens, or generated test data.
+

@@ -7,6 +7,9 @@ import {
   ApproveNotificationDto,
   RejectNotificationDto,
   NotificationDashboardStatsDto,
+  NotificationSettingsDto,
+  UpdateNotificationSettingsRequest,
+  NotificationSettingsActionResult,
 } from "@/types/notification";
 
 export interface GetNotificationsParams {
@@ -16,13 +19,8 @@ export interface GetNotificationsParams {
 }
 
 export const notificationService = {
-  getNotifications: async (
-    params: GetNotificationsParams
-  ): Promise<NotificationListResponse> => {
-    const { data } = await apiClient.get<unknown>(
-      "/api/v1/notifications",
-      { params }
-    );
+  getNotifications: async (params: GetNotificationsParams): Promise<NotificationListResponse> => {
+    const { data } = await apiClient.get<unknown>("/api/v1/notifications", { params });
     const d = data as Record<string, unknown>;
     // Backend returns items[] + stats embedded at root level
     return {
@@ -44,21 +42,16 @@ export const notificationService = {
     return (d.data || d) as NotificationDto;
   },
 
-  createNotification: async (
-    payload: CreateNotificationRequestDto
-  ): Promise<unknown> => {
+  createNotification: async (payload: CreateNotificationRequestDto): Promise<unknown> => {
     const { data } = await apiClient.post("/api/v1/notifications", payload);
     return data;
   },
 
   updateNotification: async (
     id: string,
-    payload: UpdateNotificationRequestDto
+    payload: UpdateNotificationRequestDto,
   ): Promise<unknown> => {
-    const { data } = await apiClient.put(
-      `/api/v1/notifications/${id}`,
-      payload
-    );
+    const { data } = await apiClient.put(`/api/v1/notifications/${id}`, payload);
     return data;
   },
 
@@ -93,5 +86,26 @@ export const notificationService = {
       return (d.value || d.data) as NotificationDashboardStatsDto;
     }
     return (d.data || d) as NotificationDashboardStatsDto;
+  },
+
+  getSettings: async (): Promise<NotificationSettingsDto> => {
+    const { data } = await apiClient.get<unknown>("/api/v1/notifications/settings");
+    const d = data as Record<string, unknown>;
+    if (d.isSuccess !== undefined) {
+      return (d.value || d.data) as NotificationSettingsDto;
+    }
+    return (d.data || d) as NotificationSettingsDto;
+  },
+
+  updateSettings: async (
+    payload: UpdateNotificationSettingsRequest,
+  ): Promise<NotificationSettingsActionResult> => {
+    const { data } = await apiClient.put<unknown>("/api/v1/notifications/settings", payload);
+    const d = data as Record<string, unknown>;
+    const result = (d.value || d.data || d) as NotificationSettingsActionResult;
+    if (result?.success === false) {
+      throw new Error(result.message || result.errors?.[0] || "Failed to update notification settings");
+    }
+    return result;
   },
 };

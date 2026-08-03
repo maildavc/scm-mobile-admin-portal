@@ -7,9 +7,7 @@ import type {
 } from "@/types/userManagement";
 
 export const roleService = {
-  getRoles: async (
-    params?: Record<string, any>,
-  ): Promise<Role[]> => {
+  getRoles: async (params?: Record<string, any>): Promise<Role[]> => {
     const { data } = await apiClient.get("/api/v1/roles", { params });
 
     // After the axios interceptor decrypts, `data` is:
@@ -54,10 +52,7 @@ export const roleService = {
     await apiClient.patch(`/api/v1/roles/${id}/deactivate`);
   },
 
-  reassignUsers: async (
-    id: string,
-    payload: ReassignUsersRequest,
-  ): Promise<void> => {
+  reassignUsers: async (id: string, payload: ReassignUsersRequest): Promise<void> => {
     await apiClient.post(`/api/v1/roles/${id}/reassign-users`, payload);
   },
 };

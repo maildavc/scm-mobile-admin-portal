@@ -49,10 +49,7 @@ const OptionsButton = ({
   return (
     <>
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsOpen(false)} />
       )}
       <div className="relative" ref={menuRef}>
         <button
@@ -74,9 +71,7 @@ const OptionsButton = ({
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
               >
                 <item.icon size={18} className="text-[#2F3140]" />
-                <span className="text-sm text-[#2F3140] font-medium">
-                  {item.label}
-                </span>
+                <span className="text-sm text-[#2F3140] font-medium">{item.label}</span>
               </button>
             ))}
           </div>
@@ -94,11 +89,7 @@ export const createColumns = (
     {
       header: (
         <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            className="rounded border-gray-300"
-            aria-label="Select all"
-          />
+          <input type="checkbox" className="rounded border-gray-300" aria-label="Select all" />
           <span className="uppercase text-[#2F3140]">CUSTOMER (5)</span>
         </div>
       ),
@@ -106,9 +97,7 @@ export const createColumns = (
       render: (item) => (
         <div className="flex items-center gap-2">
           <div>
-            <p className="font-bold text-[#2F3140] text-sm">
-              {item.customer.name}
-            </p>
+            <p className="font-bold text-[#2F3140] text-sm">{item.customer.name}</p>
             <p className="text-[#707781] text-xs">{item.customer.email}</p>
           </div>
         </div>
@@ -118,9 +107,7 @@ export const createColumns = (
       header: <FilterableHeader>VERIFICATION TYPE</FilterableHeader>,
       className: "w-[20%]",
       render: (item) => (
-        <span className="text-sm font-bold text-[#2F3140]">
-          {item.verificationType}
-        </span>
+        <span className="text-sm font-bold text-[#2F3140]">{item.verificationType}</span>
       ),
     },
     {
@@ -137,9 +124,7 @@ export const createColumns = (
       className: "w-[20%]",
       render: (item) => (
         <div>
-          <p className="font-bold text-[#2F3140] text-sm">
-            {item.initiatedBy.name}
-          </p>
+          <p className="font-bold text-[#2F3140] text-sm">{item.initiatedBy.name}</p>
           <p className="text-[#707781] text-xs">{item.initiatedBy.email}</p>
         </div>
       ),
@@ -148,9 +133,7 @@ export const createColumns = (
       header: <FilterableHeader>DATE REQUESTED</FilterableHeader>,
       className: "w-[15%]",
       render: (item) => (
-        <span className="text-sm font-bold text-[#2F3140]">
-          {item.dateRequested}
-        </span>
+        <span className="text-sm font-bold text-[#2F3140]">{item.dateRequested}</span>
       ),
     },
   ];
@@ -174,12 +157,7 @@ export const createColumns = (
             />
           );
         }
-        return (
-          <OptionsButton
-            request={item}
-            onViewRequest={onViewRequest || (() => {})}
-          />
-        );
+        return <OptionsButton request={item} onViewRequest={onViewRequest || (() => {})} />;
       },
     });
   }

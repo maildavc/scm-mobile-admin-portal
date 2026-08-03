@@ -32,19 +32,15 @@ export function useCustomerForm(initialData?: Customer | null) {
     return {} as Record<string, string>;
   });
 
-  const [productAssignments, setProductAssignments] =
-    useState<ProductAssignment>(
-      initialData ? DEFAULT_PRODUCT_ASSIGNMENTS : DEFAULT_PRODUCT_ASSIGNMENTS,
-    );
+  const [productAssignments, setProductAssignments] = useState<ProductAssignment>(
+    initialData ? DEFAULT_PRODUCT_ASSIGNMENTS : DEFAULT_PRODUCT_ASSIGNMENTS,
+  );
 
   const [showSuccess, setShowSuccess] = useState(false);
 
   // Get all required fields
   const requiredFields = useMemo(
-    () =>
-      BASIC_INFO_FIELDS.filter((field) => field.required).map(
-        (field) => field.label,
-      ),
+    () => BASIC_INFO_FIELDS.filter((field) => field.required).map((field) => field.label),
     [],
   );
 
@@ -99,7 +95,8 @@ export function useCustomerForm(initialData?: Customer | null) {
       setShowSuccess(true);
     } catch (error: any) {
       console.error("Failed to save customer:", error);
-      const errorMsg = error?.message || error?.response?.data?.message || "Failed to save customer";
+      const errorMsg =
+        error?.message || error?.response?.data?.message || "Failed to save customer";
       addToast(errorMsg, "error");
     }
   };

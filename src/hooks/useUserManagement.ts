@@ -140,8 +140,7 @@ export const useDepartments = (params?: Record<string, any>) => {
 export const useCreateDepartment = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: CreateDepartmentRequest) =>
-      departmentService.createDepartment(data),
+    mutationFn: (data: CreateDepartmentRequest) => departmentService.createDepartment(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["departments"] });
     },

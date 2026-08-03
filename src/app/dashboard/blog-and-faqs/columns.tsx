@@ -100,10 +100,7 @@ const OptionsButton = ({
   return (
     <>
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsOpen(false)} />
       )}
       <div className="relative" ref={menuRef}>
         <button
@@ -122,9 +119,7 @@ const OptionsButton = ({
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
               >
                 <item.icon size={18} className="text-[#2F3140]" />
-                <span className="text-sm text-[#2F3140] font-medium">
-                  {item.label}
-                </span>
+                <span className="text-sm text-[#2F3140] font-medium">{item.label}</span>
               </button>
             ))}
           </div>
@@ -143,11 +138,7 @@ export const createBlogPostColumns = (
   {
     header: (
       <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          className="rounded border-gray-300"
-          aria-label="Select all blogs"
-        />
+        <input type="checkbox" className="rounded border-gray-300" aria-label="Select all blogs" />
         <span className="uppercase text-[#2F3140]">BLOG POST ({totalCount})</span>
       </div>
     ),
@@ -155,12 +146,7 @@ export const createBlogPostColumns = (
     render: (post) => (
       <div className="flex items-start gap-3">
         <div className="shrink-0 w-10 h-10 flex items-center justify-center relative overflow-hidden rounded-md bg-gray-100">
-          <Image
-            src="/logo.png"
-            alt={post.title}
-            fill
-            className="object-contain p-2 opacity-50"
-          />
+          <Image src="/logo.png" alt={post.title} fill className="object-contain p-2 opacity-50" />
         </div>
         <div>
           <p className="font-bold text-[#2F3140] text-sm leading-tight line-clamp-2">
@@ -204,18 +190,20 @@ export const createBlogPostColumns = (
   {
     header: <FilterableHeader>STATUS</FilterableHeader>,
     className: "w-[10%]",
-    render: (post) => <StatusBadge status={post.status as "Draft" | "Approved" | "Rejected" | "Awaiting Approval" | "Published" | "Archived"} />,
+    render: (post) => (
+      <StatusBadge
+        status={
+          post.status as
+            "Draft" | "Approved" | "Rejected" | "Awaiting Approval" | "Published" | "Archived"
+        }
+      />
+    ),
   },
   {
     header: <div className="text-xs text-[#2F3140] uppercase">ACTION</div>,
     className: "w-[10%]",
     render: (post) => (
-      <OptionsButton 
-        blogPost={post} 
-        onView={onView}
-        onEdit={onEdit}
-        isApprover={isApprover} 
-      />
+      <OptionsButton blogPost={post} onView={onView} onEdit={onEdit} isApprover={isApprover} />
     ),
   },
 ];

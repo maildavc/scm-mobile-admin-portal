@@ -35,9 +35,7 @@ export default function CustomerManagement() {
   // Sidebar Logic
   const allSidebarItems = CUSTOMER_MANAGEMENT_SIDEBAR_ITEMS.map((item) => ({
     ...item,
-    isActive: viewCustomer
-      ? item.label === "Overview"
-      : item.label === currentView,
+    isActive: viewCustomer ? item.label === "Overview" : item.label === currentView,
   }));
 
   const sidebarItems = isApprover
@@ -62,11 +60,7 @@ export default function CustomerManagement() {
     setCurrentView(customer.name);
   };
 
-  const columns = createCustomerColumns(
-    handleEditCustomer,
-    handleViewCustomer,
-    isApprover,
-  );
+  const columns = createCustomerColumns(handleEditCustomer, handleViewCustomer, isApprover);
 
   const resetView = () => {
     setCurrentView("Overview");
@@ -74,14 +68,14 @@ export default function CustomerManagement() {
     setViewCustomer(null);
   };
 
-  const breadcrumbs = getBreadcrumbs(
-    viewCustomer ? viewCustomer.name : currentView,
-  ).map((crumb) => {
-    if (crumb.label === "Customer Management") {
-      return { ...crumb, onClick: resetView, href: undefined };
-    }
-    return crumb;
-  });
+  const breadcrumbs = getBreadcrumbs(viewCustomer ? viewCustomer.name : currentView).map(
+    (crumb) => {
+      if (crumb.label === "Customer Management") {
+        return { ...crumb, onClick: resetView, href: undefined };
+      }
+      return crumb;
+    },
+  );
 
   return (
     <SidebarProvider>
@@ -114,29 +108,13 @@ export default function CustomerManagement() {
                       }
                     }
 
-                    return (
-                      <StatsCard
-                        key={stat.label}
-                        label={stat.label}
-                        value={value}
-                      />
-                    );
+                    return <StatsCard key={stat.label} label={stat.label} value={value} />;
                   })}
                 </div>
 
                 <div className="flex justify-between items-center gap-3 mb-6">
-                  <ActionButton
-                    onClick={() => console.log("Download clicked")}
-                    label="Download Table as PDF"
-                    actionText="Download"
-                    fullWidth
-                  />
-                  <ActionButton
-                    onClick={() => console.log("Export clicked")}
-                    label="Export Table as CSV"
-                    actionText="Export"
-                    fullWidth
-                  />
+                  <ActionButton label="Download Table as PDF" actionText="Download" fullWidth />
+                  <ActionButton label="Export Table as CSV" actionText="Export" fullWidth />
                 </div>
 
                 <Table
@@ -184,7 +162,7 @@ export default function CustomerManagement() {
               )
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
-                {currentView} view coming soon
+                Unable to display the selected customer view.
               </div>
             )}
           </main>

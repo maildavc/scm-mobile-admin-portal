@@ -34,9 +34,7 @@ const DetailRow = ({
     }`}
   >
     <span className="text-sm text-[#2F3140]">{label}</span>
-    <span className="text-sm text-[#707781] font-medium text-right max-w-[60%]">
-      {value}
-    </span>
+    <span className="text-sm text-[#707781] font-medium text-right max-w-[60%]">{value}</span>
   </div>
 );
 
@@ -74,9 +72,7 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
         : "—",
     },
   ];
-  const [viewStatus, setViewStatus] = useState<
-    "review" | "success" | "rejected"
-  >("review");
+  const [viewStatus, setViewStatus] = useState<"review" | "success" | "rejected">("review");
 
   const { mutateAsync: approveRejectCustomer } = useApproveRejectCustomer();
 
@@ -114,12 +110,10 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
         <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
-          {customer.requestType || "Customer Creation"} Request Approved
-          Successfully
+          {customer.requestType || "Customer Creation"} Request Approved Successfully
         </h2>
         <p className="text-sm text-[#707781] mb-8 text-center">
-          {customer.requestType || "Customer Creation"} request was successfully
-          approved.
+          {customer.requestType || "Customer Creation"} request was successfully approved.
         </p>
         <div className="w-32">
           <Button
@@ -143,8 +137,7 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
           {customer.requestType || "Customer Creation"} Request Rejected
         </h2>
         <p className="text-sm text-[#707781] mb-8 text-center">
-          {customer.requestType || "Customer Creation"} request was successfully
-          rejected.
+          {customer.requestType || "Customer Creation"} request was successfully rejected.
         </p>
         <div className="w-32">
           <Button
@@ -183,9 +176,7 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
         <div>
           <p className="text-[10px] text-[#707781] font-semibold">Created By</p>
           <p className="text-sm font-bold text-[#2F3140]">{customer.name}</p>
-          <p className="text-xs text-[#707781]">
-            {customer.createdAt || "N/A"}
-          </p>
+          <p className="text-xs text-[#707781]">{customer.createdAt || "N/A"}</p>
         </div>
       </div>
 
@@ -203,9 +194,7 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             {/* Customer Information */}
             <div className="border rounded-xl p-6 border-[#F4F4F5]">
-              <h3 className="text-sm font-semibold text-[#2F3140] mb-6">
-                Customer Information
-              </h3>
+              <h3 className="text-sm font-semibold text-[#2F3140] mb-6">Customer Information</h3>
 
               {/* Avatar */}
               <div className="flex justify-center mb-6">
@@ -227,12 +216,8 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
                 <div className="flex justify-between items-center py-2 border-b border-[#F4F4F5]">
                   <span className="text-sm text-[#2F3140]">Account Status</span>
                   <StatusBadge
-                    status={
-                      (customer.status || "Awaiting Approval") as StatusType
-                    }
-                    displayLabel={
-                      !customer.status ? "Awaiting Approval" : undefined
-                    }
+                    status={(customer.status || "Awaiting Approval") as StatusType}
+                    displayLabel={!customer.status ? "Awaiting Approval" : undefined}
                   />
                 </div>
                 <div className="flex justify-between items-center py-2">
@@ -247,23 +232,19 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
 
             {/* Profile Information */}
             <div className="border rounded-xl p-6 border-[#F4F4F5]">
-              <h3 className="text-sm font-semibold text-[#2F3140] mb-6">
-                Profile Information
-              </h3>
+              <h3 className="text-sm font-semibold text-[#2F3140] mb-6">Profile Information</h3>
               <div className="flex flex-col items-center justify-center py-12 text-center text-[#707781]">
                 <BiUser size={40} className="mb-3 opacity-30" />
                 <p className="text-sm">
-                  Extended profile details (BVN, NIN, address) are not yet
-                  available from the backend.
+                  Extended profile details (BVN, NIN, address) are not yet available from the
+                  backend.
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {activeTab === "Active Products" && (
-          <ActiveProductsTab mode="approval" />
-        )}
+        {activeTab === "Active Products" && <ActiveProductsTab mode="approval" />}
         {activeTab === "Cards" && <PaymentsAndCardsTab mode="approval" />}
         {activeTab === "Documents" && <DocumentsTab mode="approval" />}
       </div>

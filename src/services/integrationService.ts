@@ -13,7 +13,7 @@ import {
   UpdateIntegrationRequestDto,
   IntegrationDetailsDto,
   IntegrationsPagedResponse,
-  IntegrationLogsPagedResponse
+  IntegrationLogsPagedResponse,
 } from "@/types/integration";
 
 export interface GetIntegrationsParams {
@@ -27,32 +27,23 @@ export interface GetIntegrationsParams {
 }
 
 export const integrationService = {
-  getIntegrations: async (
-    params?: Record<string, any>,
-  ): Promise<IntegrationsPagedResponse> => {
+  getIntegrations: async (params?: Record<string, any>): Promise<IntegrationsPagedResponse> => {
     const { data } = await apiClient.get<BackendEnvelope<IntegrationsPagedResponse>>(
       "/api/v1/integrations",
-      { params }
+      { params },
     );
     return (data.value !== undefined ? data.value : data.data) as IntegrationsPagedResponse;
   },
 
-  getIntegrationDetails: async (
-    id: string
-  ): Promise<IntegrationDetailsDto> => {
+  getIntegrationDetails: async (id: string): Promise<IntegrationDetailsDto> => {
     const { data } = await apiClient.get<BackendEnvelope<IntegrationDetailsDto>>(
-      `/api/v1/integrations/${id}`
+      `/api/v1/integrations/${id}`,
     );
     return (data.value !== undefined ? data.value : data.data) as IntegrationDetailsDto;
   },
 
-  createIntegration: async (
-    payload: CreateIntegrationRequestDto,
-  ): Promise<IntegrationDto> => {
-    const { data } = await apiClient.post<Record<string, any>>(
-      "/api/v1/integrations",
-      payload,
-    );
+  createIntegration: async (payload: CreateIntegrationRequestDto): Promise<IntegrationDto> => {
+    const { data } = await apiClient.post<Record<string, any>>("/api/v1/integrations", payload);
     if (!data) return {} as IntegrationDto;
     if (data.isSuccess === false || data.status === "error") {
       throw new Error(data.error || data.message || "Failed to create integration");
@@ -80,9 +71,7 @@ export const integrationService = {
   },
 
   deleteIntegration: async (id: string): Promise<void> => {
-    const { data } = await apiClient.delete<Record<string, any>>(
-      `/api/v1/integrations/${id}`,
-    );
+    const { data } = await apiClient.delete<Record<string, any>>(`/api/v1/integrations/${id}`);
     if (data && (data.isSuccess === false || data.status === "error")) {
       throw new Error(data.error || data.message || "Failed to delete integration");
     }
@@ -107,9 +96,7 @@ export const integrationService = {
   },
 
   testIntegration: async (id: string): Promise<void> => {
-    const { data } = await apiClient.post<Record<string, any>>(
-      `/api/v1/integrations/${id}/test`,
-    );
+    const { data } = await apiClient.post<Record<string, any>>(`/api/v1/integrations/${id}/test`);
     if (data && (data.isSuccess === false || data.status === "error")) {
       throw new Error(data.error || data.message || "Connection test failed");
     }
@@ -117,11 +104,11 @@ export const integrationService = {
 
   getIntegrationLogs: async (
     id: string,
-    params: { Page: number; PageSize: number; IntegrationId: string }
+    params: { Page: number; PageSize: number; IntegrationId: string },
   ): Promise<IntegrationLogsPagedResponse> => {
     const { data } = await apiClient.get<BackendEnvelope<IntegrationLogsPagedResponse>>(
       `/api/v1/integrations/${id}/logs`,
-      { params }
+      { params },
     );
     return (data.value !== undefined ? data.value : data.data) as IntegrationLogsPagedResponse;
   },

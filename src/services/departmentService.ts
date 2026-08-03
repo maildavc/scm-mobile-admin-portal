@@ -7,9 +7,7 @@ import type {
 } from "@/types/userManagement";
 
 export const departmentService = {
-  getDepartments: async (
-    params?: Record<string, any>,
-  ): Promise<Department[]> => {
+  getDepartments: async (params?: Record<string, any>): Promise<Department[]> => {
     const { data } = await apiClient.get("/api/v1/departments", { params });
 
     // After the axios interceptor decrypts, `data` is:
@@ -40,7 +38,7 @@ export const departmentService = {
     return list.map((d) => ({
       ...d,
       members: (d.userCount as number) ?? (d.members as number) ?? 0,
-      updated: d.updated as string || d.updatedAt as string || "",
+      updated: (d.updated as string) || (d.updatedAt as string) || "",
     })) as Department[];
   },
 
@@ -49,9 +47,7 @@ export const departmentService = {
     return data;
   },
 
-  createDepartment: async (
-    payload: CreateDepartmentRequest,
-  ): Promise<Department> => {
+  createDepartment: async (payload: CreateDepartmentRequest): Promise<Department> => {
     const { data } = await apiClient.post("/api/v1/departments", payload);
     // The backend may return 2xx with { status: "error", message: "..." }
     const resp = data as Record<string, unknown>;
@@ -61,14 +57,8 @@ export const departmentService = {
     return data;
   },
 
-  updateDepartment: async (
-    id: string,
-    payload: UpdateDepartmentRequest,
-  ): Promise<Department> => {
-    const { data } = await apiClient.patch(
-      `/api/v1/departments/${id}`,
-      payload,
-    );
+  updateDepartment: async (id: string, payload: UpdateDepartmentRequest): Promise<Department> => {
+    const { data } = await apiClient.patch(`/api/v1/departments/${id}`, payload);
     return data;
   },
 
@@ -88,10 +78,7 @@ export const departmentService = {
     await apiClient.patch(`/api/v1/departments/${id}/deactivate`);
   },
 
-  reassignUsers: async (
-    id: string,
-    payload: ReassignUsersRequest,
-  ): Promise<void> => {
+  reassignUsers: async (id: string, payload: ReassignUsersRequest): Promise<void> => {
     await apiClient.post(`/api/v1/departments/${id}/reassign-users`, payload);
   },
 };

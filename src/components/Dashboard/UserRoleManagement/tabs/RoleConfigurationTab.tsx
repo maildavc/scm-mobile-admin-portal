@@ -6,9 +6,7 @@ interface RoleConfigurationTabProps {
   onDeactivate: () => void;
 }
 
-const RoleConfigurationTab: React.FC<RoleConfigurationTabProps> = ({
-  onDeactivate,
-}) => {
+const RoleConfigurationTab: React.FC<RoleConfigurationTabProps> = ({ onDeactivate }) => {
   const configOptions = [
     {
       title: "Role Deactivation",

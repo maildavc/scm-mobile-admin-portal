@@ -16,10 +16,7 @@ import {
 import ActionButton from "@/components/Dashboard/ActionButton";
 import { createProductColumns } from "./columns";
 import { useAuthStore } from "@/stores/authStore";
-import {
-  useProducts,
-  useUpdateProductStatus,
-} from "@/hooks/useProducts";
+import { useProducts, useUpdateProductStatus } from "@/hooks/useProducts";
 import { useToastStore } from "@/stores/toastStore";
 
 export type Product = {
@@ -48,17 +45,23 @@ export default function ProductOffering() {
   const stats = productsRes?.value?.data?.stats;
 
   const statsConfig = [
-    { 
-      label: "Active Products", 
-      value: products.filter(p => p.status === "Active" || p.status === "Approved").length || stats?.activeProducts || 0
+    {
+      label: "Active Products",
+      value:
+        products.filter((p) => p.status === "Active" || p.status === "Approved").length ||
+        stats?.activeProducts ||
+        0,
     },
-    { 
-      label: "Inactive Products", 
-      value: products.filter(p => p.status === "Inactive" || p.status === "Deactivated").length || stats?.inactiveProducts || 0
+    {
+      label: "Inactive Products",
+      value:
+        products.filter((p) => p.status === "Inactive" || p.status === "Deactivated").length ||
+        stats?.inactiveProducts ||
+        0,
     },
-    { 
-      label: "Unsubscribed", 
-      value: stats?.unsubscribedProducts ?? 0
+    {
+      label: "Unsubscribed",
+      value: stats?.unsubscribedProducts ?? 0,
     },
   ];
 
@@ -69,9 +72,7 @@ export default function ProductOffering() {
 
   const sidebarItems = filteredSidebarItems.map((item) => ({
     ...item,
-    isActive: viewProduct
-      ? item.label === "Overview"
-      : item.label === currentView,
+    isActive: viewProduct ? item.label === "Overview" : item.label === currentView,
   }));
 
   const handleSidebarClick = (label: string) => {
@@ -128,12 +129,10 @@ export default function ProductOffering() {
     handleEditProduct,
     handleViewProduct,
     isApprover,
-    totalCount
+    totalCount,
   );
 
-  const breadcrumbs = getBreadcrumbs(
-    viewProduct ? viewProduct.name : currentView,
-  ).map((crumb) => {
+  const breadcrumbs = getBreadcrumbs(viewProduct ? viewProduct.name : currentView).map((crumb) => {
     if (crumb.label === "Product Offering") {
       return { ...crumb, onClick: resetView, href: undefined };
     }
@@ -159,27 +158,15 @@ export default function ProductOffering() {
                       label={stat.label}
                       value={isLoading ? "..." : String(stat.value)}
                       className={
-                        statsConfig.length === 3 && index === 2
-                          ? "col-span-2 md:col-span-1"
-                          : ""
+                        statsConfig.length === 3 && index === 2 ? "col-span-2 md:col-span-1" : ""
                       }
                     />
                   ))}
                 </div>
 
                 <div className="flex justify-between items-center gap-3 mb-6">
-                  <ActionButton
-                    onClick={() => console.log("Download clicked")}
-                    label="Download Table as PDF"
-                    actionText="Download"
-                    fullWidth
-                  />
-                  <ActionButton
-                    onClick={() => console.log("Export clicked")}
-                    label="Export Table as CSV"
-                    actionText="Export"
-                    fullWidth
-                  />
+                  <ActionButton label="Download Table as PDF" actionText="Download" fullWidth />
+                  <ActionButton label="Export Table as CSV" actionText="Export" fullWidth />
                 </div>
 
                 {isLoading ? (
@@ -222,7 +209,7 @@ export default function ProductOffering() {
               )
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
-                {currentView} view coming soon
+                Unable to display the selected product view.
               </div>
             )}
           </main>

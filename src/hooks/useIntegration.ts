@@ -1,20 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  integrationService,
-  GetIntegrationsParams,
-} from "@/services/integrationService";
-import {
-  CreateIntegrationRequestDto,
-  UpdateIntegrationRequestDto,
-} from "@/types/integration";
+import { integrationService, GetIntegrationsParams } from "@/services/integrationService";
+import { CreateIntegrationRequestDto, UpdateIntegrationRequestDto } from "@/types/integration";
 import { useToastStore } from "@/stores/toastStore";
 
 // Keys for React Query cache
 export const integrationKeys = {
   all: ["integrations"] as const,
   lists: () => [...integrationKeys.all, "list"] as const,
-  list: (params: GetIntegrationsParams) =>
-    [...integrationKeys.lists(), params] as const,
+  list: (params: GetIntegrationsParams) => [...integrationKeys.lists(), params] as const,
   details: () => [...integrationKeys.all, "detail"] as const,
   detail: (id: string) => [...integrationKeys.details(), id] as const,
   logs: (id: string) => [...integrationKeys.all, "logs", id] as const,
@@ -59,9 +52,7 @@ export const useCreateIntegration = () => {
       queryClient.invalidateQueries({ queryKey: integrationKeys.lists() });
     },
     onError: (error: any) => {
-      addToast(
-        error?.response?.data?.message || "Failed to create integration", "error"
-      );
+      addToast(error?.response?.data?.message || "Failed to create integration", "error");
     },
   });
 };
@@ -71,13 +62,8 @@ export const useUpdateIntegration = () => {
   const addToast = useToastStore((s) => s.addToast);
 
   return useMutation({
-    mutationFn: ({
-      id,
-      payload,
-    }: {
-      id: string;
-      payload: UpdateIntegrationRequestDto;
-    }) => integrationService.updateIntegration(id, payload),
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateIntegrationRequestDto }) =>
+      integrationService.updateIntegration(id, payload),
     onSuccess: (_, variables) => {
       addToast("Integration updated successfully", "success");
       queryClient.invalidateQueries({
@@ -86,9 +72,7 @@ export const useUpdateIntegration = () => {
       queryClient.invalidateQueries({ queryKey: integrationKeys.lists() });
     },
     onError: (error: any) => {
-      addToast(
-        error?.response?.data?.message || "Failed to update integration", "error"
-      );
+      addToast(error?.response?.data?.message || "Failed to update integration", "error");
     },
   });
 };
@@ -104,9 +88,7 @@ export const useDeleteIntegration = () => {
       queryClient.invalidateQueries({ queryKey: integrationKeys.lists() });
     },
     onError: (error: any) => {
-      addToast(
-        error?.response?.data?.message || "Failed to remove integration", "error"
-      );
+      addToast(error?.response?.data?.message || "Failed to remove integration", "error");
     },
   });
 };
@@ -123,9 +105,7 @@ export const useConnectIntegration = () => {
       queryClient.invalidateQueries({ queryKey: integrationKeys.lists() });
     },
     onError: (error: any) => {
-      addToast(
-        error?.response?.data?.message || "Failed to connect integration", "error"
-      );
+      addToast(error?.response?.data?.message || "Failed to connect integration", "error");
     },
   });
 };
@@ -142,9 +122,7 @@ export const useDisconnectIntegration = () => {
       queryClient.invalidateQueries({ queryKey: integrationKeys.lists() });
     },
     onError: (error: any) => {
-      addToast(
-        error?.response?.data?.message || "Failed to disconnect integration", "error"
-      );
+      addToast(error?.response?.data?.message || "Failed to disconnect integration", "error");
     },
   });
 };
@@ -157,9 +135,7 @@ export const useTestIntegration = () => {
       addToast("Connection test successful", "success");
     },
     onError: (error: any) => {
-      addToast(
-        error?.response?.data?.message || "Connection test failed", "error"
-      );
+      addToast(error?.response?.data?.message || "Connection test failed", "error");
     },
   });
 };

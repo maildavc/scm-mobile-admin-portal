@@ -19,12 +19,7 @@ interface ViewRoleProps {
   onDeactivate: (role: ViewRoleProps["role"]) => void;
 }
 
-const ViewRole: React.FC<ViewRoleProps> = ({
-  role,
-  onBack,
-  onEdit,
-  onDeactivate,
-}) => {
+const ViewRole: React.FC<ViewRoleProps> = ({ role, onBack, onEdit, onDeactivate }) => {
   const [activeTab, setActiveTab] = useState("User Info");
   const [showDeactivateModal, setShowDeactivateModal] = useState(false);
 
@@ -32,8 +27,7 @@ const ViewRole: React.FC<ViewRoleProps> = ({
     setShowDeactivateModal(true);
   };
 
-  const handleDeactivateConfirm = (newRoleId: string) => {
-    console.log("Reassigning users to role:", newRoleId);
+  const handleDeactivateConfirm = () => {
     onDeactivate(role);
     setShowDeactivateModal(false);
   };

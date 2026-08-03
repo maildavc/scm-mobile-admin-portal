@@ -34,8 +34,6 @@ export interface Organization {
 }
 
 export interface LoginData {
-  accessToken: string;
-  refreshToken: string;
   user: User;
   requiresPasswordChange: boolean;
   organization: Organization;

@@ -49,13 +49,7 @@ export default function Onboarding() {
         <div className="flex-1 flex flex-col justify-center items-center w-full max-w-md mx-auto">
           {/* Logo */}
           <div className="mb-8">
-            <Image
-              src="/scmLogo.svg"
-              alt="SCM Logo"
-              width={48}
-              height={48}
-              className="w-12 h-12"
-            />
+            <Image src="/scmLogo.svg" alt="SCM Logo" width={48} height={48} className="w-12 h-12" />
           </div>
 
           <div className="text-center mb-8">
@@ -151,20 +145,16 @@ export default function Onboarding() {
                       ? "Logging in..."
                       : "Changing Password..."
                     : step === 1
-                    ? "Login"
-                    : "Change Password"
+                      ? "Login"
+                      : "Change Password"
                 }
-                disabled={
-                  isLoading || (step === 1 ? !isStep1Valid : !isStep2Valid)
-                }
+                disabled={isLoading || (step === 1 ? !isStep1Valid : !isStep2Valid)}
               />
             </div>
           </form>
         </div>
 
-        <div className="text-center text-xs text-[#6E6D7A]">
-          © SCM Capital 2026
-        </div>
+        <div className="text-center text-xs text-[#6E6D7A]">© SCM Capital 2026</div>
       </div>
 
       {/* Right Side - Image/Background */}

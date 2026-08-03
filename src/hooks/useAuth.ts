@@ -14,13 +14,11 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: (payload: LoginRequest) => authService.login(payload),
     onSuccess: (response) => {
-      const { accessToken, refreshToken, user, requiresPasswordChange, organization } = response.data;
+      const { user, requiresPasswordChange, organization } = response.data;
 
       setAuth({
         user,
         organization,
-        accessToken,
-        refreshToken,
         requiresPasswordChange,
       });
 

@@ -5,7 +5,7 @@ export interface ProductListItem {
   name: string;
   type: string;
   size: string;
-  status: "Active" | "Inactive" | "Awaiting Approval";
+  status: "Active" | "Inactive" | "Deactivated" | "Awaiting Approval" | "Approved";
   updated: string;
 }
 

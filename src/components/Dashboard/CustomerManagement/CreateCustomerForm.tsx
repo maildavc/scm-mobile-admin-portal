@@ -4,10 +4,7 @@ import React from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import CustomCheckbox from "@/components/CustomCheckbox";
-import {
-  BASIC_INFO_FIELDS,
-  PRODUCT_TYPES,
-} from "@/constants/customerManagement/createCustomer";
+import { BASIC_INFO_FIELDS, PRODUCT_TYPES } from "@/constants/customerManagement/createCustomer";
 import Image from "next/image";
 import { useCustomerForm } from "@/hooks/useCustomerForm";
 
@@ -44,9 +41,7 @@ const CreateCustomerForm: React.FC<CreateCustomerFormProps> = ({
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
         <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
-          {initialData
-            ? "Customer Details Updated Successfully"
-            : "Customer Creation Successful"}
+          {initialData ? "Customer Details Updated Successfully" : "Customer Creation Successful"}
         </h2>
         <p className="text-sm text-[#707781] mb-8 text-center max-w-sm">
           {initialData
@@ -64,11 +59,7 @@ const CreateCustomerForm: React.FC<CreateCustomerFormProps> = ({
             </div>
           )}
           <div className="w-32">
-            <Button
-              text="Done"
-              variant="primary"
-              onClick={() => handleDone(onSuccess)}
-            />
+            <Button text="Done" variant="primary" onClick={() => handleDone(onSuccess)} />
           </div>
         </div>
       </div>
@@ -79,9 +70,7 @@ const CreateCustomerForm: React.FC<CreateCustomerFormProps> = ({
     <div className="flex flex-col gap-8 pb-8">
       {/* Basic Information Section */}
       <section>
-        <h3 className="text-base font-bold text-[#2F3140] mb-1">
-          Basic Information
-        </h3>
+        <h3 className="text-base font-bold text-[#2F3140] mb-1">Basic Information</h3>
         <p className="text-sm text-[#707781] mb-6">Tell us about user</p>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {BASIC_INFO_FIELDS.map((field, fieldIndex) => (
@@ -104,9 +93,7 @@ const CreateCustomerForm: React.FC<CreateCustomerFormProps> = ({
 
       {/* Assign Products Section */}
       <section>
-        <h3 className="text-base font-bold text-[#2F3140] mb-1">
-          Assign Products
-        </h3>
+        <h3 className="text-base font-bold text-[#2F3140] mb-1">Assign Products</h3>
         <p className="text-sm text-[#707781] mb-6">
           Select what products this customer should have
         </p>

@@ -26,7 +26,17 @@ import ApproveRoleRequest from "@/components/Dashboard/UserRoleManagement/Approv
 import ViewDepartment from "@/components/Dashboard/UserRoleManagement/ViewDepartment";
 import ApproveDepartmentRequest from "@/components/Dashboard/UserRoleManagement/ApproveDepartmentRequest";
 import ActionButton from "@/components/Dashboard/ActionButton";
-import { useUsers, useRoles, useDepartments, useDeactivateUser, useApproveUser, useApproveRole, useRejectRole, useApproveDepartment, useRejectDepartment } from "@/hooks/useUserManagement";
+import {
+  useUsers,
+  useRoles,
+  useDepartments,
+  useDeactivateUser,
+  useApproveUser,
+  useApproveRole,
+  useRejectRole,
+  useApproveDepartment,
+  useRejectDepartment,
+} from "@/hooks/useUserManagement";
 import { useToastStore } from "@/stores/toastStore";
 
 type User = {
@@ -71,11 +81,14 @@ export default function UserRoleManagement() {
     page: 1,
     limit: 100,
   });
-  const { data: departmentsData, isLoading: isDepartmentsLoading } =
-    useDepartments({ page: 1, limit: 100 });
+  const { data: departmentsData, isLoading: isDepartmentsLoading } = useDepartments({
+    page: 1,
+    limit: 100,
+  });
 
   const [editUser, setEditUser] = useState<User | null>(null);
   const [editRole, setEditRole] = useState<Role | null>(null);
+  const [editDepartment, setEditDepartment] = useState<Department | null>(null);
   const [viewUser, setViewUser] = useState<User | null>(null);
   const [viewRole, setViewRole] = useState<Role | null>(null);
   const [viewDepartment, setViewDepartment] = useState<Department | null>(null);
@@ -101,6 +114,7 @@ export default function UserRoleManagement() {
     setCurrentView(label);
     setEditUser(null);
     setEditRole(null);
+    setEditDepartment(null);
     setViewUser(null);
     setViewRole(null);
     setViewDepartment(null);
@@ -139,8 +153,9 @@ export default function UserRoleManagement() {
   };
 
   const handleEditDepartment = (department: Department) => {
-    console.log("Edit department:", department);
-    // TODO: Implement edit department functionality
+    setEditDepartment(department);
+    setCurrentView("Create Department");
+    setViewDepartment(null);
   };
 
   const handleDeactivateDepartment = (department: Department) => {
@@ -176,10 +191,7 @@ export default function UserRoleManagement() {
     <SidebarProvider>
       <div className="flex flex-col h-full">
         <div className="w-full border-b border-gray-50 md:border-0 md:px-0">
-          <PageHeader
-            title={PAGE_CONFIG.title}
-            breadcrumbs={getBreadcrumbs(currentView)}
-          />
+          <PageHeader title={PAGE_CONFIG.title} breadcrumbs={getBreadcrumbs(currentView)} />
         </div>
         <div className="flex-1 flex h-full">
           <Sidebar menuItems={sidebarItems} onItemClick={handleSidebarClick} />
@@ -205,10 +217,13 @@ export default function UserRoleManagement() {
                     });
                   }}
                   onReject={(dept, reason) => {
-                    rejectDepartment.mutate({ id: dept.id, reason }, {
-                      onSuccess: () => addToast("Department rejected successfully", "success"),
-                      onError: () => addToast("Failed to reject department", "error"),
-                    });
+                    rejectDepartment.mutate(
+                      { id: dept.id, reason },
+                      {
+                        onSuccess: () => addToast("Department rejected successfully", "success"),
+                        onError: () => addToast("Failed to reject department", "error"),
+                      },
+                    );
                   }}
                 />
               ) : (
@@ -246,10 +261,13 @@ export default function UserRoleManagement() {
                     });
                   }}
                   onReject={(role, reason) => {
-                    rejectRole.mutate({ id: role.id, reason }, {
-                      onSuccess: () => addToast("Role rejected successfully", "success"),
-                      onError: () => addToast("Failed to reject role", "error"),
-                    });
+                    rejectRole.mutate(
+                      { id: role.id, reason },
+                      {
+                        onSuccess: () => addToast("Role rejected successfully", "success"),
+                        onError: () => addToast("Failed to reject role", "error"),
+                      },
+                    );
                   }}
                 />
               ) : (
@@ -338,22 +356,22 @@ export default function UserRoleManagement() {
                     <>
                       <StatsCard
                         label="Active Roles"
-                        value={rolesList.filter(r => r.status === "Approved").length.toString()}
+                        value={rolesList.filter((r) => r.status === "Approved").length.toString()}
                       />
                       <StatsCard
                         label="Inactive Roles"
-                        value={rolesList.filter(r => r.status !== "Approved").length.toString()}
+                        value={rolesList.filter((r) => r.status !== "Approved").length.toString()}
                       />
                     </>
                   ) : (
                     <>
                       <StatsCard
                         label="Active Users"
-                        value={usersList.filter(u => u.status === "Active").length.toString()}
+                        value={usersList.filter((u) => u.status === "Active").length.toString()}
                       />
                       <StatsCard
                         label="Inactive Users"
-                        value={usersList.filter(u => u.status !== "Active").length.toString()}
+                        value={usersList.filter((u) => u.status !== "Active").length.toString()}
                       />
                     </>
                   )}
@@ -366,40 +384,23 @@ export default function UserRoleManagement() {
                     onTabChange={setActiveTab}
                   />
                   <div className="flex gap-3">
-                    <ActionButton
-                      onClick={() => console.log("Download clicked")}
-                      label="Download Table as PDF"
-                      actionText="Download"
-                    />
-                    <ActionButton
-                      onClick={() => console.log("Export clicked")}
-                      label="Export Table as CSV"
-                      actionText="Export"
-                    />
+                    <ActionButton label="Download Table as PDF" actionText="Download" />
+                    <ActionButton label="Export Table as CSV" actionText="Export" />
                   </div>
                 </div>
 
                 {activeTab === "Users" ? (
                   isUsersLoading ? (
-                    <div className="flex items-center justify-center p-8">
-                      Loading users...
-                    </div>
+                    <div className="flex items-center justify-center p-8">Loading users...</div>
                   ) : (
                     <Table
                       data={usersList.map((u) => ({
                         ...u,
-                        name:
-                          u.name ||
-                          `${u.firstName} ${u.lastName}`.trim() ||
-                          "Unknown User",
+                        name: u.name || `${u.firstName} ${u.lastName}`.trim() || "Unknown User",
                         roleName: u.roleName || "Unassigned",
                         roleType: u.roleType || "Permanent",
-                        status: u.status as
-                          | "Active"
-                          | "Deactivated"
-                          | "Awaiting Approval",
-                        updated:
-                          u.updated || u.updatedAt || u.createdAt || "N/A",
+                        status: u.status as "Active" | "Deactivated" | "Awaiting Approval",
+                        updated: u.updated || u.updatedAt || u.createdAt || "N/A",
                       }))}
                       columns={columns}
                       itemsPerPage={PAGE_CONFIG.itemsPerPage}
@@ -407,20 +408,14 @@ export default function UserRoleManagement() {
                   )
                 ) : activeTab === "Roles" ? (
                   isRolesLoading ? (
-                    <div className="flex items-center justify-center p-8">
-                      Loading roles...
-                    </div>
+                    <div className="flex items-center justify-center p-8">Loading roles...</div>
                   ) : (
                     <Table
                       data={rolesList.map((r) => ({
                         ...r,
                         description: r.description || "No description provided",
-                        status: r.status as
-                          | "Active"
-                          | "Deactivated"
-                          | "Awaiting Approval",
-                        updated:
-                          r.updated || r.updatedAt || r.createdAt || "N/A",
+                        status: r.status as "Active" | "Deactivated" | "Awaiting Approval",
+                        updated: r.updated || r.updatedAt || r.createdAt || "N/A",
                       }))}
                       columns={roleColumns}
                       itemsPerPage={PAGE_CONFIG.itemsPerPage}
@@ -437,12 +432,8 @@ export default function UserRoleManagement() {
                         ...d,
                         description: d.description || "No description provided",
                         members: d.members || 0,
-                        status: d.status as
-                          | "Active"
-                          | "Deactivated"
-                          | "Awaiting Approval",
-                        updated:
-                          d.updated || d.updatedAt || d.createdAt || "N/A",
+                        status: d.status as "Active" | "Deactivated" | "Awaiting Approval",
+                        updated: d.updated || d.updatedAt || d.createdAt || "N/A",
                       }))}
                       columns={departmentColumns}
                       itemsPerPage={PAGE_CONFIG.itemsPerPage}
@@ -450,7 +441,7 @@ export default function UserRoleManagement() {
                   )
                 ) : (
                   <div className="flex items-center justify-center h-64 text-gray-500">
-                    {activeTab} view coming soon
+                    Unable to display the selected management tab.
                   </div>
                 )}
               </>
@@ -497,12 +488,19 @@ export default function UserRoleManagement() {
               />
             ) : currentView === "Create Department" ? (
               <CreateDepartmentForm
-                onCancel={() => setCurrentView("Overview")}
-                onSuccess={() => setCurrentView("Overview")}
+                initialData={editDepartment}
+                onCancel={() => {
+                  setCurrentView("Overview");
+                  setEditDepartment(null);
+                }}
+                onSuccess={() => {
+                  setCurrentView("Overview");
+                  setEditDepartment(null);
+                }}
               />
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
-                {currentView} view coming soon
+                Unable to display the selected management view.
               </div>
             )}
           </main>

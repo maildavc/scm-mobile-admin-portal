@@ -17,7 +17,7 @@ import { auditLogService } from "@/services/auditLogService";
 const AuditLogPage = () => {
   const [currentView, setCurrentView] = React.useState("Audit Log");
 
-  // Fetching data - grabbing enough limit for client side pagination locally, 
+  // Fetching data - grabbing enough limit for client side pagination locally,
   // since Table.tsx doesn't natively support server-side events out of the box.
   const { data: auditResponse, isLoading } = useAuditLogs({
     page: 1,
@@ -56,23 +56,13 @@ const AuditLogPage = () => {
           <PageHeader title={PAGE_CONFIG.title} breadcrumbs={breadcrumbs} />
         </div>
         <div className="flex-1 flex h-full">
-          <Sidebar
-            menuItems={sidebarItems}
-            onItemClick={(label) => setCurrentView(label)}
-          />
+          <Sidebar menuItems={sidebarItems} onItemClick={(label) => setCurrentView(label)} />
 
           <main className="flex-1 p-8 bg-white overflow-hidden pt-4 overflow-y-auto">
             <div className="flex flex-col gap-6">
-
-
               {/* Action Cards */}
               <div className="flex flex-col md:flex-row gap-4">
-                <ActionButton
-                  label="Download Table as PDF"
-                  actionText="Download"
-                  onClick={() => console.log("Download PDF")}
-                  fullWidth
-                />
+                <ActionButton label="Download Table as PDF" actionText="Download" fullWidth />
                 <ActionButton
                   label="Export Table as CSV"
                   actionText="Export"

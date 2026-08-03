@@ -45,7 +45,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChatId }) => {
         onSuccess: () => {
           setMessage("");
         },
-      }
+      },
     );
   };
 
@@ -71,7 +71,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChatId }) => {
             <h3 className="font-bold text-sm text-[#2F3140]">
               {conversation?.customerName || "Customer"}
             </h3>
-            <p className="text-xs text-gray-500">{conversation?.status || conversation?.priority || "Tier User"}</p>
+            <p className="text-xs text-gray-500">
+              {conversation?.status || conversation?.priority || "Tier User"}
+            </p>
           </div>
         </div>
         <button className="bg-[#B2171E] text-white text-xs font-semibold px-3 md:px-4 py-2 rounded-full hover:bg-[#901318] transition-colors">
@@ -89,8 +91,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChatId }) => {
         ) : (
           messages.map((msg, index) => {
             const isMe = msg.senderType === "Admin" || msg.senderType === "Support";
-            const showDate = index === 0 || new Date(msg.createdAt).toDateString() !== new Date(messages[index - 1].createdAt).toDateString();
-            
+            const showDate =
+              index === 0 ||
+              new Date(msg.createdAt).toDateString() !==
+                new Date(messages[index - 1].createdAt).toDateString();
+
             return (
               <React.Fragment key={msg.id}>
                 {showDate && (
@@ -100,13 +105,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChatId }) => {
                     </div>
                   </div>
                 )}
-                
+
                 <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                   <div className="max-w-[80%]">
-                    <div className={`${isMe ? "bg-[#F2F4F7]" : "bg-white border border-gray-100"} p-4 rounded-xl text-sm text-[#2F3140] mb-1 leading-relaxed`}>
+                    <div
+                      className={`${isMe ? "bg-[#F2F4F7]" : "bg-white border border-gray-100"} p-4 rounded-xl text-sm text-[#2F3140] mb-1 leading-relaxed`}
+                    >
                       {msg.message}
                     </div>
-                    <div className={`text-[10px] text-gray-400 ${isMe ? "text-right" : "text-left"}`}>
+                    <div
+                      className={`text-[10px] text-gray-400 ${isMe ? "text-right" : "text-left"}`}
+                    >
                       {formatTimeTohmma(msg.createdAt)}
                     </div>
                   </div>
@@ -130,7 +139,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedChatId }) => {
             placeholder="Enter message..."
             className="flex-1 px-4 md:px-5 py-3 md:py-3.5 bg-white border border-gray-200 rounded-xl text-sm text-black placeholder:text-gray-400 focus:outline-none focus:border-[#B2171E] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           />
-          <button 
+          <button
             onClick={handleSend}
             disabled={!message.trim() || sendMessageMutation.isPending}
             className="p-1 h-full aspect-square bg-[#B2171E] rounded-lg text-white flex items-center justify-center transition-colors hover:bg-[#901318] disabled:opacity-50 disabled:cursor-not-allowed shrink-0"

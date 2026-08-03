@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import Cookies from "js-cookie";
 import type { User, Organization } from "@/types/auth";
 
 /**
@@ -31,8 +30,6 @@ interface AuthState {
   setAuth: (params: {
     user: User;
     organization: Organization;
-    accessToken: string;
-    refreshToken: string;
     requiresPasswordChange: boolean;
   }) => void;
   setPasswordChanged: () => void;
@@ -48,32 +45,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   isApprover: false,
   isInitiator: false,
 
-  setAuth: ({
-    user,
-    organization,
-    accessToken,
-    refreshToken,
-    requiresPasswordChange,
-  }) => {
-    // Persist tokens in cookies (httpOnly in prod should be set server-side)
-    Cookies.set("accessToken", accessToken, { expires: 1, sameSite: "strict" });
-    Cookies.set("refreshToken", refreshToken, {
-      expires: 7,
-      sameSite: "strict",
-    });
-
-    // Persist user & org in localStorage for hydration
+  setAuth: ({ user, organization, requiresPasswordChange }) => {
+    // Tokens are stored only in secure, httpOnly cookies by the API proxy.
+    // Persist non-sensitive display/session context for client hydration.
     if (typeof window !== "undefined") {
       localStorage.setItem("user", JSON.stringify(user));
       // Safely stringify organization, using null if undefined
-      localStorage.setItem(
-        "organization",
-        JSON.stringify(organization || null),
-      );
-      localStorage.setItem(
-        "requiresPasswordChange",
-        JSON.stringify(requiresPasswordChange),
-      );
+      localStorage.setItem("organization", JSON.stringify(organization || null));
+      localStorage.setItem("requiresPasswordChange", JSON.stringify(requiresPasswordChange));
     }
 
     set({
@@ -94,8 +73,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
-    Cookies.remove("accessToken");
-    Cookies.remove("refreshToken");
     if (typeof window !== "undefined") {
       localStorage.removeItem("user");
       localStorage.removeItem("organization");
@@ -114,30 +91,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   hydrate: () => {
     if (typeof window === "undefined") return;
 
-    const accessToken = Cookies.get("accessToken");
     const userStr = localStorage.getItem("user");
     const orgStr = localStorage.getItem("organization");
     const rpc = localStorage.getItem("requiresPasswordChange");
 
-    if (accessToken && userStr && userStr !== "undefined") {
+    if (userStr && userStr !== "undefined") {
       try {
         const user = JSON.parse(userStr) as User;
-        let org =
-          orgStr && orgStr !== "undefined" ? JSON.parse(orgStr) : null;
-
-        // Fallback: extract organization_id from JWT when localStorage has no org
-        if (!org && accessToken) {
-          try {
-            const payload = JSON.parse(atob(accessToken.split(".")[1]));
-            const orgId = payload.organization_id || payload.OrganizationId;
-            if (orgId) {
-              org = { id: orgId, name: "", domain: "", type: 0, logoUrl: null } as Organization;
-              localStorage.setItem("organization", JSON.stringify(org));
-            }
-          } catch {
-            // JWT decode failed — ignore
-          }
-        }
+        const org = orgStr && orgStr !== "undefined" ? JSON.parse(orgStr) : null;
 
         set({
           user,
@@ -149,9 +110,6 @@ export const useAuthStore = create<AuthState>((set) => ({
         });
       } catch (err) {
         console.error("Auth hydration error:", err);
-        // Corrupted data — reset
-        Cookies.remove("accessToken");
-        Cookies.remove("refreshToken");
         localStorage.removeItem("user");
         localStorage.removeItem("organization");
         localStorage.removeItem("requiresPasswordChange");

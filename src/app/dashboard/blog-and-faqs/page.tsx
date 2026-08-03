@@ -78,7 +78,7 @@ export default function BlogAndFaqs() {
       setEditBlogPost(post as BlogListDto);
       setCurrentView("Create Blog Post");
     },
-    blogsTotalCount
+    blogsTotalCount,
   );
 
   const faqColumns = createFAQColumns(
@@ -88,13 +88,16 @@ export default function BlogAndFaqs() {
       setEditFAQ(faq as FAQDto);
       setCurrentView("Create FAQ");
     },
-    faqsTotalCount
+    faqsTotalCount,
   );
 
   const currentStats =
     activeTab === "Blog"
       ? [
-          { label: "All Blogs", value: String(blogStatsRes?.allBlogs?.totalPosts ?? blogsTotalCount) },
+          {
+            label: "All Blogs",
+            value: String(blogStatsRes?.allBlogs?.totalPosts ?? blogsTotalCount),
+          },
           { label: "Homepage Blogs", value: String(blogStatsRes?.homepageBlogs?.totalPosts ?? 0) },
           { label: "Product Blogs", value: String(blogStatsRes?.productBlogs?.totalPosts ?? 0) },
         ]
@@ -111,10 +114,7 @@ export default function BlogAndFaqs() {
           <PageHeader title={PAGE_CONFIG.title} breadcrumbs={breadcrumbs} />
         </div>
         <div className="flex-1 flex h-full">
-          <Sidebar
-            menuItems={activeSidebarItems}
-            onItemClick={handleSidebarClick}
-          />
+          <Sidebar menuItems={activeSidebarItems} onItemClick={handleSidebarClick} />
 
           <main className="flex-1 p-8 bg-white overflow-hidden pt-4 overflow-y-auto">
             {viewBlogPost ? (
@@ -153,35 +153,21 @@ export default function BlogAndFaqs() {
                       value={stat.value}
                       showLink={false}
                       className={
-                        currentStats.length === 3 && index === 2
-                          ? "col-span-2 md:col-span-1"
-                          : ""
+                        currentStats.length === 3 && index === 2 ? "col-span-2 md:col-span-1" : ""
                       }
                     />
                   ))}
                 </div>
 
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                  <Tabs
-                    tabs={["Blog", "FAQ"]}
-                    activeTab={activeTab}
-                    onTabChange={setActiveTab}
-                  />
+                  <Tabs tabs={["Blog", "FAQ"]} activeTab={activeTab} onTabChange={setActiveTab} />
 
                   <div className="flex gap-3">
                     <div className="">
-                      <ActionButton
-                        onClick={() => console.log("Download clicked")}
-                        label="Download Table as PDF"
-                        actionText="Download"
-                      />
+                      <ActionButton label="Download Table as PDF" actionText="Download" />
                     </div>
                     <div className="">
-                      <ActionButton
-                        onClick={() => console.log("Export clicked")}
-                        label="Export Table as CSV"
-                        actionText="Export"
-                      />
+                      <ActionButton label="Export Table as CSV" actionText="Export" />
                     </div>
                   </div>
                 </div>
@@ -203,24 +189,24 @@ export default function BlogAndFaqs() {
                 )}
               </>
             ) : currentView === "Create Blog Post" ? (
-              <CreateBlogPostForm 
-                initialData={editBlogPost} 
+              <CreateBlogPostForm
+                initialData={editBlogPost}
                 onCancel={() => {
                   setCurrentView("Overview");
                   setEditBlogPost(null);
-                }} 
+                }}
               />
             ) : currentView === "Create FAQ" ? (
-              <CreateFAQForm 
-                initialData={editFAQ} 
+              <CreateFAQForm
+                initialData={editFAQ}
                 onCancel={() => {
                   setCurrentView("Overview");
                   setEditFAQ(null);
-                }} 
+                }}
               />
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
-                {currentView} view coming soon
+                Unable to display the selected content view.
               </div>
             )}
           </main>

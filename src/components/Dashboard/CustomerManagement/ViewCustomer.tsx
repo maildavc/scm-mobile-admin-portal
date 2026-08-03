@@ -17,11 +17,7 @@ interface ViewCustomerProps {
   onDeactivate?: () => void;
 }
 
-const ViewCustomer: React.FC<ViewCustomerProps> = ({
-  customer,
-  onEdit,
-  onDeactivate,
-}) => {
+const ViewCustomer: React.FC<ViewCustomerProps> = ({ customer, onEdit, onDeactivate }) => {
   const [activeTab, setActiveTab] = useState("Customer Info");
 
   const tabs = [
@@ -39,11 +35,7 @@ const ViewCustomer: React.FC<ViewCustomerProps> = ({
       <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
       {activeTab === "Customer Info" ? (
-        <CustomerInfoTab
-          customer={customer}
-          onEdit={onEdit}
-          onDeactivate={onDeactivate}
-        />
+        <CustomerInfoTab customer={customer} onEdit={onEdit} onDeactivate={onDeactivate} />
       ) : activeTab === "Active Products" ? (
         <ActiveProductsTab />
       ) : activeTab === "Configuration" ? (
@@ -56,7 +48,7 @@ const ViewCustomer: React.FC<ViewCustomerProps> = ({
         <ActivityLogTab />
       ) : (
         <div className="flex items-center justify-center h-64 text-gray-500">
-          {activeTab} view coming soon
+          Unable to display the selected customer tab.
         </div>
       )}
     </div>

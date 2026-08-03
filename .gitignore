@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -43,8 +44,15 @@ yarn-error.log*
 swagger.json
 next-env.d.ts
 
-# custom scripts/tests
+# ad-hoc scripts / local probes
 _test.js
 test-api.js
 test-payload.json
+test-*-e2e.js
+tmp-*.js
+fix.md
+
+# local test output
+test-results/
+playwright-report/
 

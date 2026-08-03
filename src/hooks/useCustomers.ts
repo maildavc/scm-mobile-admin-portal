@@ -24,8 +24,7 @@ export const useGetCustomerDetails = (customerId: string) => {
 export const useCreateCustomer = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: CreateCustomerRequest) =>
-      customerService.createCustomer(payload),
+    mutationFn: (payload: CreateCustomerRequest) => customerService.createCustomer(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["customers"] });
     },
@@ -35,13 +34,8 @@ export const useCreateCustomer = () => {
 export const useUpdateCustomer = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      customerId,
-      payload,
-    }: {
-      customerId: string;
-      payload: UpdateCustomerRequest;
-    }) => customerService.updateCustomer(customerId, payload),
+    mutationFn: ({ customerId, payload }: { customerId: string; payload: UpdateCustomerRequest }) =>
+      customerService.updateCustomer(customerId, payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["customers"] });
       queryClient.invalidateQueries({
@@ -54,13 +48,8 @@ export const useUpdateCustomer = () => {
 export const useApproveRejectCustomer = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      customerId,
-      action,
-    }: {
-      customerId: string;
-      action: "approve" | "reject";
-    }) => customerService.approveRejectCustomer(customerId, action),
+    mutationFn: ({ customerId, action }: { customerId: string; action: "approve" | "reject" }) =>
+      customerService.approveRejectCustomer(customerId, action),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["customers"] });
       queryClient.invalidateQueries({
@@ -73,13 +62,8 @@ export const useApproveRejectCustomer = () => {
 export const useDeactivateCustomer = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      customerId,
-      reason,
-    }: {
-      customerId: string;
-      reason: string;
-    }) => customerService.deactivateCustomer(customerId, reason),
+    mutationFn: ({ customerId, reason }: { customerId: string; reason: string }) =>
+      customerService.deactivateCustomer(customerId, reason),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["customers"] });
       queryClient.invalidateQueries({

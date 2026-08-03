@@ -4,11 +4,7 @@ import React, { useState, useMemo } from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Image from "next/image";
-import {
-  useCreateUser,
-  useRoles,
-  useDepartments,
-} from "@/hooks/useUserManagement";
+import { useCreateUser, useRoles, useDepartments } from "@/hooks/useUserManagement";
 
 import { CREATE_USER_FORM_SECTIONS } from "@/constants/userRoleManagement/createUser";
 
@@ -18,14 +14,8 @@ interface CreateUserFormProps {
   initialData?: Record<string, string>;
 }
 
-const CreateUserForm: React.FC<CreateUserFormProps> = ({
-  onSuccess,
-  onCancel,
-  initialData,
-}) => {
-  const [formData, setFormData] = useState<Record<string, string>>(
-    initialData || {},
-  );
+const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, initialData }) => {
+  const [formData, setFormData] = useState<Record<string, string>>(initialData || {});
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -45,9 +35,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
   }, [rolesData]);
 
   const departmentOptions = useMemo(() => {
-    const departments = Array.isArray(departmentsData)
-      ? departmentsData
-      : [];
+    const departments = Array.isArray(departmentsData) ? departmentsData : [];
     return departments
       .filter((d: { status?: string }) => d.status?.toLowerCase() === "approved")
       .map((d: { name: string; id: string }) => ({
@@ -59,9 +47,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
   const requiredFields = useMemo(
     () =>
       CREATE_USER_FORM_SECTIONS.flatMap((section) =>
-        section.fields
-          .filter((field) => field.required)
-          .map((field) => field.label),
+        section.fields.filter((field) => field.required).map((field) => field.label),
       ),
     [],
   );
@@ -108,22 +94,16 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
         },
       };
 
-      createUser.mutate(payload,
-        {
-          onSuccess: () => setShowSuccess(true),
-          onError: (error: Error | unknown) => {
-            const err = error as {
-              response?: { data?: { message?: string } };
-              message?: string;
-            };
-            setErrorMsg(
-              err?.response?.data?.message ||
-                err?.message ||
-                "Failed to create user",
-            );
-          },
+      createUser.mutate(payload, {
+        onSuccess: () => setShowSuccess(true),
+        onError: (error: Error | unknown) => {
+          const err = error as {
+            response?: { data?: { message?: string } };
+            message?: string;
+          };
+          setErrorMsg(err?.response?.data?.message || err?.message || "Failed to create user");
         },
-      );
+      });
     }
   };
 
@@ -144,19 +124,13 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
         <div className="mb-6">
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
-        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
-          User Creation Successful
-        </h2>
+        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">User Creation Successful</h2>
         <p className="text-sm text-[#707781] mb-8 text-center">
           User creation was successfully sent for approver confirmation.
         </p>
         <div className="flex gap-4">
           <div className=" w-56">
-            <Button
-              text="Create Another User"
-              variant="outline"
-              onClick={handleCreateAnother}
-            />
+            <Button text="Create Another User" variant="outline" onClick={handleCreateAnother} />
           </div>
           <div className="w-32">
             <Button text="Done" variant="primary" onClick={handleDone} />
@@ -175,9 +149,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
       )}
       {CREATE_USER_FORM_SECTIONS.map((section, index) => (
         <section key={index}>
-          <h3 className="text-sm font-bold text-[#2F3140] mb-1">
-            {section.title}
-          </h3>
+          <h3 className="text-sm font-bold text-[#2F3140] mb-1">{section.title}</h3>
           <p className="text-xs text-[#707781] mb-4">{section.description}</p>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {section.fields.map((field, fieldIndex) => {

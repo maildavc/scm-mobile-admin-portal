@@ -6,22 +6,8 @@ interface ConfigurationTabProps {
   onDeactivate?: () => void;
 }
 
-const ConfigurationTab: React.FC<ConfigurationTabProps> = ({
-  onDeactivate,
-}) => {
+const ConfigurationTab: React.FC<ConfigurationTabProps> = ({ onDeactivate }) => {
   const configOptions = [
-    {
-      title: "Email address",
-      description: "Initiate a change or reset users email address",
-      buttonText: "Resend email Verification",
-      onClick: () => console.log("Resend email verification"),
-    },
-    {
-      title: "Password",
-      description: "Initiate a change or reset users password",
-      buttonText: "Resend Password",
-      onClick: () => console.log("Resend password"),
-    },
     {
       title: "Profile Deactivation",
       description: "Delete or deactivate users profile",
@@ -33,7 +19,7 @@ const ConfigurationTab: React.FC<ConfigurationTabProps> = ({
   return (
     <div className="mt-4">
       <div className="border border-gray-200 rounded-xl p-6 max-w-2xl min-h-112.5 flex flex-col">
-        <h3 className="text-sm font-semibold text-[#2F3140] mb-6">Reset</h3>
+        <h3 className="text-sm font-semibold text-[#2F3140] mb-6">Account action</h3>
 
         <div className="space-y-6 grow">
           {configOptions.map((option, index) => (

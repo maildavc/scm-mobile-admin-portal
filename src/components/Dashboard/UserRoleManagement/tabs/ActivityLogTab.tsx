@@ -41,18 +41,8 @@ const ActivityLogTab: React.FC = () => {
     <div className="flex flex-col h-full">
       {/* Action Buttons */}
       <div className="flex justify-between items-center gap-3 mb-6">
-        <ActionButton
-          onClick={() => console.log("Download clicked")}
-          label="Download Table as PDF"
-          actionText="Download"
-          fullWidth
-        />
-        <ActionButton
-          onClick={() => console.log("Export clicked")}
-          label="Export Table as CSV"
-          actionText="Export"
-          fullWidth
-        />
+        <ActionButton label="Download Table as PDF" actionText="Download" fullWidth />
+        <ActionButton label="Export Table as CSV" actionText="Export" fullWidth />
       </div>
 
       {/* Activity Log Table */}
@@ -76,22 +66,11 @@ const ActivityLogTab: React.FC = () => {
           </thead>
           <tbody>
             {activityLogs.map((log, index) => (
-              <tr
-                key={index}
-                className="border-b border-[#F4F4F5] hover:bg-gray-50"
-              >
-                <td className="py-4 px-4 text-sm text-[#2F3140]">
-                  {log.action}
-                </td>
-                <td className="py-4 px-4 text-sm text-[#707781]">
-                  {log.dataPassed}
-                </td>
-                <td className="py-4 px-4 text-sm text-[#707781]">
-                  {log.column3}
-                </td>
-                <td className="py-4 px-4 text-sm text-[#707781]">
-                  {log.column4}
-                </td>
+              <tr key={index} className="border-b border-[#F4F4F5] hover:bg-gray-50">
+                <td className="py-4 px-4 text-sm text-[#2F3140]">{log.action}</td>
+                <td className="py-4 px-4 text-sm text-[#707781]">{log.dataPassed}</td>
+                <td className="py-4 px-4 text-sm text-[#707781]">{log.column3}</td>
+                <td className="py-4 px-4 text-sm text-[#707781]">{log.column4}</td>
               </tr>
             ))}
           </tbody>

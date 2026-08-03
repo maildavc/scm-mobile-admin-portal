@@ -8,12 +8,10 @@ interface TimePickerProps {
   onClose: () => void;
 }
 
-const TimePicker: React.FC<TimePickerProps> = ({
-  selectedTime,
-  onTimeSelect,
-  onClose,
-}) => {
-  const parseTime = (timeString?: string): { hour: number; minute: number; period: "AM" | "PM" } => {
+const TimePicker: React.FC<TimePickerProps> = ({ selectedTime, onTimeSelect, onClose }) => {
+  const parseTime = (
+    timeString?: string,
+  ): { hour: number; minute: number; period: "AM" | "PM" } => {
     if (!timeString) {
       const now = new Date();
       const hour = now.getHours();
@@ -23,7 +21,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
         period: hour >= 12 ? "PM" : "AM",
       };
     }
-    
+
     const [time, period] = timeString.split(" ");
     const [hourStr, minuteStr] = time.split(":");
     return {

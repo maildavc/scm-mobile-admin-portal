@@ -91,16 +91,32 @@ export const useFAQAction = (actionName: string) => {
   const addToast = useToastStore((s) => s.addToast);
 
   return useMutation({
-    mutationFn: async ({ id, action, reason }: { id: string; action: "submit" | "approve" | "reject" | "publish" | "unpublish" | "feature" | "archive"; reason?: string }) => {
+    mutationFn: async ({
+      id,
+      action,
+      reason,
+    }: {
+      id: string;
+      action: "submit" | "approve" | "reject" | "publish" | "unpublish" | "feature" | "archive";
+      reason?: string;
+    }) => {
       switch (action) {
-        case "submit": return faqService.submitFAQ(id);
-        case "approve": return faqService.approveFAQ({ id, publishImmediately: true });
-        case "reject": return faqService.rejectFAQ({ id, reason: reason || "Rejected" });
-        case "publish": return faqService.publishFAQ(id);
-        case "unpublish": return faqService.unpublishFAQ(id);
-        case "feature": return faqService.featureFAQ(id);
-        case "archive": return faqService.archiveFAQ(id);
-        default: throw new Error("Invalid action");
+        case "submit":
+          return faqService.submitFAQ(id);
+        case "approve":
+          return faqService.approveFAQ({ id, publishImmediately: true });
+        case "reject":
+          return faqService.rejectFAQ({ id, reason: reason || "Rejected" });
+        case "publish":
+          return faqService.publishFAQ(id);
+        case "unpublish":
+          return faqService.unpublishFAQ(id);
+        case "feature":
+          return faqService.featureFAQ(id);
+        case "archive":
+          return faqService.archiveFAQ(id);
+        default:
+          throw new Error("Invalid action");
       }
     },
     onSuccess: (_, variables) => {
