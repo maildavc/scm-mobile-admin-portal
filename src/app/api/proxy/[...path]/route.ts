@@ -29,6 +29,41 @@ function isProduction() {
   return process.env.NODE_ENV === "production";
 }
 
+function normalizeOrigin(origin: string) {
+  return origin.trim().replace(/\/+$/, "");
+}
+
+function getConfiguredOrigins() {
+  return (process.env.APP_ORIGIN || process.env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map(normalizeOrigin)
+    .filter(Boolean);
+}
+
+/** Public site origin behind reverse proxies (nginx, load balancers). */
+function getPublicOrigin(request: NextRequest) {
+  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const host = forwardedHost || request.headers.get("host");
+  if (!host) return normalizeOrigin(request.nextUrl.origin);
+
+  const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const proto = forwardedProto || (isProduction() ? "https" : request.nextUrl.protocol.replace(":", ""));
+  return normalizeOrigin(`${proto}://${host}`);
+}
+
+function isAllowedOrigin(request: NextRequest, origin: string) {
+  const normalizedOrigin = normalizeOrigin(origin);
+  const configured = getConfiguredOrigins();
+  if (configured.length > 0) {
+    return configured.includes(normalizedOrigin);
+  }
+
+  return (
+    normalizedOrigin === getPublicOrigin(request) ||
+    normalizedOrigin === normalizeOrigin(request.nextUrl.origin)
+  );
+}
+
 function setAuthCookies(response: NextResponse, accessToken: string, refreshToken?: string) {
   response.cookies.set(ACCESS_COOKIE, accessToken, {
     httpOnly: true,
@@ -182,7 +217,7 @@ async function handle(request: NextRequest, context: RouteContext) {
   if (
     !["GET", "HEAD", "OPTIONS"].includes(request.method) &&
     origin &&
-    origin !== request.nextUrl.origin
+    !isAllowedOrigin(request, origin)
   ) {
     return NextResponse.json(
       { message: "Cross-origin API requests are not allowed." },

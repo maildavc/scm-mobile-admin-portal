@@ -41,12 +41,16 @@ Copy-Item .env.example .env.local
 
 Required server-only variables:
 
-| Variable            | Purpose                            |
-| ------------------- | ---------------------------------- |
-| `API_BASE_URL`      | Base URL of the .NET API           |
-| `API_AES_KEY`       | 16-byte AES-128-CBC key            |
-| `API_AES_IV`        | 16-byte AES initialization vector  |
-| `AUTH_REFRESH_PATH` | Optional refresh endpoint override |
+| Variable            | Purpose                                                      |
+| ------------------- | ------------------------------------------------------------ |
+| `API_BASE_URL`      | Base URL of the .NET API                                     |
+| `API_AES_KEY`       | 16-byte AES-128-CBC key                                      |
+| `API_AES_IV`        | 16-byte AES initialization vector                            |
+| `APP_ORIGIN`        | Public site origin(s), e.g. `https://scm.phroneiq.com`       |
+| `AUTH_REFRESH_PATH` | Optional refresh endpoint override                           |
+
+Set `APP_ORIGIN` in production (comma-separated if multiple). Without it, the
+proxy reconstructs the public origin from `Host` / `X-Forwarded-*` headers.
 
 Never rename these to `NEXT_PUBLIC_*`; public variables are embedded into the
 browser bundle.
