@@ -15,6 +15,8 @@ const TextArea: React.FC<TextAreaProps> = ({
   error,
   className,
   theme = "dark",
+  maxLength = 4000,
+  onChange,
   ...props
 }) => {
   const isLight = theme === "light";
@@ -35,6 +37,8 @@ const TextArea: React.FC<TextAreaProps> = ({
         </label>
         <textarea
           {...props}
+          maxLength={maxLength}
+          onChange={onChange}
           className={`w-full bg-transparent text-sm ${textColor} focus:outline-none ${placeholderColor} font-medium resize-none min-h-24`}
         />
       </div>

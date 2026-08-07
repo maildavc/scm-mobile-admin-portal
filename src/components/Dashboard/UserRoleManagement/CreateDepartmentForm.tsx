@@ -150,13 +150,17 @@ const CreateDepartmentForm: React.FC<CreateDepartmentFormProps> = ({
             theme="light"
             type="text"
             required={true}
+            maxLength={100}
+            inputKind="text"
             value={departmentName}
             onChange={(e) => {
               setDepartmentName(e.target.value);
               if (nameError) setNameError("");
             }}
-            error={!!nameError}
-            errorMessage={nameError}
+            error={!!nameError || departmentName.length > 100}
+            errorMessage={
+              nameError || (departmentName.length > 100 ? "Max 100 characters" : undefined)
+            }
           />
           <Input
             label="Department Description (Optional)"
@@ -164,6 +168,8 @@ const CreateDepartmentForm: React.FC<CreateDepartmentFormProps> = ({
             theme="light"
             type="text"
             required={false}
+            maxLength={250}
+            inputKind="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />

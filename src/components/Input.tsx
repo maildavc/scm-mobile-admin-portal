@@ -4,19 +4,30 @@ import React, { useState, useRef, useEffect } from "react";
 import { FiEye, FiEyeOff, FiChevronDown, FiCalendar, FiClock } from "react-icons/fi";
 import Calendar from "./Calendar";
 import TimePicker from "./TimePicker";
+import {
+  DEFAULT_MAX_LENGTH,
+  InputKind,
+  inferInputKind,
+  sanitizeByKind,
+  todayIsoDate,
+} from "@/utils/formValidation";
 
 interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
   label: string;
   isPassword?: boolean;
   error?: boolean;
   errorMessage?: string;
-  theme?: "dark" | "light"; // dark for login (default), light for dashboard
+  theme?: "dark" | "light";
   type?: React.HTMLInputTypeAttribute | "select" | "file";
   options?: { value: string; label: string | React.ReactNode }[];
   rightIcon?: React.ReactNode;
   onFileChange?: (file: File | null) => void;
   minDate?: string;
   maxDate?: string;
+  /** When true, past dates are allowed (e.g. Date of Birth). */
+  allowPastDates?: boolean;
+  /** Controls character filtering / format rules. Inferred from label/type when omitted. */
+  inputKind?: InputKind;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -33,6 +44,10 @@ const Input: React.FC<InputProps> = ({
   onFileChange,
   minDate,
   maxDate,
+  allowPastDates = false,
+  inputKind,
+  maxLength,
+  onChange,
   ...props
 }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -43,95 +58,67 @@ const Input: React.FC<InputProps> = ({
   const [selectedFileName, setSelectedFileName] = useState<string>("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const dateInputRef = useRef<HTMLInputElement>(null);
-  const timeInputRef = useRef<HTMLInputElement>(null);
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const handleClickOutside = (event: MouseEvent) => {
-    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-      setIsOpen(false);
-      setIsCalendarOpen(false);
-      setIsTimePickerOpen(false);
-    }
-  };
+  const resolvedKind =
+    inputKind ||
+    (isPassword ? "password" : inferInputKind(label, typeof type === "string" ? type : undefined));
+  const resolvedMaxLength = maxLength ?? DEFAULT_MAX_LENGTH[resolvedKind];
+  const effectiveMinDate = minDate ?? (allowPastDates ? undefined : todayIsoDate());
 
   useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+        setIsCalendarOpen(false);
+        setIsTimePickerOpen(false);
+      }
     };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const inputType = isPassword ? (showPassword ? "text" : "password") : type;
-
   const isLight = theme === "light";
-
   const borderColor = error ? "border-red-500" : isLight ? "border-gray-200" : "border-white/10";
-
   const bgColor = isLight ? "bg-white" : "bg-transparent";
   const textColor = isLight ? "text-[#2F3140]" : "text-white";
   const placeholderColor = "placeholder:text-[#707781]";
 
-  // Handle select value
   const currentValue = props.value !== undefined ? props.value : internalValue;
   const selectedOption = options?.find((opt) => opt.value === props.value);
+
+  const emitChange = (value: string, name?: string) => {
+    const event = {
+      target: { value, name: name || props.name },
+      currentTarget: { value, name: name || props.name },
+    } as React.ChangeEvent<HTMLInputElement>;
+    onChange?.(event);
+  };
 
   const handleSelect = (value: string) => {
     setInternalValue(value);
     setIsOpen(false);
-    if (props.onChange) {
-      // Create synthetic event for compatibility
-      const event = {
-        target: { value, name: props.name },
-        currentTarget: { value, name: props.name },
-      } as React.ChangeEvent<HTMLInputElement>;
-      props.onChange(event);
-    }
+    emitChange(value);
   };
 
-  const handleFileClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleDateClick = () => {
-    if (!props.disabled) {
-      setIsCalendarOpen(!isCalendarOpen);
-    }
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const sanitized = sanitizeByKind(resolvedKind, e.target.value, resolvedMaxLength);
+    setInternalValue(sanitized);
+    emitChange(sanitized, e.target.name);
   };
 
   const handleDateSelect = (dateString: string) => {
-    if (props.onChange) {
-      const event = {
-        target: { value: dateString, name: props.name },
-        currentTarget: { value: dateString, name: props.name },
-      } as React.ChangeEvent<HTMLInputElement>;
-      props.onChange(event);
-    }
+    emitChange(dateString);
+  };
+
+  const handleTimeSelect = (timeString: string) => {
+    emitChange(timeString);
   };
 
   const formatDisplayDate = (dateString: string): string => {
     if (!dateString) return "";
     const [year, month, day] = dateString.split("-");
     return `${day}/${month}/${year}`;
-  };
-
-  const handleTimeClick = () => {
-    if (!props.disabled) {
-      setIsTimePickerOpen(!isTimePickerOpen);
-    }
-  };
-
-  const handleTimeSelect = (timeString: string) => {
-    if (props.onChange) {
-      const event = {
-        target: { value: timeString, name: props.name },
-        currentTarget: { value: timeString, name: props.name },
-      } as React.ChangeEvent<HTMLInputElement>;
-      props.onChange(event);
-    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -180,7 +167,7 @@ const Input: React.FC<InputProps> = ({
             <>
               <div
                 className={`w-full bg-transparent text-sm ${selectedFileName ? textColor : "text-[#707781]"} focus:outline-none font-medium cursor-pointer`}
-                onClick={handleFileClick}
+                onClick={() => fileInputRef.current?.click()}
               >
                 {selectedFileName || props.placeholder || "Upload Image"}
               </div>
@@ -197,7 +184,7 @@ const Input: React.FC<InputProps> = ({
             <>
               <div
                 className={`w-full bg-transparent text-sm ${props.value ? textColor : "text-[#707781]"} focus:outline-none font-medium cursor-pointer`}
-                onClick={handleDateClick}
+                onClick={() => !props.disabled && setIsCalendarOpen(!isCalendarOpen)}
               >
                 {props.value
                   ? formatDisplayDate(String(props.value))
@@ -208,7 +195,7 @@ const Input: React.FC<InputProps> = ({
                   selectedDate={String(props.value || "")}
                   onDateSelect={handleDateSelect}
                   onClose={() => setIsCalendarOpen(false)}
-                  minDate={minDate}
+                  minDate={effectiveMinDate}
                   maxDate={maxDate}
                 />
               )}
@@ -217,7 +204,7 @@ const Input: React.FC<InputProps> = ({
             <>
               <div
                 className={`w-full bg-transparent text-sm ${props.value ? textColor : "text-[#707781]"} focus:outline-none font-medium cursor-pointer`}
-                onClick={handleTimeClick}
+                onClick={() => !props.disabled && setIsTimePickerOpen(!isTimePickerOpen)}
               >
                 {props.value ? String(props.value) : props.placeholder || "00:00 AM"}
               </div>
@@ -232,8 +219,19 @@ const Input: React.FC<InputProps> = ({
           ) : (
             <input
               {...props}
-              type={inputType}
+              type={inputType === "email" || inputType === "url" ? "text" : inputType}
+              inputMode={
+                resolvedKind === "number" || resolvedKind === "percentage"
+                  ? "decimal"
+                  : resolvedKind === "phone"
+                    ? "tel"
+                    : resolvedKind === "email"
+                      ? "email"
+                      : "text"
+              }
+              maxLength={resolvedMaxLength}
               className={`w-full bg-transparent text-sm ${textColor} focus:outline-none ${placeholderColor} font-medium`}
+              onChange={handleTextChange}
             />
           )}
         </div>
@@ -241,7 +239,7 @@ const Input: React.FC<InputProps> = ({
         {isPassword ? (
           <button
             type="button"
-            onClick={togglePasswordVisibility}
+            onClick={() => setShowPassword(!showPassword)}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none"
           >
             {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
@@ -249,7 +247,7 @@ const Input: React.FC<InputProps> = ({
         ) : type === "file" ? (
           <button
             type="button"
-            onClick={handleFileClick}
+            onClick={() => fileInputRef.current?.click()}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none cursor-pointer transition-colors"
           >
             {rightIcon}
@@ -267,7 +265,7 @@ const Input: React.FC<InputProps> = ({
           <button
             type="button"
             aria-label="Open date picker"
-            onClick={handleDateClick}
+            onClick={() => !props.disabled && setIsCalendarOpen(!isCalendarOpen)}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none cursor-pointer"
           >
             <FiCalendar size={18} />
@@ -276,7 +274,7 @@ const Input: React.FC<InputProps> = ({
           <button
             type="button"
             aria-label="Open time picker"
-            onClick={handleTimeClick}
+            onClick={() => !props.disabled && setIsTimePickerOpen(!isTimePickerOpen)}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-[#707781] focus:outline-none cursor-pointer"
           >
             <FiClock size={18} />

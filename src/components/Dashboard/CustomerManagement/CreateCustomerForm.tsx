@@ -87,10 +87,12 @@ const CreateCustomerForm: React.FC<CreateCustomerFormProps> = ({
               className={field.className}
               value={(formData[field.label] as string) || ""}
               onChange={(e) => handleInputChange(field.label, e.target.value)}
-              maxLength={
-                field.label.includes("Name") ? 50 : field.label === "Email Address" ? 100 : undefined
+              allowPastDates={field.label === "Date of Birth"}
+              maxDate={
+                field.label === "Date of Birth"
+                  ? new Date().toISOString().slice(0, 10)
+                  : undefined
               }
-              maxDate={field.type === "date" ? new Date().toISOString().slice(0, 10) : undefined}
               error={!!fieldErrors[field.label]}
               errorMessage={fieldErrors[field.label]}
             />

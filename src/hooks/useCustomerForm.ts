@@ -7,6 +7,7 @@ import {
 } from "@/constants/customerManagement/createCustomer";
 import { useCreateCustomer, useUpdateCustomer } from "./useCustomers";
 import { useToastStore } from "@/stores/toastStore";
+import { todayIsoDate, validateByKind } from "@/utils/formValidation";
 
 type Customer = {
   id: string;
@@ -44,37 +45,24 @@ export function useCustomerForm(initialData?: Customer | null) {
     [],
   );
 
-  const namePattern = /^[A-Za-z][A-Za-z\s'-]{0,49}$/;
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phonePattern = /^[+]?[\d\s()-]{7,20}$/;
-
   const fieldErrors = useMemo(() => {
     const errors: Record<string, string> = {};
-    const first = formData["Legal First Name"] || "";
-    const last = formData["Legal Last Name"] || "";
-    const middle = formData["Middle Name (Optional)"] || "";
-    const email = formData["Email Address"] || "";
-    const phone = formData["Phone Number"] || "";
+    const checks: Array<[string, "name" | "email" | "phone"]> = [
+      ["Legal First Name", "name"],
+      ["Legal Last Name", "name"],
+      ["Middle Name (Optional)", "name"],
+      ["Email Address", "email"],
+      ["Phone Number", "phone"],
+    ];
+    for (const [label, kind] of checks) {
+      const value = formData[label] || "";
+      if (!value) continue;
+      const message = validateByKind(kind, value, false);
+      if (message) errors[label] = message;
+    }
     const dob = formData["Date of Birth"] || "";
-
-    if (first && !namePattern.test(first)) {
-      errors["Legal First Name"] = "Letters only, max 50 characters";
-    }
-    if (last && !namePattern.test(last)) {
-      errors["Legal Last Name"] = "Letters only, max 50 characters";
-    }
-    if (middle && !namePattern.test(middle)) {
-      errors["Middle Name (Optional)"] = "Letters only, max 50 characters";
-    }
-    if (email && !emailPattern.test(email)) {
-      errors["Email Address"] = "Enter a valid email address";
-    }
-    if (phone && !phonePattern.test(phone)) {
-      errors["Phone Number"] = "Enter a valid phone number";
-    }
-    if (dob) {
-      const today = new Date().toISOString().slice(0, 10);
-      if (dob > today) errors["Date of Birth"] = "Date of birth cannot be in the future";
+    if (dob && dob > todayIsoDate()) {
+      errors["Date of Birth"] = "Date of birth cannot be in the future";
     }
     return errors;
   }, [formData]);
@@ -89,15 +77,7 @@ export function useCustomerForm(initialData?: Customer | null) {
   }, [formData, requiredFields, fieldErrors]);
 
   const handleInputChange = (label: string, value: string) => {
-    const maxLengths: Record<string, number> = {
-      "Legal First Name": 50,
-      "Legal Last Name": 50,
-      "Middle Name (Optional)": 50,
-      "Email Address": 100,
-      "Phone Number": 20,
-    };
-    const max = maxLengths[label];
-    setFormData((prev) => ({ ...prev, [label]: max ? value.slice(0, max) : value }));
+    setFormData((prev) => ({ ...prev, [label]: value }));
   };
 
   const handleProductToggle = (productId: string, type: "buy" | "sell") => {

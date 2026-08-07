@@ -100,7 +100,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
         brandingSettings: {
           ...(logoUrl ? { logoUrl } : {}),
           brandColor: backgroundColor,
-          companyName: companyName.trim() || "SCM Admin",
+          companyName: companyName.trim().slice(0, 100) || "SCM Admin",
         },
       });
       onSuccess();

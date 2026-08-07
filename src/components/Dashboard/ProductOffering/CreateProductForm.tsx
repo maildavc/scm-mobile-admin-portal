@@ -8,6 +8,7 @@ import { FORM_SECTIONS } from "@/constants/productOffering/createProduct";
 import Image from "next/image";
 import { useCreateProduct, useUpdateProduct, useProductDetail } from "@/hooks/useProducts";
 import { useToastStore } from "@/stores/toastStore";
+import { validateByKind } from "@/utils/formValidation";
 
 type Product = {
   id: string;
@@ -115,6 +116,26 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
 
   const handleCreateProduct = async () => {
     if (!isFormValid) return;
+
+    const percentFields = [
+      "Interest or returns Percentage",
+      "WHT Amount",
+      "Applicable Tax",
+    ] as const;
+    for (const field of percentFields) {
+      const message = validateByKind("percentage", String(formData[field] || ""), true);
+      if (message) {
+        addToast(`${field}: ${message}`, "error");
+        return;
+      }
+    }
+
+    const minAmt = parseFloat(String(formData["Minimum Investment Amount"] || "0"));
+    const maxAmt = parseFloat(String(formData["Maximum Investment Amount"] || "0"));
+    if (!Number.isNaN(minAmt) && !Number.isNaN(maxAmt) && minAmt > maxAmt) {
+      addToast("Minimum investment cannot be greater than maximum investment", "error");
+      return;
+    }
 
     let issuersLogoBase64 = "";
     const logoFile = formData["Issuers Logo"];
@@ -241,6 +262,7 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
                 readOnly={field.readOnly}
                 className={field.className}
                 maxLength={field.maxLength}
+                inputKind={field.inputKind}
                 value={(formData[field.label] as string) || ""}
                 onChange={(e) => handleInputChange(field.label, e.target.value)}
                 onFileChange={

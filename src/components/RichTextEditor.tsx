@@ -9,6 +9,7 @@ interface RichTextEditorProps {
   placeholder?: string;
   required?: boolean;
   rows?: number;
+  maxLength?: number;
 }
 
 const FONT_FAMILIES = ["Roboto", "Arial", "Georgia", "Times New Roman"];
@@ -21,6 +22,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   placeholder = "Enter text",
   required,
   rows = 12,
+  maxLength = 10000,
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -133,7 +135,16 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         data-placeholder={placeholder}
         className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#2F3140] outline-none focus:border-[#B2171E] min-h-40 empty:before:content-[attr(data-placeholder)] empty:before:text-[#707781]"
         style={{ minHeight: `${Math.max(rows, 6) * 1.5}rem` }}
-        onInput={() => onChange(editorRef.current?.innerHTML || "")}
+        onInput={() => {
+          const html = editorRef.current?.innerHTML || "";
+          const plain = editorRef.current?.innerText || "";
+          if (plain.length > maxLength) {
+            // Keep last accepted value when over limit
+            if (editorRef.current) editorRef.current.innerHTML = value;
+            return;
+          }
+          onChange(html);
+        }}
         onBlur={() => onChange(editorRef.current?.innerHTML || "")}
       />
     </div>

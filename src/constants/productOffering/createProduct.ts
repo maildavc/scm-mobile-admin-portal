@@ -1,3 +1,5 @@
+import type { InputKind } from "@/utils/formValidation";
+
 export interface FormField {
   label: string;
   placeholder: string;
@@ -8,6 +10,7 @@ export interface FormField {
   className?: string;
   hasUploadIcon?: boolean;
   maxLength?: number;
+  inputKind?: InputKind;
 }
 
 export interface FormSection {
@@ -84,25 +87,40 @@ export const FORM_SECTIONS: FormSection[] = [
     title: "Financial Information",
     description: "Tell us how this product is sold",
     fields: [
-      { label: "Selling Price", placeholder: "₦0.0", required: true, maxLength: 20 },
-      { label: "Available Volume", placeholder: "Enter value", required: true, maxLength: 20 },
       {
-        label: "Interest or returns Percentage",
+        label: "Selling Price",
+        placeholder: "₦0.0",
+        required: true,
+        maxLength: 20,
+        inputKind: "decimal",
+      },
+      {
+        label: "Available Volume",
         placeholder: "Enter value",
         required: true,
-        maxLength: 10,
+        maxLength: 20,
+        inputKind: "number",
+      },
+      {
+        label: "Interest or returns Percentage",
+        placeholder: "0-100",
+        required: true,
+        maxLength: 6,
+        inputKind: "percentage",
       },
       {
         label: "Minimum Investment Amount",
         placeholder: "Enter value",
         required: true,
         maxLength: 20,
+        inputKind: "decimal",
       },
       {
         label: "Maximum Investment Amount",
         placeholder: "Enter value",
         required: true,
         maxLength: 20,
+        inputKind: "decimal",
       },
       { label: "Settlement Date", placeholder: "DD/MM/YYYY", type: "date", required: true },
     ],
@@ -132,15 +150,23 @@ export const FORM_SECTIONS: FormSection[] = [
         label: "Early Liquidation Penalty?",
         placeholder: "Enter value",
         required: true,
-        maxLength: 50,
+        maxLength: 20,
+        inputKind: "decimal",
       },
       {
         label: "WHT Amount",
-        placeholder: "₦0.0 or in percentage",
+        placeholder: "0-100",
         required: true,
-        maxLength: 20,
+        maxLength: 6,
+        inputKind: "percentage",
       },
-      { label: "Applicable Tax", placeholder: "Enter value", required: true, maxLength: 20 },
+      {
+        label: "Applicable Tax",
+        placeholder: "0-100",
+        required: true,
+        maxLength: 6,
+        inputKind: "percentage",
+      },
     ],
   },
 ];

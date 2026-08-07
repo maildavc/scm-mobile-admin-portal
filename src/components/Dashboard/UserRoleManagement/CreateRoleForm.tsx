@@ -163,13 +163,15 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({ onSuccess, onCancel, ed
             theme="light"
             type="text"
             required={true}
+            maxLength={100}
+            inputKind="text"
             value={roleName}
             onChange={(e) => {
               setRoleName(e.target.value);
               if (nameError) setNameError("");
             }}
-            error={!!nameError}
-            errorMessage={nameError}
+            error={!!nameError || roleName.length > 100}
+            errorMessage={nameError || (roleName.length > 100 ? "Max 100 characters" : undefined)}
           />
           <Input
             label="Role Description (Optional)"
@@ -177,6 +179,8 @@ const CreateRoleForm: React.FC<CreateRoleFormProps> = ({ onSuccess, onCancel, ed
             theme="light"
             type="text"
             required={false}
+            maxLength={250}
+            inputKind="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />

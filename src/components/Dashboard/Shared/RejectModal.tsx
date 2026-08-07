@@ -46,8 +46,9 @@ const RejectModal: React.FC<RejectModalProps> = ({
             placeholder="Enter rejection reason"
             theme="light"
             required
+            maxLength={500}
             value={reason}
-            onChange={(e) => setReason(e.target.value)}
+            onChange={(e) => setReason(e.target.value.slice(0, 500))}
           />
         </div>
 

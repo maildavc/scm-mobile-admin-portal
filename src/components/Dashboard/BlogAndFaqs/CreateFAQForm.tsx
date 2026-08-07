@@ -38,7 +38,13 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel, initialData }) 
 
   const handleInputChange = (field: string, value: string) => {
     const nextValue = field === "faqQuestion" ? value.slice(0, 200) : value;
-    setFormData((prev) => ({ ...prev, [field]: nextValue }));
+    setFormData((prev) => {
+      const next = { ...prev, [field]: nextValue };
+      if (field === "whenLive" && value !== "scheduled") {
+        next.scheduledDate = "";
+      }
+      return next;
+    });
   };
 
   const isFormValid = () => {

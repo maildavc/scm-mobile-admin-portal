@@ -41,7 +41,18 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({ onSucce
 
   const handleInputChange = (field: string, value: string) => {
     const nextValue = field === "title" ? value.slice(0, 120) : value;
-    setFormData((prev) => ({ ...prev, [field]: nextValue }));
+    setFormData((prev) => {
+      const next = { ...prev, [field]: nextValue };
+      // Immediately / Now → disable and clear schedule fields
+      if (field === "sendType" && value !== "Later") {
+        next.date = "";
+        next.time = "";
+      }
+      if (field === "allowReply" && value !== "Yes") {
+        next.replyToEmail = "";
+      }
+      return next;
+    });
   };
 
   const toOptions = (items: string[]) => items.map((item) => ({ label: item, value: item }));
@@ -199,7 +210,10 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({ onSucce
               label="Where should replies go to?"
               placeholder="Enter email address"
               theme="light"
-              required
+              required={formData.allowReply === "Yes"}
+              disabled={formData.allowReply !== "Yes"}
+              inputKind="email"
+              maxLength={100}
               value={formData.replyToEmail}
               onChange={(e) => handleInputChange("replyToEmail", e.target.value)}
               rightIcon={<FiLink2 size={18} />}

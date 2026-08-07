@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useCreateUser, useRoles, useDepartments } from "@/hooks/useUserManagement";
 
 import { CREATE_USER_FORM_SECTIONS } from "@/constants/userRoleManagement/createUser";
+import { inferInputKind, todayIsoDate, validateByKind } from "@/utils/formValidation";
 
 interface CreateUserFormProps {
   onSuccess?: () => void;
@@ -52,20 +53,41 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, in
     [],
   );
 
+  const fieldErrors = useMemo(() => {
+    const errors: Record<string, string> = {};
+    const checks: Array<[string, "name" | "email" | "phone"]> = [
+      ["First Name", "name"],
+      ["Middle Name", "name"],
+      ["Last Name", "name"],
+      ["Email Address", "email"],
+      ["Phone Number", "phone"],
+    ];
+    for (const [label, kind] of checks) {
+      const value = formData[label] || "";
+      if (!value) continue;
+      const message = validateByKind(kind, value, false);
+      if (message) errors[label] = message;
+    }
+    const isPermanent = formData["Expiry Status"] === "Permanent";
+    if (!isPermanent && formData["Expires"] && formData["Expires"] < todayIsoDate()) {
+      errors["Expires"] = "Expiry date must be today or in the future";
+    }
+    return errors;
+  }, [formData]);
+
   const isFormValid = useMemo(() => {
     const isPermanent = formData["Expiry Status"] === "Permanent";
-    return requiredFields.every((fieldLabel) => {
-      // Expires is not required when Permanent
+    const requiredOk = requiredFields.every((fieldLabel) => {
       if (fieldLabel === "Expires" && isPermanent) return true;
       const value = formData[fieldLabel];
       return value !== undefined && value !== "" && value !== null;
     });
-  }, [formData, requiredFields]);
+    return requiredOk && Object.keys(fieldErrors).length === 0;
+  }, [formData, requiredFields, fieldErrors]);
 
   const handleInputChange = (label: string, value: string) => {
     setFormData((prev) => {
       const next = { ...prev, [label]: value };
-      // Clear Expires when switching to Permanent
       if (label === "Expiry Status" && value === "Permanent") {
         next["Expires"] = "";
       }
@@ -165,6 +187,11 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, in
                   placeholder={field.placeholder}
                   theme="light"
                   type={field.type as "text" | "select" | "date" | "email"}
+                  inputKind={
+                    field.type === "select" || field.type === "date"
+                      ? undefined
+                      : inferInputKind(field.label, field.type)
+                  }
                   options={
                     field.label === "Assign Role"
                       ? roleOptions
@@ -176,6 +203,8 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel, in
                   disabled={isDisabled}
                   value={formData[field.label] || ""}
                   onChange={(e) => handleInputChange(field.label, e.target.value)}
+                  error={!!fieldErrors[field.label]}
+                  errorMessage={fieldErrors[field.label]}
                 />
               );
             })}

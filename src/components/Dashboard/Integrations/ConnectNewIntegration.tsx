@@ -138,6 +138,7 @@ const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
             type="text"
             className="w-full"
             maxLength={100}
+            inputKind="text"
             error={!!fieldErrors.name}
             errorMessage={fieldErrors.name}
           />
@@ -151,6 +152,7 @@ const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
             type="text"
             className="w-full"
             maxLength={250}
+            inputKind="text"
             error={!!fieldErrors.description}
             errorMessage={fieldErrors.description}
           />
@@ -164,6 +166,7 @@ const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
             theme="light"
             type="url"
             className="w-full"
+            inputKind="url"
             error={!!fieldErrors.clientUrl}
             errorMessage={fieldErrors.clientUrl}
           />
@@ -179,6 +182,7 @@ const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
             isPassword
             className="w-full"
             maxLength={256}
+            inputKind="password"
           />
           <Input
             label="Username"
@@ -191,6 +195,7 @@ const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
             type="text"
             className="w-full"
             maxLength={50}
+            inputKind="text"
             error={!!fieldErrors.username}
             errorMessage={fieldErrors.username}
           />
