@@ -8,10 +8,11 @@ import {
   EMAIL_REPLY_OPTIONS,
 } from "@/constants/notificationService/notificationService";
 import Input from "@/components/Input";
-import TextArea from "@/components/TextArea";
 import Button from "@/components/Button";
+import RichTextEditor from "@/components/RichTextEditor";
 import EmailPreviewModal from "./EmailPreviewModal";
 import { useCreateNotification } from "@/hooks/useNotification";
+import { useToastStore } from "@/stores/toastStore";
 import { NotificationChannel, RecipientType } from "@/types/notification";
 
 interface CreateNotificationFormProps {
@@ -34,9 +35,13 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({ onSucce
   });
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const { mutate: createNotification, isPending } = useCreateNotification();
+  const addToast = useToastStore((s) => s.addToast);
+  const isScheduled = formData.sendType === "Later";
+  const today = new Date().toISOString().slice(0, 10);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    const nextValue = field === "title" ? value.slice(0, 120) : value;
+    setFormData((prev) => ({ ...prev, [field]: nextValue }));
   };
 
   const toOptions = (items: string[]) => items.map((item) => ({ label: item, value: item }));
@@ -60,12 +65,23 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({ onSucce
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (formData.title.trim().length === 0 || formData.title.length > 120) {
+      addToast("Title is required and must be at most 120 characters", "error");
+      return;
+    }
+
     // Build scheduled date from separate date+time fields
     let scheduledFor: string | undefined;
-    if (formData.sendType === "Later" && formData.date) {
-      const dt = formData.time
-        ? new Date(`${formData.date}T${formData.time}`)
-        : new Date(formData.date);
+    if (formData.sendType === "Later") {
+      if (!formData.date || !formData.time) {
+        addToast("Date and time are required for scheduled notifications", "error");
+        return;
+      }
+      const dt = new Date(`${formData.date}T${formData.time}`);
+      if (Number.isNaN(dt.getTime()) || dt.getTime() < Date.now()) {
+        addToast("Scheduled date/time must be in the future", "error");
+        return;
+      }
       scheduledFor = dt.toISOString();
     }
 
@@ -100,8 +116,11 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({ onSucce
               placeholder="Enter"
               theme="light"
               required
+              maxLength={120}
               value={formData.title}
               onChange={(e) => handleInputChange("title", e.target.value)}
+              error={formData.title.length > 120}
+              errorMessage="Max 120 characters"
             />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -153,92 +172,12 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({ onSucce
           </div>
           <p className="text-xs text-gray-500 mb-6">Assign a role to this user</p>
 
-          {/* Rich Text Editor Toolbar */}
-          <div className="mb-4 flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-white">
-            <select className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none">
-              <option>Roboto</option>
-            </select>
-            <select className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none">
-              <option>Normal</option>
-            </select>
-            <select className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none">
-              <option>16</option>
-            </select>
-            <div className="h-5 w-px bg-gray-300" />
-            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
-              <strong className="text-sm">B</strong>
-            </button>
-            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
-              <em className="text-sm">I</em>
-            </button>
-            <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
-              <u className="text-sm">U</u>
-            </button>
-            <button
-              type="button"
-              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-            >
-              S
-            </button>
-            <div className="h-5 w-px bg-gray-300" />
-            <button
-              type="button"
-              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-            >
-              •
-            </button>
-            <button
-              type="button"
-              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-            >
-              1.
-            </button>
-            <button
-              type="button"
-              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-            >
-              ⇥
-            </button>
-            <button
-              type="button"
-              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-            >
-              ⇤
-            </button>
-            <div className="h-5 w-px bg-gray-300" />
-            <button
-              type="button"
-              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-            >
-              x₂
-            </button>
-            <button
-              type="button"
-              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-            >
-              x²
-            </button>
-            <button
-              type="button"
-              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-            >
-              🔗
-            </button>
-            <button
-              type="button"
-              className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm"
-            >
-              🖼
-            </button>
-          </div>
-
-          <TextArea
+          <RichTextEditor
             label="Notification Body"
-            theme="light"
             required
             placeholder="Enter Text"
             value={formData.body}
-            onChange={(e) => handleInputChange("body", e.target.value)}
+            onChange={(html) => handleInputChange("body", html)}
             rows={12}
           />
         </section>
@@ -289,7 +228,9 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({ onSucce
               label="Date"
               type="date"
               theme="light"
-              required
+              required={isScheduled}
+              disabled={!isScheduled}
+              minDate={today}
               value={formData.date}
               onChange={(e) => handleInputChange("date", e.target.value)}
               placeholder="DD/MM/YYYY"
@@ -298,7 +239,8 @@ const CreateNotificationForm: React.FC<CreateNotificationFormProps> = ({ onSucce
               label="Time"
               type="time"
               theme="light"
-              required
+              required={isScheduled}
+              disabled={!isScheduled}
               value={formData.time}
               onChange={(e) => handleInputChange("time", e.target.value)}
               placeholder="00:00 AM"

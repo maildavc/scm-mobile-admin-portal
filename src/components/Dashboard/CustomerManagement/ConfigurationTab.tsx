@@ -3,12 +3,19 @@ import { CONFIG_OPTIONS } from "@/constants/customerManagement/customerManagemen
 
 interface ConfigurationTabProps {
   onDeactivate?: () => void;
+  onResendEmail?: () => void;
+  onResetPassword?: () => void;
 }
 
-const ConfigurationTab: React.FC<ConfigurationTabProps> = ({ onDeactivate }) => {
+const ConfigurationTab: React.FC<ConfigurationTabProps> = ({
+  onDeactivate,
+  onResendEmail,
+  onResetPassword,
+}) => {
+  const handlers = [onResendEmail, onResetPassword, onDeactivate];
   const configOptions = CONFIG_OPTIONS.map((option, index) => ({
     ...option,
-    onClick: index === 2 ? onDeactivate : () => {},
+    onClick: handlers[index],
   }));
 
   return (

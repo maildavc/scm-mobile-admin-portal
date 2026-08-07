@@ -170,7 +170,7 @@ export interface NotificationDashboardStatsDto {
 }
 
 export interface NotificationBrandingSettings {
-  logoUrl: string;
+  logoUrl?: string;
   brandColor: string;
   companyName: string;
 }

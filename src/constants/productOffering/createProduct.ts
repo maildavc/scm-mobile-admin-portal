@@ -7,6 +7,7 @@ export interface FormField {
   readOnly?: boolean;
   className?: string;
   hasUploadIcon?: boolean;
+  maxLength?: number;
 }
 
 export interface FormSection {
@@ -37,7 +38,7 @@ export const FORM_SECTIONS: FormSection[] = [
     title: "Basic Information",
     description: "Tell us about this product",
     fields: [
-      { label: "Product Name", placeholder: "Enter name", required: true },
+      { label: "Product Name", placeholder: "Enter name", required: true, maxLength: 100 },
       {
         label: "Instrument Type",
         placeholder: "Select Option",
@@ -83,11 +84,26 @@ export const FORM_SECTIONS: FormSection[] = [
     title: "Financial Information",
     description: "Tell us how this product is sold",
     fields: [
-      { label: "Selling Price", placeholder: "₦0.0", required: true },
-      { label: "Available Volume", placeholder: "Enter value", required: true },
-      { label: "Interest or returns Percentage", placeholder: "Enter value", required: true },
-      { label: "Minimum Investment Amount", placeholder: "Enter value", required: true },
-      { label: "Maximum Investment Amount", placeholder: "Enter value", required: true },
+      { label: "Selling Price", placeholder: "₦0.0", required: true, maxLength: 20 },
+      { label: "Available Volume", placeholder: "Enter value", required: true, maxLength: 20 },
+      {
+        label: "Interest or returns Percentage",
+        placeholder: "Enter value",
+        required: true,
+        maxLength: 10,
+      },
+      {
+        label: "Minimum Investment Amount",
+        placeholder: "Enter value",
+        required: true,
+        maxLength: 20,
+      },
+      {
+        label: "Maximum Investment Amount",
+        placeholder: "Enter value",
+        required: true,
+        maxLength: 20,
+      },
       { label: "Settlement Date", placeholder: "DD/MM/YYYY", type: "date", required: true },
     ],
   },
@@ -112,9 +128,19 @@ export const FORM_SECTIONS: FormSection[] = [
         required: true,
         options: [{ value: "30", label: "30 Days" }],
       },
-      { label: "Early Liquidation Penalty?", placeholder: "Enter value", required: true },
-      { label: "WHT Amount", placeholder: "₦0.0 or in percentage", required: true },
-      { label: "Applicable Tax", placeholder: "Enter value", required: true },
+      {
+        label: "Early Liquidation Penalty?",
+        placeholder: "Enter value",
+        required: true,
+        maxLength: 50,
+      },
+      {
+        label: "WHT Amount",
+        placeholder: "₦0.0 or in percentage",
+        required: true,
+        maxLength: 20,
+      },
+      { label: "Applicable Tax", placeholder: "Enter value", required: true, maxLength: 20 },
     ],
   },
 ];

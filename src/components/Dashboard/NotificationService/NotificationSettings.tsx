@@ -85,13 +85,22 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
     }
 
     try {
-      const logoUrl = logoFile ? await fileToBase64(logoFile) : existingLogoUrl;
+      const isUsableLogoUrl =
+        !!existingLogoUrl &&
+        !existingLogoUrl.startsWith("/") &&
+        (existingLogoUrl.startsWith("http") || existingLogoUrl.startsWith("data:"));
+      const logoUrl = logoFile
+        ? await fileToBase64(logoFile)
+        : isUsableLogoUrl
+          ? existingLogoUrl
+          : undefined;
+
       await updateSettings({
         userId,
         brandingSettings: {
-          logoUrl,
+          ...(logoUrl ? { logoUrl } : {}),
           brandColor: backgroundColor,
-          companyName,
+          companyName: companyName.trim() || "SCM Admin",
         },
       });
       onSuccess();

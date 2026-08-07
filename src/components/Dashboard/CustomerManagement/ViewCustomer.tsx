@@ -15,9 +15,17 @@ interface ViewCustomerProps {
   customer: Customer;
   onEdit?: () => void;
   onDeactivate?: () => void;
+  onResendEmail?: () => void;
+  onResetPassword?: () => void;
 }
 
-const ViewCustomer: React.FC<ViewCustomerProps> = ({ customer, onEdit, onDeactivate }) => {
+const ViewCustomer: React.FC<ViewCustomerProps> = ({
+  customer,
+  onEdit,
+  onDeactivate,
+  onResendEmail,
+  onResetPassword,
+}) => {
   const [activeTab, setActiveTab] = useState("Customer Info");
 
   const tabs = [
@@ -39,7 +47,11 @@ const ViewCustomer: React.FC<ViewCustomerProps> = ({ customer, onEdit, onDeactiv
       ) : activeTab === "Active Products" ? (
         <ActiveProductsTab />
       ) : activeTab === "Configuration" ? (
-        <ConfigurationTab onDeactivate={onDeactivate} />
+        <ConfigurationTab
+          onDeactivate={onDeactivate}
+          onResendEmail={onResendEmail}
+          onResetPassword={onResetPassword}
+        />
       ) : activeTab === "Documents" ? (
         <DocumentsTab />
       ) : activeTab === "Payments & Cards" ? (

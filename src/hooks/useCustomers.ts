@@ -72,3 +72,15 @@ export const useDeactivateCustomer = () => {
     },
   });
 };
+
+export const useResendCustomerEmailVerification = () => {
+  return useMutation({
+    mutationFn: (customerId: string) => customerService.resendEmailVerification(customerId),
+  });
+};
+
+export const useResetCustomerPassword = () => {
+  return useMutation({
+    mutationFn: (customerId: string) => customerService.resetCustomerPassword(customerId),
+  });
+};

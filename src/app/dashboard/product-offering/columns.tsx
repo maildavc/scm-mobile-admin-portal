@@ -27,11 +27,13 @@ const OptionsButton = ({
   product,
   onEditProduct,
   onViewProduct,
+  onDeactivateProduct,
   isApprover,
 }: {
   product: Product;
   onEditProduct?: (product: Product) => void;
   onViewProduct?: (product: Product) => void;
+  onDeactivateProduct?: (product: Product) => void;
   isApprover?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -89,6 +91,8 @@ const OptionsButton = ({
                 onClick={() => {
                   if (item.label === "Edit Product" && onEditProduct) {
                     onEditProduct(product);
+                  } else if (item.label === "Deactivate Product" && onDeactivateProduct) {
+                    onDeactivateProduct(product);
                   } else if (
                     (item.label === "View Product" ||
                       item.label === "View Request" ||
@@ -169,6 +173,7 @@ export const productColumns: Column<Product>[] = [
 export const createProductColumns = (
   onEditProduct?: (product: Product) => void,
   onViewProduct?: (product: Product) => void,
+  onDeactivateProduct?: (product: Product) => void,
   isApprover?: boolean,
   totalCount: number = 0,
 ): Column<Product>[] => [
@@ -230,6 +235,7 @@ export const createProductColumns = (
         product={product}
         onEditProduct={onEditProduct}
         onViewProduct={onViewProduct}
+        onDeactivateProduct={onDeactivateProduct}
         isApprover={isApprover}
       />
     ),

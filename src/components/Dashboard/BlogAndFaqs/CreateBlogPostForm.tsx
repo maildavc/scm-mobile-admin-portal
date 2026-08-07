@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
-import TextArea from "@/components/TextArea";
+import RichTextEditor from "@/components/RichTextEditor";
 import Image from "next/image";
 import { useCreateBlog, useUpdateBlog, useBlogDetails } from "@/hooks/useBlog";
+import { useToastStore } from "@/stores/toastStore";
 import { BlogListDto } from "@/types/blog";
 
 interface CreateBlogPostFormProps {
@@ -37,14 +38,20 @@ const CreateBlogPostForm: React.FC<CreateBlogPostFormProps> = ({ onCancel, initi
     }
   }, [blogDetails?.content]);
 
+  const addToast = useToastStore((s) => s.addToast);
+  const today = new Date().toISOString().slice(0, 10);
+
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    const nextValue = field === "blogTitle" ? value.slice(0, 120) : value;
+    setFormData((prev) => ({ ...prev, [field]: nextValue }));
   };
 
   const isFormValid = () => {
     const { blogTitle, audienceType, whenLive, scheduledDate, blogBody } = formData;
-    if (!blogTitle || !audienceType || !blogBody) return false;
-    if (whenLive === "scheduled" && !scheduledDate) return false;
+    if (!blogTitle || blogTitle.length > 120 || !audienceType || !blogBody) return false;
+    if (whenLive === "scheduled") {
+      if (!scheduledDate || scheduledDate < today) return false;
+    }
     return true;
   };
 
@@ -52,31 +59,34 @@ const CreateBlogPostForm: React.FC<CreateBlogPostFormProps> = ({ onCancel, initi
   const updateBlog = useUpdateBlog();
 
   const handleCreateBlog = () => {
-    if (isFormValid()) {
-      const payload = {
-        title: formData.blogTitle,
-        content: formData.blogBody,
-        audienceType: formData.audienceType || undefined,
-        whenShouldItGoLive: formData.whenLive || undefined,
-        scheduleDate:
-          formData.whenLive === "scheduled" && formData.scheduledDate
-            ? new Date(formData.scheduledDate).toISOString()
-            : undefined,
-        category: "General",
-      };
+    if (!isFormValid()) {
+      addToast("Please complete all required fields with valid values", "error");
+      return;
+    }
 
-      if (initialData) {
-        updateBlog.mutate(
-          { id: initialData.id, payload },
-          {
-            onSuccess: () => setShowSuccess(true),
-          },
-        );
-      } else {
-        createBlog.mutate(payload, {
+    const payload = {
+      title: formData.blogTitle,
+      content: formData.blogBody,
+      audienceType: formData.audienceType || undefined,
+      whenShouldItGoLive: formData.whenLive || undefined,
+      scheduleDate:
+        formData.whenLive === "scheduled" && formData.scheduledDate
+          ? new Date(formData.scheduledDate).toISOString()
+          : undefined,
+      category: "General",
+    };
+
+    if (initialData) {
+      updateBlog.mutate(
+        { id: initialData.id, payload },
+        {
           onSuccess: () => setShowSuccess(true),
-        });
-      }
+        },
+      );
+    } else {
+      createBlog.mutate(payload, {
+        onSuccess: () => setShowSuccess(true),
+      });
     }
   };
 
@@ -157,8 +167,11 @@ const CreateBlogPostForm: React.FC<CreateBlogPostFormProps> = ({ onCancel, initi
           theme="light"
           required
           placeholder="Enter"
+          maxLength={120}
           value={formData.blogTitle}
           onChange={(e) => handleInputChange("blogTitle", e.target.value)}
+          error={formData.blogTitle.length > 120}
+          errorMessage="Max 120 characters"
         />
       </div>
 
@@ -192,6 +205,7 @@ const CreateBlogPostForm: React.FC<CreateBlogPostFormProps> = ({ onCancel, initi
           value={formData.scheduledDate}
           onChange={(e) => handleInputChange("scheduledDate", e.target.value)}
           disabled={formData.whenLive !== "scheduled"}
+          minDate={today}
         />
       </div>
 
@@ -201,74 +215,12 @@ const CreateBlogPostForm: React.FC<CreateBlogPostFormProps> = ({ onCancel, initi
         <p className="text-xs text-gray-500">Enter blog details</p>
       </div>
 
-      {/* Rich Text Editor Toolbar */}
-      <div className="mb-4 flex items-center gap-3 p-1 border border-gray-200 rounded-lg bg-white">
-        <select
-          className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none"
-          aria-label="Font Family"
-        >
-          <option>Roboto</option>
-        </select>
-        <select
-          className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none"
-          aria-label="Font Style"
-        >
-          <option>Normal</option>
-        </select>
-        <select
-          className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none"
-          aria-label="Font Size"
-        >
-          <option>16</option>
-        </select>
-        <div className="h-5 w-px bg-gray-300" />
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
-          <strong className="text-sm">B</strong>
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
-          <em className="text-sm">I</em>
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
-          <u className="text-sm">U</u>
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          S
-        </button>
-        <div className="h-5 w-px bg-gray-300" />
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          •
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          1.
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          ⇥
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          ⇤
-        </button>
-        <div className="h-5 w-px bg-gray-300" />
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          x₂
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          x²
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          🔗
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          🖼
-        </button>
-      </div>
-
-      <TextArea
+      <RichTextEditor
         label="Blog Body"
-        theme="light"
         required
         placeholder="Enter Text"
         value={formData.blogBody}
-        onChange={(e) => handleInputChange("blogBody", e.target.value)}
+        onChange={(html) => handleInputChange("blogBody", html)}
         rows={15}
       />
 

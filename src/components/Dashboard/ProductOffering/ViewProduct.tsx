@@ -19,9 +19,15 @@ interface ViewProductProps {
   product: Product;
   onEdit?: () => void;
   onDeactivate?: () => void;
+  onDisable?: () => void;
 }
 
-const ViewProduct: React.FC<ViewProductProps> = ({ product, onEdit, onDeactivate }) => {
+const ViewProduct: React.FC<ViewProductProps> = ({
+  product,
+  onEdit,
+  onDeactivate,
+  onDisable,
+}) => {
   const [activeTab, setActiveTab] = useState("Product Info");
   const { data: detailRes, isLoading } = useProductDetail(product.id);
 
@@ -43,7 +49,11 @@ const ViewProduct: React.FC<ViewProductProps> = ({ product, onEdit, onDeactivate
           isLoading={isLoading}
         />
       ) : (
-        <ConfigurationTab onDeactivate={onDeactivate} portfolioSize={product.size} />
+        <ConfigurationTab
+          onDeactivate={onDeactivate}
+          onDisable={onDisable}
+          portfolioSize={product.size}
+        />
       )}
     </div>
   );

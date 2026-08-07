@@ -51,6 +51,7 @@ test-payload.json
 test-*-e2e.js
 tmp-*.js
 fix.md
+BACKEND_QA_ISSUES.md
 
 # local test output
 test-results/

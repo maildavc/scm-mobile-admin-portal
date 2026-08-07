@@ -15,6 +15,8 @@ interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "
   options?: { value: string; label: string | React.ReactNode }[];
   rightIcon?: React.ReactNode;
   onFileChange?: (file: File | null) => void;
+  minDate?: string;
+  maxDate?: string;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -29,6 +31,8 @@ const Input: React.FC<InputProps> = ({
   options,
   rightIcon,
   onFileChange,
+  minDate,
+  maxDate,
   ...props
 }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -204,6 +208,8 @@ const Input: React.FC<InputProps> = ({
                   selectedDate={String(props.value || "")}
                   onDateSelect={handleDateSelect}
                   onClose={() => setIsCalendarOpen(false)}
+                  minDate={minDate}
+                  maxDate={maxDate}
                 />
               )}
             </>

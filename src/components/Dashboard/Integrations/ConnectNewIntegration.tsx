@@ -40,18 +40,46 @@ const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
+  const isValidUrl = (value: string) => /^https?:\/\/.+\..+/i.test(value.trim());
+
+  const fieldErrors = React.useMemo(() => {
+    const errors: Partial<Record<keyof ConnectNewIntegrationData, string>> = {};
+    if (formData.name && formData.name.length > 100) {
+      errors.name = "Max 100 characters";
+    }
+    if (formData.username && formData.username.length > 50) {
+      errors.username = "Max 50 characters";
+    }
+    if (formData.clientUrl && !isValidUrl(formData.clientUrl)) {
+      errors.clientUrl = "Enter a valid URL starting with http:// or https://";
+    }
+    if (formData.description && formData.description.length > 250) {
+      errors.description = "Max 250 characters";
+    }
+    return errors;
+  }, [formData]);
+
   const isValid = React.useMemo(() => {
     return (
       formData.name.trim() !== "" &&
       formData.clientUrl.trim() !== "" &&
       formData.clientSecretKey.trim() !== "" &&
       formData.username.trim() !== "" &&
-      formData.password.trim() !== ""
+      formData.password.trim() !== "" &&
+      Object.keys(fieldErrors).length === 0
     );
-  }, [formData]);
+  }, [formData, fieldErrors]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    const limits: Record<string, number> = {
+      name: 100,
+      description: 250,
+      username: 50,
+      clientSecretKey: 256,
+    };
+    const max = limits[name];
+    setFormData({ ...formData, [name]: max ? value.slice(0, max) : value });
   };
 
   const handleImageClick = () => {
@@ -109,6 +137,9 @@ const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
             onChange={handleChange}
             type="text"
             className="w-full"
+            maxLength={100}
+            error={!!fieldErrors.name}
+            errorMessage={fieldErrors.name}
           />
           <Input
             label="Description"
@@ -119,10 +150,13 @@ const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
             theme="light"
             type="text"
             className="w-full"
+            maxLength={250}
+            error={!!fieldErrors.description}
+            errorMessage={fieldErrors.description}
           />
           <Input
             label="Client URL"
-            placeholder="Input URL"
+            placeholder="https://example.com"
             required
             name="clientUrl"
             value={formData.clientUrl}
@@ -130,17 +164,21 @@ const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
             theme="light"
             type="url"
             className="w-full"
+            error={!!fieldErrors.clientUrl}
+            errorMessage={fieldErrors.clientUrl}
           />
           <Input
             label="Client Secret Key"
-            placeholder="Input number"
+            placeholder="Input secret key"
             required
             name="clientSecretKey"
             value={formData.clientSecretKey}
             onChange={handleChange}
             theme="light"
-            type="text"
+            type="password"
+            isPassword
             className="w-full"
+            maxLength={256}
           />
           <Input
             label="Username"
@@ -152,6 +190,9 @@ const ConnectNewIntegration: React.FC<ConnectNewIntegrationProps> = ({
             theme="light"
             type="text"
             className="w-full"
+            maxLength={50}
+            error={!!fieldErrors.username}
+            errorMessage={fieldErrors.username}
           />
           <Input
             label="Password"

@@ -17,7 +17,7 @@ const StatsCard: React.FC<StatsCardProps> = ({
   linkText = "Manage Profile",
   linkHref = "#",
   className = "",
-  showLink = true,
+  showLink = false,
 }) => {
   return (
     <div className={`border border-gray-100 rounded-xl p-3 ${className}`}>

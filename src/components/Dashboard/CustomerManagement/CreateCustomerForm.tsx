@@ -26,6 +26,7 @@ const CreateCustomerForm: React.FC<CreateCustomerFormProps> = ({
     productAssignments,
     showSuccess,
     isFormValid,
+    fieldErrors,
     handleInputChange,
     handleProductToggle,
     handleSaveChanges,
@@ -86,6 +87,12 @@ const CreateCustomerForm: React.FC<CreateCustomerFormProps> = ({
               className={field.className}
               value={(formData[field.label] as string) || ""}
               onChange={(e) => handleInputChange(field.label, e.target.value)}
+              maxLength={
+                field.label.includes("Name") ? 50 : field.label === "Email Address" ? 100 : undefined
+              }
+              maxDate={field.type === "date" ? new Date().toISOString().slice(0, 10) : undefined}
+              error={!!fieldErrors[field.label]}
+              errorMessage={fieldErrors[field.label]}
             />
           ))}
         </div>

@@ -18,7 +18,13 @@ import { createCustomerColumns } from "./columns";
 import { useAuthStore } from "@/stores/authStore";
 import ViewCustomerRequest from "@/components/Dashboard/CustomerManagement/ViewCustomerRequest";
 import { Customer } from "@/types/customer";
-import { useGetCustomers } from "@/hooks/useCustomers";
+import {
+  useGetCustomers,
+  useDeactivateCustomer,
+  useResendCustomerEmailVerification,
+  useResetCustomerPassword,
+} from "@/hooks/useCustomers";
+import { useToastStore } from "@/stores/toastStore";
 
 export default function CustomerManagement() {
   const [currentView, setCurrentView] = useState("Overview");
@@ -26,6 +32,10 @@ export default function CustomerManagement() {
   const [viewCustomer, setViewCustomer] = useState<Customer | null>(null);
   const [page, setPage] = useState(1);
   const isApprover = useAuthStore((s) => s.isApprover);
+  const addToast = useToastStore((s) => s.addToast);
+  const deactivateCustomer = useDeactivateCustomer();
+  const resendEmail = useResendCustomerEmailVerification();
+  const resetPassword = useResetCustomerPassword();
 
   const { data: customersData, isLoading } = useGetCustomers({
     page,
@@ -60,13 +70,64 @@ export default function CustomerManagement() {
     setCurrentView(customer.name);
   };
 
-  const columns = createCustomerColumns(handleEditCustomer, handleViewCustomer, isApprover);
-
   const resetView = () => {
     setCurrentView("Overview");
     setEditCustomer(null);
     setViewCustomer(null);
   };
+
+  const handleDeactivateCustomer = async (customer: Customer) => {
+    try {
+      await deactivateCustomer.mutateAsync({
+        customerId: customer.id,
+        reason: "Deactivated by admin",
+      });
+      addToast("Customer deactivated successfully", "success");
+      resetView();
+    } catch (error: unknown) {
+      const message =
+        (error as { response?: { data?: { message?: string } }; message?: string })?.response?.data
+          ?.message ||
+        (error as { message?: string })?.message ||
+        "Failed to deactivate customer";
+      addToast(message, "error");
+    }
+  };
+
+  const handleResendEmail = async (customer: Customer) => {
+    try {
+      await resendEmail.mutateAsync(customer.id);
+      addToast("Email verification resent successfully", "success");
+    } catch (error: unknown) {
+      const message =
+        (error as { response?: { data?: { message?: string } }; message?: string })?.response?.data
+          ?.message ||
+        (error as { message?: string })?.message ||
+        "Failed to resend email verification";
+      addToast(message, "error");
+    }
+  };
+
+  const handleResetPassword = async (customer: Customer) => {
+    try {
+      await resetPassword.mutateAsync(customer.id);
+      addToast("Password reset initiated successfully", "success");
+    } catch (error: unknown) {
+      const message =
+        (error as { response?: { data?: { message?: string } }; message?: string })?.response?.data
+          ?.message ||
+        (error as { message?: string })?.message ||
+        "Failed to reset customer password";
+      addToast(message, "error");
+    }
+  };
+
+  const columns = createCustomerColumns(
+    handleEditCustomer,
+    handleViewCustomer,
+    handleDeactivateCustomer,
+    isApprover,
+  );
 
   const breadcrumbs = getBreadcrumbs(viewCustomer ? viewCustomer.name : currentView).map(
     (crumb) => {
@@ -153,11 +214,9 @@ export default function CustomerManagement() {
                 <ViewCustomer
                   customer={viewCustomer}
                   onEdit={() => handleEditCustomer(viewCustomer)}
-                  onDeactivate={() => {
-                    // Handle deactivation
-                    setCurrentView("Overview");
-                    setViewCustomer(null);
-                  }}
+                  onDeactivate={() => handleDeactivateCustomer(viewCustomer)}
+                  onResendEmail={() => handleResendEmail(viewCustomer)}
+                  onResetPassword={() => handleResetPassword(viewCustomer)}
                 />
               )
             ) : (

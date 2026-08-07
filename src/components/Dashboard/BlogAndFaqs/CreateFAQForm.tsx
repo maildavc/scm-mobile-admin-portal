@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
-import TextArea from "@/components/TextArea";
+import RichTextEditor from "@/components/RichTextEditor";
 import Image from "next/image";
 import { useCreateFAQ, useUpdateFAQ, useFAQDetails } from "@/hooks/useFaq";
+import { useToastStore } from "@/stores/toastStore";
 import { FAQDto } from "@/types/faq";
 
 interface CreateFAQFormProps {
@@ -32,14 +33,20 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel, initialData }) 
     }
   }, [faqDetails?.answer]);
 
+  const addToast = useToastStore((s) => s.addToast);
+  const today = new Date().toISOString().slice(0, 10);
+
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    const nextValue = field === "faqQuestion" ? value.slice(0, 200) : value;
+    setFormData((prev) => ({ ...prev, [field]: nextValue }));
   };
 
   const isFormValid = () => {
     const { faqQuestion, whenLive, scheduledDate, faqAnswer, category } = formData;
-    if (!faqQuestion || !faqAnswer || !category) return false;
-    if (whenLive === "scheduled" && !scheduledDate) return false;
+    if (!faqQuestion || faqQuestion.length > 200 || !faqAnswer || !category) return false;
+    if (whenLive === "scheduled") {
+      if (!scheduledDate || scheduledDate < today) return false;
+    }
     return true;
   };
 
@@ -47,30 +54,33 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel, initialData }) 
   const updateFaq = useUpdateFAQ();
 
   const handleCreateFAQ = () => {
-    if (isFormValid()) {
-      const payload = {
-        question: formData.faqQuestion,
-        answer: formData.faqAnswer,
-        whenShouldItGoLive: formData.whenLive || undefined,
-        scheduleDate:
-          formData.whenLive === "scheduled" && formData.scheduledDate
-            ? new Date(formData.scheduledDate).toISOString()
-            : undefined,
-        category: parseInt(formData.category, 10) || 1,
-      };
+    if (!isFormValid()) {
+      addToast("Please complete all required fields with valid values", "error");
+      return;
+    }
 
-      if (initialData) {
-        updateFaq.mutate(
-          { id: initialData.id, payload },
-          {
-            onSuccess: () => setShowSuccess(true),
-          },
-        );
-      } else {
-        createFaq.mutate(payload, {
+    const payload = {
+      question: formData.faqQuestion,
+      answer: formData.faqAnswer,
+      whenShouldItGoLive: formData.whenLive || undefined,
+      scheduleDate:
+        formData.whenLive === "scheduled" && formData.scheduledDate
+          ? new Date(formData.scheduledDate).toISOString()
+          : undefined,
+      category: parseInt(formData.category, 10) || 1,
+    };
+
+    if (initialData) {
+      updateFaq.mutate(
+        { id: initialData.id, payload },
+        {
           onSuccess: () => setShowSuccess(true),
-        });
-      }
+        },
+      );
+    } else {
+      createFaq.mutate(payload, {
+        onSuccess: () => setShowSuccess(true),
+      });
     }
   };
 
@@ -161,8 +171,11 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel, initialData }) 
           theme="light"
           required
           placeholder="Enter"
+          maxLength={200}
           value={formData.faqQuestion}
           onChange={(e) => handleInputChange("faqQuestion", e.target.value)}
+          error={formData.faqQuestion.length > 200}
+          errorMessage="Max 200 characters"
         />
         <Input
           label="Category"
@@ -196,6 +209,7 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel, initialData }) 
           value={formData.scheduledDate}
           onChange={(e) => handleInputChange("scheduledDate", e.target.value)}
           disabled={formData.whenLive !== "scheduled"}
+          minDate={today}
         />
       </div>
 
@@ -205,74 +219,12 @@ const CreateFAQForm: React.FC<CreateFAQFormProps> = ({ onCancel, initialData }) 
         <p className="text-xs text-gray-500">Enter answer</p>
       </div>
 
-      {/* Rich Text Editor Toolbar */}
-      <div className="mb-4 flex items-center gap-3 p-1 border border-gray-200 rounded-lg bg-white">
-        <select
-          aria-label="Font family"
-          className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none"
-        >
-          <option>Roboto</option>
-        </select>
-        <select
-          aria-label="Text style"
-          className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none"
-        >
-          <option>Normal</option>
-        </select>
-        <select
-          aria-label="Font size"
-          className="px-2 py-1 text-sm border-none focus:ring-0 text-[#2F3140] bg-transparent outline-none"
-        >
-          <option>16</option>
-        </select>
-        <div className="h-5 w-px bg-gray-300" />
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
-          <strong className="text-sm">B</strong>
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
-          <em className="text-sm">I</em>
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140]">
-          <u className="text-sm">U</u>
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          S
-        </button>
-        <div className="h-5 w-px bg-gray-300" />
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          •
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          1.
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          ⇥
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          ⇤
-        </button>
-        <div className="h-5 w-px bg-gray-300" />
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          x₂
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          x²
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          🔗
-        </button>
-        <button type="button" className="p-1.5 hover:bg-gray-100 rounded text-[#2F3140] text-sm">
-          🖼
-        </button>
-      </div>
-
-      <TextArea
+      <RichTextEditor
         label="FAQ Answer"
-        theme="light"
         required
         placeholder="Enter Text"
         value={formData.faqAnswer}
-        onChange={(e) => handleInputChange("faqAnswer", e.target.value)}
+        onChange={(html) => handleInputChange("faqAnswer", html)}
         rows={15}
       />
 

@@ -20,11 +20,13 @@ const OptionsButton = ({
   customer,
   onEditCustomer,
   onViewCustomer,
+  onDeactivateCustomer,
   isApprover,
 }: {
   customer: Customer;
   onEditCustomer?: (customer: Customer) => void;
   onViewCustomer?: (customer: Customer) => void;
+  onDeactivateCustomer?: (customer: Customer) => void;
   isApprover?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -82,6 +84,8 @@ const OptionsButton = ({
                 onClick={() => {
                   if (item.label === "Edit Customer" && onEditCustomer) {
                     onEditCustomer(customer);
+                  } else if (item.label === "Deactivate Customer" && onDeactivateCustomer) {
+                    onDeactivateCustomer(customer);
                   } else if (
                     (item.label === "View Customer" ||
                       item.label === "View Request" ||
@@ -176,6 +180,7 @@ export const customerColumns: Column<Customer>[] = [
 export const createCustomerColumns = (
   onEditCustomer?: (customer: Customer) => void,
   onViewCustomer?: (customer: Customer) => void,
+  onDeactivateCustomer?: (customer: Customer) => void,
   isApprover?: boolean,
 ): Column<Customer>[] => {
   if (isApprover) {
@@ -246,6 +251,7 @@ export const createCustomerColumns = (
             customer={customer}
             onEditCustomer={onEditCustomer}
             onViewCustomer={onViewCustomer}
+            onDeactivateCustomer={onDeactivateCustomer}
             isApprover={isApprover}
           />
         ),
@@ -267,6 +273,7 @@ export const createCustomerColumns = (
           customer={customer}
           onEditCustomer={onEditCustomer}
           onViewCustomer={onViewCustomer}
+          onDeactivateCustomer={onDeactivateCustomer}
         />
       ),
     },

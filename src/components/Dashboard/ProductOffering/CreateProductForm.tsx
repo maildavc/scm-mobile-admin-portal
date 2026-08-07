@@ -127,15 +127,20 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
     }
 
     // Build the nested payload object based on the new Backend DTO
+    const basicInformation: Record<string, unknown> = {
+      productName: formData["Product Name"] as string,
+      instrumentType: formData["Instrument Type"] as string,
+      issuer: formData["Issuer"] as string,
+      sector: formData["Sector"] as string,
+      description: "",
+    };
+    // On edit, omit empty logo so the backend keeps the existing image
+    if (issuersLogoBase64 || !isEditing) {
+      basicInformation.issuersLogo = issuersLogoBase64;
+    }
+
     const corePayload = {
-      basicInformation: {
-        productName: formData["Product Name"] as string,
-        instrumentType: formData["Instrument Type"] as string,
-        issuer: formData["Issuer"] as string,
-        sector: formData["Sector"] as string,
-        description: "", // added to match new DTO requirements
-        issuersLogo: issuersLogoBase64,
-      },
+      basicInformation,
       financialInformation: {
         sellingPrice: parseFloat(formData["Selling Price"] as string) || 0,
         availableVolume: parseInt(formData["Available Volume"] as string, 10) || 0,
@@ -146,12 +151,14 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
         settlementDate: formData["Settlement Date"]
           ? new Date(formData["Settlement Date"] as string).toISOString()
           : new Date().toISOString(),
-        // Mapping liquidation info into financialInformation per new payload structure
         allowForEarlyLiquidation: formData["Allow for Early Liquidation"] === "yes",
         earlyLiquidationPeriod: (formData["Early Liquidation Period"] as string) || "",
         earlyLiquidationPenalty: (formData["Early Liquidation Penalty?"] as string) || "",
         whtAmount: parseFloat(formData["WHT Amount"] as string) || 0,
         applicableTax: parseFloat(formData["Applicable Tax"] as string) || 0,
+      },
+      integration: {
+        source: (formData["Source"] as string) || "",
       },
     };
 
@@ -192,13 +199,19 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
         <div className="mb-6">
           <Image src="/success.svg" alt="Success" width={80} height={80} />
         </div>
-        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">Product Creation Successful</h2>
+        <h2 className="text-lg font-semibold text-[#2F3140] mb-2">
+          {isEditing ? "Product Update Successful" : "Product Creation Successful"}
+        </h2>
         <p className="text-sm text-[#707781] mb-8 text-center">
-          Product creation was successfully sent for approver confirmation.
+          {isEditing
+            ? "Product updates were successfully sent for approver confirmation."
+            : "Product creation was successfully sent for approver confirmation."}
         </p>
         <div className="flex gap-4">
           <div className=" w-56">
-            <Button text="Create Another Product" variant="outline" onClick={handleCreateAnother} />
+            {!isEditing && (
+              <Button text="Create Another Product" variant="outline" onClick={handleCreateAnother} />
+            )}
           </div>
           <div className="w-32">
             <Button text="Done" variant="primary" onClick={handleDone} />
@@ -227,6 +240,7 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({
                 rightIcon={field.hasUploadIcon ? <FiUploadCloud size={18} /> : undefined}
                 readOnly={field.readOnly}
                 className={field.className}
+                maxLength={field.maxLength}
                 value={(formData[field.label] as string) || ""}
                 onChange={(e) => handleInputChange(field.label, e.target.value)}
                 onFileChange={

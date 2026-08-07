@@ -3,6 +3,7 @@
 import React from "react";
 import { FiFile } from "react-icons/fi";
 import Button from "@/components/Button";
+import { runTableExportAction as exportTable } from "@/utils/tableExport";
 
 interface ActionButtonProps {
   onClick?: () => void;
@@ -12,26 +13,7 @@ interface ActionButtonProps {
 }
 
 export function runTableExportAction(label: string) {
-  if (label.toLowerCase().includes("pdf")) {
-    window.print();
-    return;
-  }
-
-  const table = document.querySelector("table");
-  if (!table) return;
-
-  const rows = Array.from(table.querySelectorAll("tr")).map((row) =>
-    Array.from(row.querySelectorAll("th,td")).map(
-      (cell) => `"${(cell.textContent || "").trim().replaceAll('"', '""')}"`,
-    ),
-  );
-  const csv = rows.map((row) => row.join(",")).join("\r\n");
-  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = `scm-export-${new Date().toISOString().slice(0, 10)}.csv`;
-  anchor.click();
-  URL.revokeObjectURL(url);
+  exportTable(label);
 }
 
 const ActionButton: React.FC<ActionButtonProps> = ({

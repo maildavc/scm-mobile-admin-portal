@@ -7,9 +7,19 @@ interface CalendarProps {
   selectedDate?: string;
   onDateSelect: (date: string) => void;
   onClose: () => void;
+  /** YYYY-MM-DD — dates before this are disabled */
+  minDate?: string;
+  /** YYYY-MM-DD — dates after this are disabled */
+  maxDate?: string;
 }
 
-const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect, onClose }) => {
+const Calendar: React.FC<CalendarProps> = ({
+  selectedDate,
+  onDateSelect,
+  onClose,
+  minDate,
+  maxDate,
+}) => {
   const parseDate = (dateString?: string): Date => {
     if (!dateString) return new Date();
     const [year, month, day] = dateString.split("-").map(Number);
@@ -82,8 +92,15 @@ const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect, onClose
     setShowYearPicker(false);
   };
 
+  const isDateDisabled = (dateString: string) => {
+    if (minDate && dateString < minDate) return true;
+    if (maxDate && dateString > maxDate) return true;
+    return false;
+  };
+
   const handleDateClick = (day: number) => {
     const dateString = formatDate(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    if (isDateDisabled(dateString)) return;
     onDateSelect(dateString);
     onClose();
   };
@@ -113,18 +130,23 @@ const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect, onClose
         today.getDate() === day &&
         today.getMonth() === currentMonth.getMonth() &&
         today.getFullYear() === currentMonth.getFullYear();
+      const dateString = formatDate(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+      const disabled = isDateDisabled(dateString);
 
       days.push(
         <button
           key={day}
           type="button"
+          disabled={disabled}
           onClick={() => handleDateClick(day)}
           className={`h-9 w-9 rounded-lg text-sm font-medium transition-colors ${
-            isSelected
-              ? "bg-[#B2171E] text-white hover:bg-[#9a1419]"
-              : isToday
-                ? "bg-gray-100 text-[#2F3140] hover:bg-gray-200"
-                : "text-[#2F3140] hover:bg-gray-50"
+            disabled
+              ? "text-gray-300 cursor-not-allowed"
+              : isSelected
+                ? "bg-[#B2171E] text-white hover:bg-[#9a1419]"
+                : isToday
+                  ? "bg-gray-100 text-[#2F3140] hover:bg-gray-200"
+                  : "text-[#2F3140] hover:bg-gray-50"
           }`}
         >
           {day}

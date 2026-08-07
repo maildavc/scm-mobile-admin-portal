@@ -2,17 +2,22 @@ import React from "react";
 
 interface ConfigurationTabProps {
   onDeactivate?: () => void;
+  onDisable?: () => void;
   portfolioSize?: string;
 }
 
-const ConfigurationTab: React.FC<ConfigurationTabProps> = ({ onDeactivate, portfolioSize }) => {
+const ConfigurationTab: React.FC<ConfigurationTabProps> = ({
+  onDeactivate,
+  onDisable,
+  portfolioSize,
+}) => {
   const configOptions = [
     {
       title: "Disable product",
       description: "Temporarily disable product",
       buttonText: "Disable Product",
       mobileButtonText: "Disable",
-      onClick: () => {},
+      onClick: onDisable || onDeactivate,
     },
     {
       title: "Product Deactivation",

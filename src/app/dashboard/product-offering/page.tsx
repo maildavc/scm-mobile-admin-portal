@@ -72,7 +72,10 @@ export default function ProductOffering() {
 
   const sidebarItems = filteredSidebarItems.map((item) => ({
     ...item,
-    isActive: viewProduct ? item.label === "Overview" : item.label === currentView,
+    isActive: viewProduct
+      ? item.label === "Overview"
+      : item.label === currentView ||
+        (currentView === "Edit Product" && item.label === "Create Product"),
   }));
 
   const handleSidebarClick = (label: string) => {
@@ -84,7 +87,7 @@ export default function ProductOffering() {
   const handleEditProduct = (product: Product) => {
     setEditProduct(product);
     setViewProduct(null);
-    setCurrentView("Create Product");
+    setCurrentView("Edit Product");
   };
 
   const handleViewProduct = (product: Product) => {
@@ -108,26 +111,41 @@ export default function ProductOffering() {
     resetView();
   };
 
-  // ── Deactivate / Activate ──────────────────────────────────────────
-  const handleDeactivate = async () => {
-    if (!viewProduct) return;
-    const newStatus = viewProduct.status === "Active" ? "Inactive" : "Active";
+  // ── Deactivate / Activate / Disable ────────────────────────────────
+  const isLiveStatus = (status: Product["status"]) =>
+    status === "Active" || status === "Approved";
+
+  const handleStatusChange = async (product: Product, status: "Active" | "Inactive") => {
     try {
       await updateStatus.mutateAsync({
-        productId: viewProduct.id,
-        payload: { productId: viewProduct.id, status: newStatus },
+        productId: product.id,
+        payload: { productId: product.id, status },
       });
-      addToast(`Product set to ${newStatus}`, "success");
+      addToast(`Product set to ${status}`, "success");
       resetView();
     } catch {
       addToast("Failed to update product status", "error");
     }
   };
 
+  const handleDeactivate = async (product?: Product | null) => {
+    const target = product || viewProduct;
+    if (!target) return;
+    const newStatus = isLiveStatus(target.status) ? "Inactive" : "Active";
+    await handleStatusChange(target, newStatus);
+  };
+
+  const handleDisable = async (product?: Product | null) => {
+    const target = product || viewProduct;
+    if (!target) return;
+    await handleStatusChange(target, "Inactive");
+  };
+
   const totalCount = productsRes?.value?.data?.pagination?.total || products.length;
   const columns = createProductColumns(
     handleEditProduct,
     handleViewProduct,
+    (product) => handleDeactivate(product),
     isApprover,
     totalCount,
   );
@@ -181,7 +199,7 @@ export default function ProductOffering() {
                   />
                 )}
               </>
-            ) : currentView === "Create Product" ? (
+            ) : currentView === "Create Product" || currentView === "Edit Product" ? (
               <CreateProductForm
                 initialData={editProduct}
                 onSuccess={() => {
@@ -204,7 +222,8 @@ export default function ProductOffering() {
                 <ViewProduct
                   product={viewProduct}
                   onEdit={() => handleEditProduct(viewProduct)}
-                  onDeactivate={handleDeactivate}
+                  onDeactivate={() => handleDeactivate(viewProduct)}
+                  onDisable={() => handleDisable(viewProduct)}
                 />
               )
             ) : (
