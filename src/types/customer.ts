@@ -22,16 +22,39 @@ export interface GetCustomersParams {
   search?: string;
 }
 
+export interface CustomerProductAssignmentPayload {
+  productId: string;
+  canBuy: boolean;
+  canSell: boolean;
+}
+
 export interface CreateCustomerRequest {
   name: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
   email: string;
   phone: string;
+  citizenship?: string;
+  gender?: string;
+  dateOfBirth?: string;
+  /** Omit entirely when empty — backend 500s on `[]`. */
+  productAssignments?: CustomerProductAssignmentPayload[];
 }
 
 export interface UpdateCustomerRequest {
-  customerId: string;
+  customerId?: string;
+  id?: string;
   name: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
   email: string;
+  phone: string;
+  citizenship?: string;
+  gender?: string;
+  dateOfBirth?: string;
+  productAssignments?: CustomerProductAssignmentPayload[];
 }
 
 export interface GetCustomersResponse {

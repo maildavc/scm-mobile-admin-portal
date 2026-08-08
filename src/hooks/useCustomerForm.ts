@@ -1,13 +1,18 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   BASIC_INFO_FIELDS,
   ProductAssignment,
-  DEFAULT_PRODUCT_ASSIGNMENTS,
   EMPTY_PRODUCT_ASSIGNMENTS,
 } from "@/constants/customerManagement/createCustomer";
 import { useCreateCustomer, useUpdateCustomer } from "./useCustomers";
+import { useProducts } from "./useProducts";
 import { useToastStore } from "@/stores/toastStore";
 import { todayIsoDate, validateByKind } from "@/utils/formValidation";
+import type {
+  CreateCustomerRequest,
+  CustomerProductAssignmentPayload,
+  UpdateCustomerRequest,
+} from "@/types/customer";
 
 type Customer = {
   id: string;
@@ -20,6 +25,54 @@ type Customer = {
   updatedAt?: string;
 };
 
+function buildProductAssignmentPayload(
+  assignments: ProductAssignment,
+): CustomerProductAssignmentPayload[] | undefined {
+  const selected = Object.entries(assignments)
+    .filter(([, flags]) => flags.buy || flags.sell)
+    .map(([productId, flags]) => ({
+      productId,
+      canBuy: flags.buy,
+      canSell: flags.sell,
+    }));
+
+  // Backend 500s on empty arrays — omit the field entirely when nothing selected
+  return selected.length > 0 ? selected : undefined;
+}
+
+function buildCustomerPayload(
+  formData: Record<string, string>,
+  assignments: ProductAssignment,
+): CreateCustomerRequest {
+  const firstName = (formData["Legal First Name"] || "").trim();
+  const middleName = (formData["Middle Name (Optional)"] || "").trim();
+  const lastName = (formData["Legal Last Name"] || "").trim();
+  const name = [firstName, middleName, lastName].filter(Boolean).join(" ");
+  const dob = formData["Date of Birth"] || "";
+
+  const payload: CreateCustomerRequest = {
+    name,
+    firstName,
+    lastName,
+    email: (formData["Email Address"] || "").trim(),
+    phone: (formData["Phone Number"] || "").trim(),
+    citizenship: formData["Citizenship"] || undefined,
+    gender: formData["Gender"] || undefined,
+    dateOfBirth: dob ? new Date(`${dob}T00:00:00Z`).toISOString() : undefined,
+  };
+
+  if (middleName) {
+    payload.middleName = middleName;
+  }
+
+  const productAssignments = buildProductAssignmentPayload(assignments);
+  if (productAssignments) {
+    payload.productAssignments = productAssignments;
+  }
+
+  return payload;
+}
+
 export function useCustomerForm(initialData?: Customer | null) {
   const [formData, setFormData] = useState<Record<string, string>>(() => {
     if (initialData) {
@@ -27,19 +80,34 @@ export function useCustomerForm(initialData?: Customer | null) {
       return {
         "Legal First Name": nameParts[0] || "",
         "Legal Last Name": nameParts[nameParts.length - 1] || "",
+        "Email Address": initialData.email || "",
+        "Phone Number": initialData.phone || "",
         "Account Status": initialData.status.toLowerCase(),
       };
     }
     return {} as Record<string, string>;
   });
 
-  const [productAssignments, setProductAssignments] = useState<ProductAssignment>(
-    initialData ? DEFAULT_PRODUCT_ASSIGNMENTS : DEFAULT_PRODUCT_ASSIGNMENTS,
-  );
+  const [productAssignments, setProductAssignments] =
+    useState<ProductAssignment>(EMPTY_PRODUCT_ASSIGNMENTS);
 
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Get all required fields
+  const { data: productsRes } = useProducts({ page: 1, limit: 50 });
+  const liveProducts = productsRes?.value?.data?.products ?? [];
+
+  // Keep assignment map in sync with available product IDs (real GUIDs from API)
+  useEffect(() => {
+    if (!liveProducts.length) return;
+    setProductAssignments((prev) => {
+      const next: ProductAssignment = {};
+      for (const product of liveProducts) {
+        next[product.id] = prev[product.id] || { buy: false, sell: false };
+      }
+      return next;
+    });
+  }, [liveProducts]);
+
   const requiredFields = useMemo(
     () => BASIC_INFO_FIELDS.filter((field) => field.required).map((field) => field.label),
     [],
@@ -67,7 +135,6 @@ export function useCustomerForm(initialData?: Customer | null) {
     return errors;
   }, [formData]);
 
-  // Check if all required fields are filled and valid
   const isFormValid = useMemo(() => {
     const requiredOk = requiredFields.every((fieldLabel) => {
       const value = formData[fieldLabel];
@@ -84,8 +151,9 @@ export function useCustomerForm(initialData?: Customer | null) {
     setProductAssignments((prev) => ({
       ...prev,
       [productId]: {
-        ...prev[productId],
-        [type]: !prev[productId][type],
+        buy: prev[productId]?.buy || false,
+        sell: prev[productId]?.sell || false,
+        [type]: !(prev[productId]?.[type] || false),
       },
     }));
   };
@@ -98,29 +166,33 @@ export function useCustomerForm(initialData?: Customer | null) {
     if (!isFormValid) return;
 
     try {
-      const payload = {
-        name: `${formData["Legal First Name"] || ""} ${formData["Legal Last Name"] || ""}`.trim(),
-        email: formData["Email Address"] || "",
-        phone: formData["Phone Number"] || "",
-      };
+      const payload = buildCustomerPayload(formData, productAssignments);
 
       if (initialData) {
+        const updatePayload: UpdateCustomerRequest = {
+          ...payload,
+          id: initialData.id,
+          customerId: initialData.id,
+        };
         await updateMutation.mutateAsync({
           customerId: initialData.id,
-          payload: {
-            ...payload,
-            customerId: initialData.id,
-          },
+          payload: updatePayload,
         });
       } else {
         await createMutation.mutateAsync(payload);
       }
 
       setShowSuccess(true);
-    } catch (error: any) {
-      console.error("Failed to save customer:", error);
+    } catch (error: unknown) {
+      const err = error as {
+        message?: string;
+        response?: { data?: { message?: string; detail?: string } };
+      };
       const errorMsg =
-        error?.message || error?.response?.data?.message || "Failed to save customer";
+        err?.response?.data?.detail ||
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to save customer";
       addToast(errorMsg, "error");
     }
   };
@@ -128,7 +200,9 @@ export function useCustomerForm(initialData?: Customer | null) {
   const handleCreateAnother = () => {
     setShowSuccess(false);
     setFormData({});
-    setProductAssignments(EMPTY_PRODUCT_ASSIGNMENTS);
+    setProductAssignments(
+      Object.fromEntries(liveProducts.map((p) => [p.id, { buy: false, sell: false }])),
+    );
   };
 
   const handleDone = (onSuccess?: () => void) => {
@@ -147,6 +221,7 @@ export function useCustomerForm(initialData?: Customer | null) {
     requiredFields,
     isFormValid,
     fieldErrors,
+    liveProducts,
     handleInputChange,
     handleProductToggle,
     handleSaveChanges,

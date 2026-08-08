@@ -4,7 +4,7 @@ import React from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import CustomCheckbox from "@/components/CustomCheckbox";
-import { BASIC_INFO_FIELDS, PRODUCT_TYPES } from "@/constants/customerManagement/createCustomer";
+import { BASIC_INFO_FIELDS } from "@/constants/customerManagement/createCustomer";
 import Image from "next/image";
 import { useCustomerForm } from "@/hooks/useCustomerForm";
 
@@ -27,6 +27,7 @@ const CreateCustomerForm: React.FC<CreateCustomerFormProps> = ({
     showSuccess,
     isFormValid,
     fieldErrors,
+    liveProducts,
     handleInputChange,
     handleProductToggle,
     handleSaveChanges,
@@ -107,27 +108,34 @@ const CreateCustomerForm: React.FC<CreateCustomerFormProps> = ({
           Select what products this customer should have
         </p>
         <div className="bg-[#F9F9F9] rounded-xl p-8">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-10 gap-x-4">
-            {PRODUCT_TYPES.map((product) => (
-              <div key={product.id} className="flex flex-col gap-4">
-                <h4 className="text-xs font-bold text-[#555555] uppercase tracking-wider mb-2">
-                  {product.name}
-                </h4>
-                <div className="flex flex-col gap-3">
-                  <CustomCheckbox
-                    checked={productAssignments[product.id]?.buy || false}
-                    onChange={() => handleProductToggle(product.id, "buy")}
-                    label="Buy"
-                  />
-                  <CustomCheckbox
-                    checked={productAssignments[product.id]?.sell || false}
-                    onChange={() => handleProductToggle(product.id, "sell")}
-                    label="Sell"
-                  />
+          {liveProducts.length === 0 ? (
+            <p className="text-sm text-[#707781]">
+              No active products available to assign yet. Customer can still be created without
+              product assignments.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-10 gap-x-4">
+              {liveProducts.map((product) => (
+                <div key={product.id} className="flex flex-col gap-4">
+                  <h4 className="text-xs font-bold text-[#555555] uppercase tracking-wider mb-2">
+                    {product.name}
+                  </h4>
+                  <div className="flex flex-col gap-3">
+                    <CustomCheckbox
+                      checked={productAssignments[product.id]?.buy || false}
+                      onChange={() => handleProductToggle(product.id, "buy")}
+                      label="Buy"
+                    />
+                    <CustomCheckbox
+                      checked={productAssignments[product.id]?.sell || false}
+                      onChange={() => handleProductToggle(product.id, "sell")}
+                      label="Sell"
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

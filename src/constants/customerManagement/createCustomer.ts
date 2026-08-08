@@ -26,8 +26,8 @@ export const BASIC_INFO_FIELDS: FormField[] = [
     type: "select",
     required: true,
     options: [
-      { value: "nigerian", label: "Nigerian" },
-      { value: "other", label: "Other" },
+      { value: "Nigerian", label: "Nigerian" },
+      { value: "Other", label: "Other" },
     ],
   },
   {
@@ -36,9 +36,9 @@ export const BASIC_INFO_FIELDS: FormField[] = [
     type: "select",
     required: true,
     options: [
-      { value: "male", label: "Male" },
-      { value: "female", label: "Female" },
-      { value: "other", label: "Other" },
+      { value: "Male", label: "Male" },
+      { value: "Female", label: "Female" },
+      { value: "Other", label: "Other" },
     ],
   },
   {
