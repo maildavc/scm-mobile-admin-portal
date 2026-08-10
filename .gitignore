@@ -56,4 +56,6 @@ BACKEND_QA_ISSUES.md
 # local test output
 test-results/
 playwright-report/
+sample-table-export.pdf
+sample-table-export.png
 
