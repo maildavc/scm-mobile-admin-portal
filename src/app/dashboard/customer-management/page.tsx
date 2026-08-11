@@ -198,27 +198,38 @@ export default function CustomerManagement() {
                 }}
               />
             ) : viewCustomer ? (
-              isApprover ? (
-                <ViewCustomerRequest
-                  customer={viewCustomer}
-                  onApprove={() => {
-                    setCurrentView("Overview");
-                    setViewCustomer(null);
-                  }}
-                  onReject={() => {
-                    setCurrentView("Overview");
-                    setViewCustomer(null);
-                  }}
-                />
-              ) : (
-                <ViewCustomer
-                  customer={viewCustomer}
-                  onEdit={() => handleEditCustomer(viewCustomer)}
-                  onDeactivate={() => handleDeactivateCustomer(viewCustomer)}
-                  onResendEmail={() => handleResendEmail(viewCustomer)}
-                  onResetPassword={() => handleResetPassword(viewCustomer)}
-                />
-              )
+              (() => {
+                const status = String(viewCustomer.status || "").toLowerCase();
+                const needsApproval =
+                  status === "pending" ||
+                  status === "awaiting approval" ||
+                  status === "awaitingapproval";
+                // Approvers review pending requests; Configuration (email/password reset)
+                // is on ViewCustomer for already-approved customers.
+                const showApprovalView = isApprover && needsApproval;
+
+                return showApprovalView ? (
+                  <ViewCustomerRequest
+                    customer={viewCustomer}
+                    onApprove={() => {
+                      setCurrentView("Overview");
+                      setViewCustomer(null);
+                    }}
+                    onReject={() => {
+                      setCurrentView("Overview");
+                      setViewCustomer(null);
+                    }}
+                  />
+                ) : (
+                  <ViewCustomer
+                    customer={viewCustomer}
+                    onEdit={() => handleEditCustomer(viewCustomer)}
+                    onDeactivate={() => handleDeactivateCustomer(viewCustomer)}
+                    onResendEmail={() => handleResendEmail(viewCustomer)}
+                    onResetPassword={() => handleResetPassword(viewCustomer)}
+                  />
+                );
+              })()
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
                 Unable to display the selected customer view.

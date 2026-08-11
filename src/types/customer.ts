@@ -12,6 +12,8 @@ export interface Customer {
   products?: unknown[];
   tier?: string;
   requestType?: string;
+  /** Backend distinguishes portal users (`user`) from admin-created customers (`customer`). */
+  sourceType?: "user" | "customer" | string;
 }
 
 export interface GetCustomersParams {

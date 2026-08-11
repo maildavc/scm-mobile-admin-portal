@@ -56,12 +56,14 @@ export const customerService = {
   approveRejectCustomer: async (
     customerId: string,
     action: "approve" | "reject",
+    reason?: string,
   ): Promise<SingleCustomerResponse> => {
     const { data } = await apiClient.patch<BackendEnvelope<SingleCustomerResponse>>(
       `/api/v1/customers/${customerId}/approve`,
       {
         customerId,
         action,
+        ...(reason ? { reason } : {}),
       },
     );
     return data.value ?? (data as unknown as SingleCustomerResponse);

@@ -48,8 +48,15 @@ export const useUpdateCustomer = () => {
 export const useApproveRejectCustomer = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ customerId, action }: { customerId: string; action: "approve" | "reject" }) =>
-      customerService.approveRejectCustomer(customerId, action),
+    mutationFn: ({
+      customerId,
+      action,
+      reason,
+    }: {
+      customerId: string;
+      action: "approve" | "reject";
+      reason?: string;
+    }) => customerService.approveRejectCustomer(customerId, action, reason),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["customers"] });
       queryClient.invalidateQueries({

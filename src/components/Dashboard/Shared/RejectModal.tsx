@@ -8,9 +8,10 @@ import TextArea from "@/components/TextArea";
 interface RejectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onReject: (reason: string) => void;
+  onReject: (reason: string) => void | Promise<void>;
   title?: string;
   description?: string;
+  isSubmitting?: boolean;
 }
 
 const RejectModal: React.FC<RejectModalProps> = ({
@@ -19,17 +20,28 @@ const RejectModal: React.FC<RejectModalProps> = ({
   onReject,
   title = "Reject Request?",
   description = "Are you sure you want to reject this request?",
+  isSubmitting = false,
 }) => {
   const [reason, setReason] = useState("");
+  const [isPending, setIsPending] = useState(false);
 
-  const handleReject = () => {
-    if (reason.trim()) {
-      onReject(reason);
+  const busy = isSubmitting || isPending;
+
+  const handleReject = async () => {
+    const trimmed = reason.trim();
+    if (!trimmed || busy) return;
+
+    setIsPending(true);
+    try {
+      await onReject(trimmed);
       setReason("");
+    } finally {
+      setIsPending(false);
     }
   };
 
   const handleClose = () => {
+    if (busy) return;
     setReason("");
     onClose();
   };
@@ -58,15 +70,16 @@ const RejectModal: React.FC<RejectModalProps> = ({
               text="Cancel"
               variant="outline"
               onClick={handleClose}
+              disabled={busy}
               className="bg-[#F4F4F5] font-bold border-none"
             />
           </div>
           <div className="w-40">
             <Button
-              text="Yes, Reject"
+              text={busy ? "Rejecting..." : "Yes, Reject"}
               variant="primary"
               onClick={handleReject}
-              disabled={!reason.trim()}
+              disabled={!reason.trim() || busy}
               className="font-bold bg-[#B2171E]"
             />
           </div>

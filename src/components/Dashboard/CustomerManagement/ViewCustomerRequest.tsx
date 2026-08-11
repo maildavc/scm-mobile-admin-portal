@@ -12,6 +12,7 @@ import DocumentsTab from "./DocumentsTab";
 
 import { Customer } from "@/types/customer";
 import { useApproveRejectCustomer } from "@/hooks/useCustomers";
+import { useToastStore } from "@/stores/toastStore";
 
 interface ViewCustomerRequestProps {
   customer: Customer;
@@ -74,7 +75,14 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
   ];
   const [viewStatus, setViewStatus] = useState<"review" | "success" | "rejected">("review");
 
-  const { mutateAsync: approveRejectCustomer } = useApproveRejectCustomer();
+  const { mutateAsync: approveRejectCustomer, isPending } = useApproveRejectCustomer();
+  const addToast = useToastStore((s) => s.addToast);
+
+  const getErrorMessage = (error: unknown, fallback: string) =>
+    (error as { response?: { data?: { message?: string } }; message?: string })?.response?.data
+      ?.message ||
+    (error as { message?: string })?.message ||
+    fallback;
 
   const handleApproveConfirm = async () => {
     try {
@@ -85,21 +93,22 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
       setIsApproveModalOpen(false);
       setViewStatus("success");
     } catch (error) {
-      console.error("Failed to approve customer", error);
+      addToast(getErrorMessage(error, "Failed to approve customer"), "error");
     }
   };
 
   const handleRejectConfirm = async (reason: string) => {
     try {
-      // The API doesn't currently take a 'reason' for rejection, but we pass the action
       await approveRejectCustomer({
         customerId: customer.id,
         action: "reject",
+        reason,
       });
       setIsRejectModalOpen(false);
       setViewStatus("rejected");
     } catch (error) {
-      console.error("Failed to reject customer", error);
+      addToast(getErrorMessage(error, "Failed to reject customer"), "error");
+      throw error;
     }
   };
 
@@ -166,6 +175,7 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
         onReject={handleRejectConfirm}
         title="Reject Customer?"
         description="Are you sure you want to reject this customer?"
+        isSubmitting={isPending}
       />
 
       {/* Creator Info */}
@@ -249,27 +259,27 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
         {activeTab === "Documents" && <DocumentsTab mode="approval" />}
       </div>
 
-      {/* Footer Actions */}
-      {activeTab !== "Active Products" && (
-        <div className="mt-auto pt-6 flex justify-end gap-3 border-t border-transparent">
-          <div className="w-32">
-            <Button
-              text="Reject Request"
-              variant="outline"
-              onClick={() => setIsRejectModalOpen(true)}
-              className="text-[#B2171E]! text-xs md:text-sm"
-            />
-          </div>
-          <div className="w-40">
-            <Button
-              text="Approve Request"
-              variant="primary"
-              onClick={() => setIsApproveModalOpen(true)}
-              className="text-xs md:text-sm"
-            />
-          </div>
+      {/* Footer Actions — keep visible on all tabs so reject/approve is always reachable */}
+      <div className="mt-auto pt-6 flex justify-end gap-3 border-t border-transparent">
+        <div className="w-32">
+          <Button
+            text="Reject Request"
+            variant="outline"
+            onClick={() => setIsRejectModalOpen(true)}
+            disabled={isPending}
+            className="text-[#B2171E]! text-xs md:text-sm"
+          />
         </div>
-      )}
+        <div className="w-40">
+          <Button
+            text="Approve Request"
+            variant="primary"
+            onClick={() => setIsApproveModalOpen(true)}
+            disabled={isPending}
+            className="text-xs md:text-sm"
+          />
+        </div>
+      </div>
     </div>
   );
 };
