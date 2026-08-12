@@ -192,20 +192,23 @@ export const createCustomerColumns = (
   onDeactivateCustomer?: (customer: Customer) => void,
   isApprover?: boolean,
   onConfigureCustomer?: (customer: Customer) => void,
+  customerCount = 0,
 ): Column<Customer>[] => {
+  const customersHeader = (
+    <div className="flex items-center gap-2">
+      <input
+        type="checkbox"
+        className="rounded border-gray-300"
+        aria-label="Select all customers"
+      />
+      <span className="uppercase text-[#2F3140]">CUSTOMERS ({customerCount})</span>
+    </div>
+  );
+
   if (isApprover) {
     return [
       {
-        header: (
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              className="rounded border-gray-300"
-              aria-label="Select all customers"
-            />
-            <span className="uppercase text-[#2F3140]">CUSTOMERS (5)</span>
-          </div>
-        ),
+        header: customersHeader,
         className: "w-[25%]",
         render: (customer) => (
           <div className="flex items-center gap-3">
@@ -271,7 +274,11 @@ export const createCustomerColumns = (
   }
 
   return [
-    ...customerColumns.slice(0, 4),
+    {
+      ...customerColumns[0],
+      header: customersHeader,
+    },
+    ...customerColumns.slice(1, 4),
     {
       header: (
         <div className="flex items-center gap-1">

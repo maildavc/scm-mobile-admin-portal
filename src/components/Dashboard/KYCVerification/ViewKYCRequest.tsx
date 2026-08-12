@@ -5,6 +5,7 @@ import Button from "@/components/Button";
 import Image from "next/image";
 import ApproveModal from "@/components/Dashboard/Shared/ApproveModal";
 import RejectModal from "@/components/Dashboard/Shared/RejectModal";
+import { StatusBadge, StatusType } from "@/components/Dashboard/StatusBadge";
 import { KYCRequest } from "@/constants/kycVerification/kycVerification";
 import { useCustomerDocuments, useApproveKycDocument, useRejectKycDocument } from "@/hooks/useKyc";
 import { formatDateToMMMdyyyy, formatTimeTohmma } from "@/utils/dateFormatter";
@@ -16,12 +17,26 @@ interface ViewKYCRequestProps {
   onBack: () => void;
 }
 
-const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
-  request,
-  onApprove,
-  onReject,
-  onBack,
-}) => {
+const DetailRow = ({
+  label,
+  value,
+  isLast = false,
+}: {
+  label: string;
+  value: React.ReactNode;
+  isLast?: boolean;
+}) => (
+  <div
+    className={`flex justify-between items-start gap-4 py-2 ${
+      !isLast ? "border-b border-[#F4F4F5]" : ""
+    }`}
+  >
+    <span className="text-sm text-[#2F3140]">{label}</span>
+    <div className="text-sm text-[#707781] font-medium text-right max-w-[65%]">{value}</div>
+  </div>
+);
+
+const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({ request, onApprove, onReject }) => {
   const { data: documents = [], isLoading: isLoadingDocs } = useCustomerDocuments(
     request.customerId,
   );
@@ -33,7 +48,6 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
   const [viewStatus, setViewStatus] = useState<"review" | "success" | "rejected">("review");
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
 
-  // Handle global approval (e.g. from footer buttons or after document check)
   const handleApproveConfirm = () => {
     if (!selectedDocId) return;
     approveDoc(
@@ -60,18 +74,7 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
     );
   };
 
-  // Handle per-document actions
   const handleDocumentAction = (id: string, action: "Approve" | "Reject") => {
-    // For now, let's just update the local state to show interactivity
-    // In a real app, this might trigger the global modal if it's the last document, etc.
-    // The user said "when approve or reject is clicked it shows the modals".
-    // So let's make the document buttons trigger the modals too, or at least a specific document modal.
-    // For simplicity and to match the user's likely intent of "testing the flow",
-    // I'll make ANY approve/reject action trigger the main modal flow for now,
-    // OR just update the status locally.
-
-    // User said: "when approve or reject is clicked it shows the modals and success screen"
-    // This implies a decisive action.
     setSelectedDocId(id);
     if (action === "Approve") {
       setIsApproveModalOpen(true);
@@ -125,31 +128,55 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-full relative">
-      {/* Breadcrumbs and Header are handled by the page wrapper usually, but we need the specific customer name header here if we replace the main content */}
-
+    <div className="flex flex-col gap-6 h-full relative">
       <ApproveModal
         isOpen={isApproveModalOpen}
         onClose={() => setIsApproveModalOpen(false)}
         onApprove={handleApproveConfirm}
-        title={selectedDocId ? "Approve Document?" : "Approve KYC Request?"}
-        description={
-          selectedDocId
-            ? "Are you sure you want to approve this document?"
-            : "Are you sure you want to approve this KYC request?"
-        }
+        title="Approve Document?"
+        description="Are you sure you want to approve this document?"
       />
       <RejectModal
         isOpen={isRejectModalOpen}
         onClose={() => setIsRejectModalOpen(false)}
         onReject={handleRejectConfirm}
-        title={selectedDocId ? "Reject Document?" : "Reject KYC Request?"}
-        description={
-          selectedDocId
-            ? "Are you sure you want to reject this document?"
-            : "Are you sure you want to reject this KYC request?"
-        }
+        title="Reject Document?"
+        description="Are you sure you want to reject this document?"
+        isSubmitting={isRejecting}
       />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg border border-[#F4F4F5] p-6">
+          <h3 className="text-base font-bold text-[#2F3140] mb-4">Request Details</h3>
+          <DetailRow label="Customer" value={request.customer.name} />
+          <DetailRow label="Email" value={request.customer.email} />
+          <DetailRow label="Verification Type" value={request.verificationType} />
+          <DetailRow
+            label="Status"
+            value={<StatusBadge status={(request.status || "Pending Verification") as StatusType} />}
+          />
+          <DetailRow label="Initiated By" value={request.initiatedBy.name} />
+          <DetailRow label="Date Requested" value={request.dateRequested} isLast={!request.reviewedBy && !request.rejectionReason} />
+          {request.reviewedBy ? (
+            <DetailRow
+              label="Reviewed By"
+              value={request.reviewedBy}
+              isLast={!request.rejectionReason}
+            />
+          ) : null}
+          {request.rejectionReason ? (
+            <DetailRow label="Rejection Reason" value={request.rejectionReason} isLast />
+          ) : null}
+        </div>
+
+        <div className="bg-white rounded-lg border border-[#F4F4F5] p-6">
+          <h3 className="text-base font-bold text-[#2F3140] mb-4">Review Tips</h3>
+          <p className="text-sm text-[#707781] leading-6">
+            Open each submitted document, confirm it matches the customer profile, then approve or
+            reject from the documents list. Request-level actions are handled per document.
+          </p>
+        </div>
+      </div>
 
       <div className="bg-white rounded-lg border border-[#F4F4F5] p-6 max-w-4xl w-full">
         <h3 className="text-base font-bold text-[#2F3140] mb-6">KYC Documents</h3>
@@ -158,7 +185,10 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
           {isLoadingDocs ? (
             <p className="text-sm text-gray-500">Loading documents...</p>
           ) : documents.length === 0 ? (
-            <p className="text-sm text-gray-500">No documents found for this customer.</p>
+            <p className="text-sm text-gray-500">
+              No documents found for this customer. Documents will appear here once the customer
+              uploads identity files.
+            </p>
           ) : (
             documents.map((doc) => {
               const isPending = doc.status === "Pending";

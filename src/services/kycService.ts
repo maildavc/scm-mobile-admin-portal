@@ -68,9 +68,14 @@ type BackendEnvelope<T> = {
 
 export const kycService = {
   getPendingKycRequests: async (): Promise<KYCRequestDto[]> => {
-    // Note: If pagination is added to this endpoint later, parameters map here.
-    const { data } = await apiClient.get<BackendEnvelope<KYCRequestDto[]>>("/api/v1/kyc/requests");
-    return data.value ?? (data as unknown as KYCRequestDto[]);
+    const { data } = await apiClient.get<
+      BackendEnvelope<KYCRequestDto[] | { data?: KYCRequestDto[]; totalCount?: number }>
+    >("/api/v1/kyc/requests");
+
+    const payload = data.value ?? (data as unknown as KYCRequestDto[] | { data?: KYCRequestDto[] });
+    if (Array.isArray(payload)) return payload;
+    if (payload && Array.isArray(payload.data)) return payload.data;
+    return [];
   },
 
   getCustomerDocuments: async (customerId: string): Promise<CustomerDocumentDto[]> => {

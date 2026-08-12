@@ -26,22 +26,41 @@ import {
 } from "@/hooks/useCustomers";
 import { useToastStore } from "@/stores/toastStore";
 
+const normalizeStatus = (value?: string | null) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, "");
+
+const getCustomerTimestamp = (customer: Customer) => {
+  const raw = customer.updatedAt || customer.createdAt || "";
+  const time = Date.parse(raw);
+  return Number.isNaN(time) ? 0 : time;
+};
+
+const sortCustomersNewestFirst = (customers: Customer[]) =>
+  [...customers].sort((a, b) => getCustomerTimestamp(b) - getCustomerTimestamp(a));
+
 export default function CustomerManagement() {
   const [currentView, setCurrentView] = useState("Overview");
   const [editCustomer, setEditCustomer] = useState<Customer | null>(null);
   const [viewCustomer, setViewCustomer] = useState<Customer | null>(null);
   const [viewInitialTab, setViewInitialTab] = useState("Customer Info");
-  const [page, setPage] = useState(1);
   const isApprover = useAuthStore((s) => s.isApprover);
   const addToast = useToastStore((s) => s.addToast);
   const deactivateCustomer = useDeactivateCustomer();
   const resendEmail = useResendCustomerEmailVerification();
   const resetPassword = useResetCustomerPassword();
 
+  // Load the full customer list so table pagination (10/20/…) works over every record.
+  // The table itself handles page size / page number client-side.
   const { data: customersData, isLoading } = useGetCustomers({
-    page,
-    limit: PAGE_CONFIG.itemsPerPage,
+    page: 1,
+    limit: 1000,
   });
+
+  const customers = sortCustomersNewestFirst(customersData?.data || []);
+  const customerCount = customersData?.totalCount ?? customers.length;
 
   // Sidebar Logic
   const allSidebarItems = CUSTOMER_MANAGEMENT_SIDEBAR_ITEMS.map((item) => ({
@@ -140,6 +159,7 @@ export default function CustomerManagement() {
     handleDeactivateCustomer,
     isApprover,
     handleConfigureCustomer,
+    customerCount,
   );
 
   const breadcrumbs = getBreadcrumbs(viewCustomer ? viewCustomer.name : currentView).map(
@@ -166,18 +186,24 @@ export default function CustomerManagement() {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-10">
                   {STATS_CONFIG.map((stat) => {
                     let value = "0";
-                    if (customersData?.data) {
+                    if (customers.length > 0) {
                       if (stat.label === "Active Customers") {
-                        value = customersData.data
-                          .filter((c) => c.status === "Active")
+                        value = customers
+                          .filter((c) => normalizeStatus(c.status) === "active")
                           .length.toString();
                       } else if (stat.label === "Inactive Customers") {
-                        value = customersData.data
-                          .filter((c) => c.status === "Deactivated")
+                        value = customers
+                          .filter((c) =>
+                            ["inactive", "deactivated"].includes(normalizeStatus(c.status)),
+                          )
                           .length.toString();
                       } else if (stat.label === "Customers with Pending KYC") {
-                        value = customersData.data
-                          .filter((c) => c.kycStatus === "Awaiting Approval")
+                        value = customers
+                          .filter((c) => {
+                            const kyc = normalizeStatus(c.kycStatus);
+                            // API often omits kycStatus; table treats that as Pending.
+                            return !kyc || ["pending", "awaitingapproval"].includes(kyc);
+                          })
                           .length.toString();
                       }
                     }
@@ -192,7 +218,7 @@ export default function CustomerManagement() {
                 </div>
 
                 <Table
-                  data={customersData?.data || []}
+                  data={customers}
                   columns={columns}
                   itemsPerPage={PAGE_CONFIG.itemsPerPage}
                   isLoading={isLoading}

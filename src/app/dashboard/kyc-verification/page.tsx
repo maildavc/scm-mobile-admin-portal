@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Sidebar, { SidebarProvider } from "@/components/Dashboard/Sidebar";
 import PageHeader from "@/components/Dashboard/PageHeader";
 import Table from "@/components/Dashboard/Table";
@@ -14,15 +14,26 @@ import {
   KYCRequest,
 } from "@/constants/kycVerification/kycVerification";
 import { createColumns } from "./columns";
-import { useAuthStore } from "@/stores/authStore";
 import ViewKYCRequest from "@/components/Dashboard/KYCVerification/ViewKYCRequest";
 import { useKycRequests } from "@/hooks/useKyc";
 import { formatDateToMMMdyyyy } from "@/utils/dateFormatter";
 
+const normalizeStatus = (value?: string | null) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, "");
+
+const mapKycStatus = (statusName?: string) => {
+  const normalized = normalizeStatus(statusName);
+  if (!normalized || normalized === "pending") return "Pending Verification";
+  if (normalized === "approved" || normalized === "completed") return "Approved";
+  if (normalized === "rejected" || normalized === "failed") return "Rejected";
+  return statusName || "Pending Verification";
+};
+
 const KYCVerificationPage = () => {
   const [viewRequest, setViewRequest] = useState<KYCRequest | null>(null);
-  const isApprover = useAuthStore((s) => s.isApprover);
-
   const { data: rawRequests, isLoading } = useKycRequests();
 
   const handleViewRequest = (request: KYCRequest) => {
@@ -33,9 +44,48 @@ const KYCVerificationPage = () => {
     setViewRequest(null);
   };
 
-  const columns = createColumns(isApprover, handleViewRequest);
+  const mappedData: KYCRequest[] = useMemo(() => {
+    if (!rawRequests) return [];
+    return rawRequests.map((req) => ({
+      id: req.id,
+      customerId: req.customerId || "",
+      customer: {
+        name: req.customer?.fullName || "Unknown Customer",
+        email: req.customer?.email || "No Email",
+      },
+      verificationType: req.levelName || req.typeName || "KYC Verification",
+      status: mapKycStatus(req.statusName),
+      initiatedBy: {
+        name: req.createdBy || req.customer?.fullName || "System",
+        email: req.customer?.email || "",
+      },
+      dateRequested: formatDateToMMMdyyyy(req.submittedAt || req.createdAt),
+      reviewedBy: req.reviewerName || req.reviewedBy,
+      rejectionReason: req.rejectionReason,
+    }));
+  }, [rawRequests]);
 
-  // Create a mutable copy of breadcrumbs with proper type
+  const columns = createColumns(handleViewRequest, mappedData.length);
+
+  const stats = useMemo(() => {
+    const approved = mappedData.filter((r) =>
+      ["approved", "completed"].includes(normalizeStatus(r.status)),
+    ).length;
+    const awaiting = mappedData.filter((r) => {
+      const status = normalizeStatus(r.status);
+      return status.includes("pending") || status.includes("awaiting");
+    }).length;
+    const rejected = mappedData.filter((r) =>
+      ["rejected", "failed"].includes(normalizeStatus(r.status)),
+    ).length;
+
+    return {
+      "Approved KYC": String(approved),
+      "Awaiting Approval": String(awaiting),
+      "Rejected KYC": String(rejected),
+    } as Record<string, string>;
+  }, [mappedData]);
+
   const breadcrumbs: {
     label: string;
     href?: string;
@@ -46,7 +96,6 @@ const KYCVerificationPage = () => {
   if (viewRequest) {
     const kycCrumbIndex = breadcrumbs.findIndex((b) => b.label === "KYC Verification");
     if (kycCrumbIndex !== -1) {
-      // Remove href and add onClick
       breadcrumbs[kycCrumbIndex] = {
         ...breadcrumbs[kycCrumbIndex],
         href: undefined,
@@ -59,32 +108,6 @@ const KYCVerificationPage = () => {
       active: true,
     });
   }
-
-  // Map API structure to UI structure
-  const mappedData: KYCRequest[] = React.useMemo(() => {
-    if (!rawRequests) return [];
-    return rawRequests.map((req) => {
-      // Map API status to StatusBadge supported strings
-      let statusStr = req.statusName;
-      if (statusStr === "Pending") statusStr = "Pending Verification";
-
-      return {
-        id: req.id,
-        customerId: req.customerId || "",
-        customer: {
-          name: req.customer?.fullName || "Unknown Customer",
-          email: req.customer?.email || "No Email",
-        },
-        verificationType: req.levelName || req.typeName || "KYC Verification",
-        status: statusStr as KYCRequest["status"],
-        initiatedBy: {
-          name: req.createdBy || req.customer?.fullName || "System",
-          email: req.customer?.email || "",
-        },
-        dateRequested: formatDateToMMMdyyyy(req.submittedAt || req.createdAt),
-      };
-    });
-  }, [rawRequests]);
 
   return (
     <SidebarProvider>
@@ -110,33 +133,28 @@ const KYCVerificationPage = () => {
               />
             ) : (
               <div className="flex flex-col gap-6">
-                {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {STATS_CONFIG.map((stat) => (
                     <StatsCard
                       key={stat.label}
                       label={stat.label}
-                      value={stat.value}
+                      value={stats[stat.label] || "0"}
                       showLink={false}
                     />
                   ))}
                 </div>
 
-                {/* Action Buttons */}
                 <div className="flex flex-col md:flex-row gap-4">
                   <ActionButton label="Download Table as PDF" actionText="Download" fullWidth />
                   <ActionButton label="Export Table as CSV" actionText="Export" fullWidth />
                 </div>
 
-                {/* Table */}
-                <div>
-                  <Table
-                    data={mappedData}
-                    columns={columns}
-                    itemsPerPage={PAGE_CONFIG.itemsPerPage}
-                    isLoading={isLoading}
-                  />
-                </div>
+                <Table
+                  data={mappedData}
+                  columns={columns}
+                  itemsPerPage={PAGE_CONFIG.itemsPerPage}
+                  isLoading={isLoading}
+                />
               </div>
             )}
           </main>

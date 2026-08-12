@@ -1,5 +1,6 @@
 import { SidebarMenuItem } from "@/components/Dashboard/Sidebar";
 import { FiHome } from "react-icons/fi";
+import { StatusType } from "@/components/Dashboard/StatusBadge";
 
 export const KYC_SIDEBAR_ITEMS: SidebarMenuItem[] = [
   {
@@ -11,18 +12,9 @@ export const KYC_SIDEBAR_ITEMS: SidebarMenuItem[] = [
 ];
 
 export const STATS_CONFIG = [
-  {
-    label: "Approved KYC",
-    value: "20",
-  },
-  {
-    label: "Awaiting Approval",
-    value: "20",
-  },
-  {
-    label: "Rejected KYC",
-    value: "20",
-  },
+  { label: "Approved KYC" },
+  { label: "Awaiting Approval" },
+  { label: "Rejected KYC" },
 ];
 
 export const PAGE_CONFIG = {
@@ -38,166 +30,15 @@ export type KYCRequest = {
     email: string;
   };
   verificationType: string;
-  status: "Completed" | "Pending Verification" | "Failed";
+  status: StatusType | string;
   initiatedBy: {
     name: string;
     email: string;
   };
   dateRequested: string;
+  reviewedBy?: string;
+  rejectionReason?: string;
 };
-
-export const MOCK_DATA: KYCRequest[] = [
-  {
-    id: "1",
-    customerId: "mock-1",
-    customer: {
-      name: "Ayodeji Olawole",
-      email: "user@scmcapital.com",
-    },
-    verificationType: "Identity Verification",
-    status: "Completed",
-    initiatedBy: {
-      name: "Admin Ehizojie",
-      email: "ehizojie@scmcapital.com",
-    },
-    dateRequested: "28/12/2025 13:32",
-  },
-  {
-    id: "2",
-    customerId: "mock-2",
-    customer: {
-      name: "Ayodeji Olawole",
-      email: "user@scmcapital.com",
-    },
-    verificationType: "ID Verification",
-    status: "Completed",
-    initiatedBy: {
-      name: "Admin Ehizojie",
-      email: "ehizojie@scmcapital.com",
-    },
-    dateRequested: "28/12/2025 13:32",
-  },
-  {
-    id: "3",
-    customerId: "mock-3",
-    customer: {
-      name: "Ayodeji Olawole",
-      email: "user@scmcapital.com",
-    },
-    verificationType: "BVN Validation",
-    status: "Pending Verification",
-    initiatedBy: {
-      name: "Admin Ehizojie",
-      email: "ehizojie@scmcapital.com",
-    },
-    dateRequested: "28/12/2025 13:32",
-  },
-  {
-    id: "4",
-    customerId: "mock-4",
-    customer: {
-      name: "Ayodeji Olawole",
-      email: "user@scmcapital.com",
-    },
-    verificationType: "Address Verification",
-    status: "Completed",
-    initiatedBy: {
-      name: "Admin Ehizojie",
-      email: "ehizojie@scmcapital.com",
-    },
-    dateRequested: "28/12/2025 13:32",
-  },
-  {
-    id: "5",
-    customerId: "mock-5",
-    customer: {
-      name: "Ayodeji Olawole",
-      email: "user@scmcapital.com",
-    },
-    verificationType: "Signature Capture",
-    status: "Failed",
-    initiatedBy: {
-      name: "Admin Ehizojie",
-      email: "ehizojie@scmcapital.com",
-    },
-    dateRequested: "28/12/2025 13:32",
-  },
-  {
-    id: "6",
-    customerId: "mock-6",
-    customer: {
-      name: "Ayodeji Olawole",
-      email: "user@scmcapital.com",
-    },
-    verificationType: "Next of Kin",
-    status: "Completed",
-    initiatedBy: {
-      name: "Admin Ehizojie",
-      email: "ehizojie@scmcapital.com",
-    },
-    dateRequested: "28/12/2025 13:32",
-  },
-  {
-    id: "7",
-    customerId: "mock-7",
-    customer: {
-      name: "Ayodeji Olawole",
-      email: "user@scmcapital.com",
-    },
-    verificationType: "Identity Verification",
-    status: "Pending Verification",
-    initiatedBy: {
-      name: "Admin Ehizojie",
-      email: "ehizojie@scmcapital.com",
-    },
-    dateRequested: "28/12/2025 13:32",
-  },
-  {
-    id: "8",
-    customerId: "mock-8",
-    customer: {
-      name: "Ayodeji Olawole",
-      email: "user@scmcapital.com",
-    },
-    verificationType: "ID Verification",
-    status: "Pending Verification",
-    initiatedBy: {
-      name: "Admin Ehizojie",
-      email: "ehizojie@scmcapital.com",
-    },
-    dateRequested: "28/12/2025 13:32",
-  },
-  {
-    id: "9",
-    customerId: "mock-9",
-    customer: {
-      name: "Ayodeji Olawole",
-      email: "user@scmcapital.com",
-    },
-    verificationType: "ID Verification",
-    status: "Failed",
-    initiatedBy: {
-      name: "Admin Ehizojie",
-      email: "ehizojie@scmcapital.com",
-    },
-    dateRequested: "28/12/2025 13:32",
-  },
-  {
-    id: "10",
-    customerId: "mock-10",
-    customer: {
-      name: "Ayodeji Olawole",
-      email: "user@scmcapital.com",
-    },
-    verificationType: "Identity Verification",
-    status: "Failed",
-    initiatedBy: {
-      name: "Admin Ehizojie",
-      email: "ehizojie@scmcapital.com",
-    },
-    dateRequested: "28/12/2025 13:32",
-  },
-];
 
 export const getBreadcrumbs = () => [
   { label: "Dashboard", href: "/dashboard" },
