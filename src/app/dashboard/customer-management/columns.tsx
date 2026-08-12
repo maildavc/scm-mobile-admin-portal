@@ -4,10 +4,11 @@ import { Column } from "@/components/Dashboard/Table";
 import { StatusBadge, StatusType } from "@/components/Dashboard/StatusBadge";
 import { TbFilterEdit } from "react-icons/tb";
 import { HiMenu } from "react-icons/hi";
-import { FiEye, FiEdit3, FiUser, FiCheck, FiTrash2, FiBox } from "react-icons/fi";
+import { FiEye, FiEdit3, FiUser, FiCheck, FiTrash2, FiBox, FiSettings } from "react-icons/fi";
 import { useState, useRef, useEffect } from "react";
 
 import { Customer } from "@/types/customer";
+import { canManageCustomerConfiguration } from "@/utils/customerAccess";
 
 const FilterableHeader = ({ children }: { children: string }) => (
   <div className="flex text-xs text-[#2F3140] items-center gap-2">
@@ -21,12 +22,14 @@ const OptionsButton = ({
   onEditCustomer,
   onViewCustomer,
   onDeactivateCustomer,
+  onConfigureCustomer,
   isApprover,
 }: {
   customer: Customer;
   onEditCustomer?: (customer: Customer) => void;
   onViewCustomer?: (customer: Customer) => void;
   onDeactivateCustomer?: (customer: Customer) => void;
+  onConfigureCustomer?: (customer: Customer) => void;
   isApprover?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -48,17 +51,21 @@ const OptionsButton = ({
     };
   }, [isOpen]);
 
+  const showConfiguration = canManageCustomerConfiguration(customer.status);
+
   const approverMenuItems = [
     { icon: FiEye, label: "View Request" },
     { icon: FiCheck, label: "Approve Request" },
     { icon: FiTrash2, label: "Reject Request" },
+    ...(showConfiguration ? [{ icon: FiSettings, label: "Configuration" }] : []),
   ];
 
   const initiatorMenuItems = [
     { icon: FiEye, label: "View Customer" },
     { icon: FiEdit3, label: "Edit Customer" },
     { icon: FiBox, label: "Assign Product" },
-    { icon: FiTrash2, label: "Deactivate Customer" },
+    ...(showConfiguration ? [{ icon: FiSettings, label: "Configuration" }] : []),
+    ...(showConfiguration ? [{ icon: FiTrash2, label: "Deactivate Customer" }] : []),
   ];
 
   const menuItems = isApprover ? approverMenuItems : initiatorMenuItems;
@@ -86,6 +93,8 @@ const OptionsButton = ({
                     onEditCustomer(customer);
                   } else if (item.label === "Deactivate Customer" && onDeactivateCustomer) {
                     onDeactivateCustomer(customer);
+                  } else if (item.label === "Configuration" && onConfigureCustomer) {
+                    onConfigureCustomer(customer);
                   } else if (
                     (item.label === "View Customer" ||
                       item.label === "View Request" ||
@@ -182,6 +191,7 @@ export const createCustomerColumns = (
   onViewCustomer?: (customer: Customer) => void,
   onDeactivateCustomer?: (customer: Customer) => void,
   isApprover?: boolean,
+  onConfigureCustomer?: (customer: Customer) => void,
 ): Column<Customer>[] => {
   if (isApprover) {
     return [
@@ -252,6 +262,7 @@ export const createCustomerColumns = (
             onEditCustomer={onEditCustomer}
             onViewCustomer={onViewCustomer}
             onDeactivateCustomer={onDeactivateCustomer}
+            onConfigureCustomer={onConfigureCustomer}
             isApprover={isApprover}
           />
         ),
@@ -274,6 +285,7 @@ export const createCustomerColumns = (
           onEditCustomer={onEditCustomer}
           onViewCustomer={onViewCustomer}
           onDeactivateCustomer={onDeactivateCustomer}
+          onConfigureCustomer={onConfigureCustomer}
         />
       ),
     },

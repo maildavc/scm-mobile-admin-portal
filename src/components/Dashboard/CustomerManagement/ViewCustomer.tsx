@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Tabs from "@/components/Dashboard/Tabs";
 import CustomerInfoTab from "./CustomerInfoTab";
 import ConfigurationTab from "./ConfigurationTab";
@@ -10,6 +10,7 @@ import ActiveProductsTab from "./ActiveProductsTab";
 import ActivityLogTab from "./ActivityLogTab";
 
 import { Customer } from "@/types/customer";
+import { canManageCustomerConfiguration } from "@/utils/customerAccess";
 
 interface ViewCustomerProps {
   customer: Customer;
@@ -17,6 +18,7 @@ interface ViewCustomerProps {
   onDeactivate?: () => void;
   onResendEmail?: () => void;
   onResetPassword?: () => void;
+  initialTab?: string;
 }
 
 const ViewCustomer: React.FC<ViewCustomerProps> = ({
@@ -25,8 +27,18 @@ const ViewCustomer: React.FC<ViewCustomerProps> = ({
   onDeactivate,
   onResendEmail,
   onResetPassword,
+  initialTab = "Customer Info",
 }) => {
-  const [activeTab, setActiveTab] = useState("Customer Info");
+  const showConfiguration = canManageCustomerConfiguration(customer.status);
+  const resolvedInitialTab =
+    initialTab === "Configuration" && !showConfiguration ? "Customer Info" : initialTab;
+  const [activeTab, setActiveTab] = useState(resolvedInitialTab);
+
+  useEffect(() => {
+    if (!showConfiguration && activeTab === "Configuration") {
+      setActiveTab("Customer Info");
+    }
+  }, [showConfiguration, activeTab]);
 
   const tabs = [
     "Customer Info",
@@ -34,19 +46,22 @@ const ViewCustomer: React.FC<ViewCustomerProps> = ({
     "Payments & Cards",
     "Documents",
     "Activity Log",
-    "Configuration",
+    ...(showConfiguration ? ["Configuration"] : []),
   ];
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Tabs */}
       <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
       {activeTab === "Customer Info" ? (
-        <CustomerInfoTab customer={customer} onEdit={onEdit} onDeactivate={onDeactivate} />
+        <CustomerInfoTab
+          customer={customer}
+          onEdit={onEdit}
+          onDeactivate={showConfiguration ? onDeactivate : undefined}
+        />
       ) : activeTab === "Active Products" ? (
         <ActiveProductsTab />
-      ) : activeTab === "Configuration" ? (
+      ) : activeTab === "Configuration" && showConfiguration ? (
         <ConfigurationTab
           onDeactivate={onDeactivate}
           onResendEmail={onResendEmail}

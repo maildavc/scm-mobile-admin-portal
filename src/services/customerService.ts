@@ -72,6 +72,7 @@ export const customerService = {
   resendEmailVerification: async (customerId: string): Promise<SimpleActionResponse> => {
     const { data } = await apiClient.post<BackendEnvelope<SimpleActionResponse>>(
       `/api/v1/customers/${customerId}/resend-email-verification`,
+      {},
     );
     return data.value ?? (data as unknown as SimpleActionResponse);
   },
@@ -79,6 +80,7 @@ export const customerService = {
   resetCustomerPassword: async (customerId: string): Promise<SimpleActionResponse> => {
     const { data } = await apiClient.post<BackendEnvelope<SimpleActionResponse>>(
       `/api/v1/customers/${customerId}/reset-password`,
+      {},
     );
     return data.value ?? (data as unknown as SimpleActionResponse);
   },

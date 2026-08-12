@@ -223,16 +223,19 @@ export const getBreadcrumbs = (activeItem?: string) => [
 
 export const CONFIG_OPTIONS = [
   {
+    key: "email" as const,
     title: "Email address",
     description: "Initiate a change or reset customer email address",
-    buttonText: "Resend email Verification",
+    buttonText: "Reset Customer Email",
   },
   {
+    key: "password" as const,
     title: "Password",
     description: "Initiate a change or reset customer password",
-    buttonText: "Resend Password",
+    buttonText: "Reset Customer Password",
   },
   {
+    key: "deactivate" as const,
     title: "Profile Deactivation",
     description: "Delete or deactivate customer profile",
     buttonText: "Deactivate User",

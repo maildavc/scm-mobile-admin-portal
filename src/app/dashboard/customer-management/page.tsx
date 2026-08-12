@@ -30,6 +30,7 @@ export default function CustomerManagement() {
   const [currentView, setCurrentView] = useState("Overview");
   const [editCustomer, setEditCustomer] = useState<Customer | null>(null);
   const [viewCustomer, setViewCustomer] = useState<Customer | null>(null);
+  const [viewInitialTab, setViewInitialTab] = useState("Customer Info");
   const [page, setPage] = useState(1);
   const isApprover = useAuthStore((s) => s.isApprover);
   const addToast = useToastStore((s) => s.addToast);
@@ -67,6 +68,14 @@ export default function CustomerManagement() {
   const handleViewCustomer = (customer: Customer) => {
     setViewCustomer(customer);
     setEditCustomer(null);
+    setViewInitialTab("Customer Info");
+    setCurrentView(customer.name);
+  };
+
+  const handleConfigureCustomer = (customer: Customer) => {
+    setViewCustomer(customer);
+    setEditCustomer(null);
+    setViewInitialTab("Configuration");
     setCurrentView(customer.name);
   };
 
@@ -74,6 +83,7 @@ export default function CustomerManagement() {
     setCurrentView("Overview");
     setEditCustomer(null);
     setViewCustomer(null);
+    setViewInitialTab("Customer Info");
   };
 
   const handleDeactivateCustomer = async (customer: Customer) => {
@@ -97,21 +107,22 @@ export default function CustomerManagement() {
   const handleResendEmail = async (customer: Customer) => {
     try {
       await resendEmail.mutateAsync(customer.id);
-      addToast("Email verification resent successfully", "success");
+      addToast("Customer email reset initiated successfully", "success");
     } catch (error: unknown) {
       const message =
         (error as { response?: { data?: { message?: string } }; message?: string })?.response?.data
           ?.message ||
         (error as { message?: string })?.message ||
-        "Failed to resend email verification";
+        "Failed to reset customer email";
       addToast(message, "error");
+      throw error;
     }
   };
 
   const handleResetPassword = async (customer: Customer) => {
     try {
       await resetPassword.mutateAsync(customer.id);
-      addToast("Password reset initiated successfully", "success");
+      addToast("Customer password reset initiated successfully", "success");
     } catch (error: unknown) {
       const message =
         (error as { response?: { data?: { message?: string } }; message?: string })?.response?.data
@@ -119,6 +130,7 @@ export default function CustomerManagement() {
         (error as { message?: string })?.message ||
         "Failed to reset customer password";
       addToast(message, "error");
+      throw error;
     }
   };
 
@@ -127,6 +139,7 @@ export default function CustomerManagement() {
     handleViewCustomer,
     handleDeactivateCustomer,
     isApprover,
+    handleConfigureCustomer,
   );
 
   const breadcrumbs = getBreadcrumbs(viewCustomer ? viewCustomer.name : currentView).map(
@@ -222,7 +235,9 @@ export default function CustomerManagement() {
                   />
                 ) : (
                   <ViewCustomer
+                    key={`${viewCustomer.id}-${viewInitialTab}`}
                     customer={viewCustomer}
+                    initialTab={viewInitialTab}
                     onEdit={() => handleEditCustomer(viewCustomer)}
                     onDeactivate={() => handleDeactivateCustomer(viewCustomer)}
                     onResendEmail={() => handleResendEmail(viewCustomer)}

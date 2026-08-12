@@ -7,7 +7,7 @@ export default function Toast() {
   const { toasts, removeToast } = useToastStore();
 
   return (
-    <div className="fixed top-20 left-[35%] -translate-x-1/2 z-9999 flex flex-col items-center gap-3 pointer-events-none">
+    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-9999 flex flex-col items-center gap-3 pointer-events-none w-[min(90vw,28rem)]">
       {toasts.map((toast) => (
         <ToastItem
           key={toast.id}

@@ -96,14 +96,16 @@ const CustomerInfoTab: React.FC<CustomerInfoTabProps> = ({ customer, onEdit, onD
 
       {/* Action Buttons */}
       <div className="flex justify-end gap-4 mt-8 pt-6">
-        <div className="w-48">
-          <Button
-            text="Deactivate Customer"
-            className="text-xs lg:text-sm"
-            variant="outline"
-            onClick={onDeactivate}
-          />
-        </div>
+        {onDeactivate ? (
+          <div className="w-48">
+            <Button
+              text="Deactivate Customer"
+              className="text-xs lg:text-sm"
+              variant="outline"
+              onClick={onDeactivate}
+            />
+          </div>
+        ) : null}
         <div className="w-48">
           <Button
             className="text-xs lg:text-sm"
