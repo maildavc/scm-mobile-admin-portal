@@ -75,7 +75,7 @@ export const createColumns = (
       header: (
         <div className="flex items-center gap-2">
           <input type="checkbox" className="rounded border-gray-300" aria-label="Select all" />
-          <span className="uppercase text-[#2F3140]">CUSTOMER ({requestCount})</span>
+          <span className="uppercase text-[#2F3140]">KYC REQUESTS ({requestCount})</span>
         </div>
       ),
       className: "w-[25%]",

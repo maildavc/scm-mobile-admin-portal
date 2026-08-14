@@ -13,6 +13,7 @@ import DocumentsTab from "./DocumentsTab";
 import { Customer } from "@/types/customer";
 import { useApproveRejectCustomer } from "@/hooks/useCustomers";
 import { useToastStore } from "@/stores/toastStore";
+import { formatDateTimeDdMmYyyy } from "@/utils/dateFormatter";
 
 interface ViewCustomerRequestProps {
   customer: Customer;
@@ -54,23 +55,11 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
     { label: "Tier", value: customer.tier || "—" },
     {
       label: "Date Registered",
-      value: customer.createdAt
-        ? new Date(customer.createdAt).toLocaleDateString("en-GB", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })
-        : "—",
+      value: formatDateTimeDdMmYyyy(customer.createdAt),
     },
     {
       label: "Last Updated",
-      value: customer.updatedAt
-        ? new Date(customer.updatedAt).toLocaleDateString("en-GB", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })
-        : "—",
+      value: formatDateTimeDdMmYyyy(customer.updatedAt || customer.createdAt),
     },
   ];
   const [viewStatus, setViewStatus] = useState<"review" | "success" | "rejected">("review");
@@ -233,8 +222,8 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
                 <div className="flex justify-between items-center py-2">
                   <span className="text-sm text-[#2F3140]">KYC Status</span>
                   <StatusBadge
-                    status={(customer.kycStatus || "Pending") as StatusType}
-                    displayLabel={!customer.kycStatus ? "Pending" : undefined}
+                    status={(customer.kycStatus || "Inactive") as StatusType}
+                    displayLabel={customer.kycStatus || "Not Submitted"}
                   />
                 </div>
               </div>

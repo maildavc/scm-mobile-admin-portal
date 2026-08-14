@@ -9,6 +9,7 @@ import { useState, useRef, useEffect } from "react";
 
 import { Customer } from "@/types/customer";
 import { canManageCustomerConfiguration } from "@/utils/customerAccess";
+import { formatDateTimeDdMmYyyy } from "@/utils/dateFormatter";
 
 const FilterableHeader = ({ children }: { children: string }) => (
   <div className="flex text-xs text-[#2F3140] items-center gap-2">
@@ -161,8 +162,8 @@ export const customerColumns: Column<Customer>[] = [
     className: "w-[20%]",
     render: (customer) => (
       <StatusBadge
-        status={(customer.kycStatus || "Pending") as StatusType}
-        displayLabel={!customer.kycStatus ? "Pending" : undefined}
+        status={(customer.kycStatus || "Inactive") as StatusType}
+        displayLabel={customer.kycStatus || "Not Submitted"}
       />
     ),
   },
@@ -171,7 +172,7 @@ export const customerColumns: Column<Customer>[] = [
     className: "w-[20%]",
     render: (customer) => (
       <span className="text-sm text-[#2F3140] font-medium">
-        {customer.updatedAt || customer.createdAt}
+        {formatDateTimeDdMmYyyy(customer.updatedAt || customer.createdAt)}
       </span>
     ),
   },
@@ -248,7 +249,7 @@ export const createCustomerColumns = (
         className: "w-[20%]",
         render: (customer) => (
           <span className="text-sm text-[#2F3140] font-medium">
-            {customer.updatedAt || customer.createdAt}
+            {formatDateTimeDdMmYyyy(customer.updatedAt || customer.createdAt)}
           </span>
         ),
       },

@@ -5,6 +5,7 @@ import Button from "@/components/Button";
 import { StatusBadge, StatusType } from "@/components/Dashboard/StatusBadge";
 import { BiUser } from "react-icons/bi";
 import { Customer } from "@/types/customer";
+import { formatDateTimeDdMmYyyy } from "@/utils/dateFormatter";
 
 interface CustomerInfoTabProps {
   customer: Customer;
@@ -20,23 +21,11 @@ const CustomerInfoTab: React.FC<CustomerInfoTabProps> = ({ customer, onEdit, onD
     { label: "Tier", value: customer.tier || "—" },
     {
       label: "Date Registered",
-      value: customer.createdAt
-        ? new Date(customer.createdAt).toLocaleDateString("en-GB", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })
-        : "—",
+      value: formatDateTimeDdMmYyyy(customer.createdAt),
     },
     {
       label: "Last Updated",
-      value: customer.updatedAt
-        ? new Date(customer.updatedAt).toLocaleDateString("en-GB", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })
-        : "—",
+      value: formatDateTimeDdMmYyyy(customer.updatedAt || customer.createdAt),
     },
   ];
 
@@ -75,8 +64,8 @@ const CustomerInfoTab: React.FC<CustomerInfoTabProps> = ({ customer, onEdit, onD
             <div className="flex justify-between items-center py-2">
               <span className="text-sm text-[#2F3140]">KYC Status</span>
               <StatusBadge
-                status={(customer.kycStatus || "Pending") as StatusType}
-                displayLabel={!customer.kycStatus ? "Pending" : undefined}
+                status={(customer.kycStatus || "Inactive") as StatusType}
+                displayLabel={customer.kycStatus || "Not Submitted"}
               />
             </div>
           </div>

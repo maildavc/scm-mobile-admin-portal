@@ -6,6 +6,8 @@ import { TbFilterEdit } from "react-icons/tb";
 import { HiMenu } from "react-icons/hi";
 import { FiEye, FiEdit3, FiCheck, FiTrash2, FiX } from "react-icons/fi";
 import { useState, useRef, useEffect } from "react";
+import { formatDateTimeDdMmYyyy } from "@/utils/dateFormatter";
+import { formatCompactAmount } from "@/utils/numberFormat";
 
 type Product = {
   id: string;
@@ -145,7 +147,9 @@ export const productColumns: Column<Product>[] = [
   {
     header: <FilterableHeader>PORTFOLIO SIZE</FilterableHeader>,
     className: "w-[15%]",
-    render: (product) => <span className="text-sm text-[#2F3140] font-bold">{product.size}</span>,
+    render: (product) => (
+      <span className="text-sm text-[#2F3140] font-bold">{formatCompactAmount(product.size)}</span>
+    ),
   },
   {
     header: <FilterableHeader>STATUS</FilterableHeader>,
@@ -156,7 +160,9 @@ export const productColumns: Column<Product>[] = [
     header: <FilterableHeader>LAST UPDATED ON</FilterableHeader>,
     className: "w-[15%]",
     render: (product) => (
-      <span className="text-sm text-[#2F3140] font-medium">{product.updated}</span>
+      <span className="text-sm text-[#2F3140] font-medium">
+        {formatDateTimeDdMmYyyy(product.updated)}
+      </span>
     ),
   },
   {
@@ -204,7 +210,9 @@ export const createProductColumns = (
   {
     header: <FilterableHeader>PORTFOLIO SIZE</FilterableHeader>,
     className: "w-[15%]",
-    render: (product) => <span className="text-sm text-[#2F3140] font-bold">{product.size}</span>,
+    render: (product) => (
+      <span className="text-sm text-[#2F3140] font-bold">{formatCompactAmount(product.size)}</span>
+    ),
   },
   {
     header: <FilterableHeader>STATUS</FilterableHeader>,
@@ -220,7 +228,9 @@ export const createProductColumns = (
     header: <FilterableHeader>LAST UPDATED ON</FilterableHeader>,
     className: "w-[15%]",
     render: (product) => (
-      <span className="text-sm text-[#2F3140] font-medium">{product.updated}</span>
+      <span className="text-sm text-[#2F3140] font-medium">
+        {formatDateTimeDdMmYyyy(product.updated)}
+      </span>
     ),
   },
   {

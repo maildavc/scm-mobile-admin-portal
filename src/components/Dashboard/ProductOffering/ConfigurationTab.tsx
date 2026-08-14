@@ -1,4 +1,5 @@
 import React from "react";
+import { formatCompactAmount } from "@/utils/numberFormat";
 
 interface ConfigurationTabProps {
   onDeactivate?: () => void;
@@ -32,7 +33,9 @@ const ConfigurationTab: React.FC<ConfigurationTabProps> = ({
     <div className="mt-4">
       <div className="mb-8">
         <p className="text-[13px] text-[#707781] font-medium mb-1">Portfolio size</p>
-        <h2 className="text-lg font-semibold text-[#2F3140] mb-1">{portfolioSize || "—"}</h2>
+        <h2 className="text-lg font-semibold text-[#2F3140] mb-1">
+          {formatCompactAmount(portfolioSize)}
+        </h2>
       </div>
 
       <div className="border border-gray-200 rounded-xl p-6 max-w-2xl min-h-112.5 flex flex-col">

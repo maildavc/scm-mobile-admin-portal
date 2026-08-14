@@ -16,7 +16,7 @@ import {
 import { createColumns } from "./columns";
 import ViewKYCRequest from "@/components/Dashboard/KYCVerification/ViewKYCRequest";
 import { useKycRequests } from "@/hooks/useKyc";
-import { formatDateToMMMdyyyy } from "@/utils/dateFormatter";
+import { formatDateTimeDdMmYyyy } from "@/utils/dateFormatter";
 
 const normalizeStatus = (value?: string | null) =>
   String(value || "")
@@ -59,7 +59,7 @@ const KYCVerificationPage = () => {
         name: req.createdBy || req.customer?.fullName || "System",
         email: req.customer?.email || "",
       },
-      dateRequested: formatDateToMMMdyyyy(req.submittedAt || req.createdAt),
+      dateRequested: formatDateTimeDdMmYyyy(req.submittedAt || req.createdAt),
       reviewedBy: req.reviewerName || req.reviewedBy,
       rejectionReason: req.rejectionReason,
     }));

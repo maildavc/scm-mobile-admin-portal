@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Sidebar, { SidebarProvider } from "@/components/Dashboard/Sidebar";
 import PageHeader from "@/components/Dashboard/PageHeader";
 import StatsCard from "@/components/Dashboard/StatsCard";
@@ -23,7 +23,9 @@ import {
   useDeactivateCustomer,
   useResetCustomerPassword,
 } from "@/hooks/useCustomers";
+import { useKycRequests } from "@/hooks/useKyc";
 import { useToastStore } from "@/stores/toastStore";
+import { rollupKycStatus } from "@/utils/kycStatus";
 
 const normalizeStatus = (value?: string | null) =>
   String(value || "")
@@ -56,8 +58,29 @@ export default function CustomerManagement() {
     page: 1,
     limit: 1000,
   });
+  const { data: kycRequests = [] } = useKycRequests();
 
-  const customers = sortCustomersNewestFirst(customersData?.data || []);
+  const kycStatusByCustomerId = useMemo(() => {
+    const grouped = new Map<string, string[]>();
+    for (const request of kycRequests) {
+      if (!request.customerId) continue;
+      const statuses = grouped.get(request.customerId) ?? [];
+      statuses.push(request.statusName);
+      grouped.set(request.customerId, statuses);
+    }
+
+    const rolled = new Map<string, string>();
+    for (const [customerId, statuses] of grouped) {
+      const status = rollupKycStatus(statuses);
+      if (status) rolled.set(customerId, status);
+    }
+    return rolled;
+  }, [kycRequests]);
+
+  const customers = sortCustomersNewestFirst(customersData?.data || []).map((customer) => ({
+    ...customer,
+    kycStatus: kycStatusByCustomerId.get(customer.id) || customer.kycStatus || undefined,
+  }));
   const customerCount = customersData?.totalCount ?? customers.length;
 
   // Sidebar Logic
@@ -184,8 +207,9 @@ export default function CustomerManagement() {
                         value = customers
                           .filter((c) => {
                             const kyc = normalizeStatus(c.kycStatus);
-                            // API often omits kycStatus; table treats that as Pending.
-                            return !kyc || ["pending", "awaitingapproval"].includes(kyc);
+                            return ["pending", "awaitingapproval", "pendingverification"].includes(
+                              kyc,
+                            );
                           })
                           .length.toString();
                       }
