@@ -79,7 +79,7 @@ export default function CustomerManagement() {
 
   const customers = sortCustomersNewestFirst(customersData?.data || []).map((customer) => ({
     ...customer,
-    kycStatus: kycStatusByCustomerId.get(customer.id) || customer.kycStatus || undefined,
+    kycStatus: kycStatusByCustomerId.get(customer.id) || customer.kycStatus,
   }));
   const customerCount = customersData?.totalCount ?? customers.length;
 
