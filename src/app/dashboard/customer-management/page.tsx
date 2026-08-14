@@ -21,7 +21,6 @@ import { Customer } from "@/types/customer";
 import {
   useGetCustomers,
   useDeactivateCustomer,
-  useResendCustomerEmailVerification,
   useResetCustomerPassword,
 } from "@/hooks/useCustomers";
 import { useToastStore } from "@/stores/toastStore";
@@ -49,7 +48,6 @@ export default function CustomerManagement() {
   const isApprover = useAuthStore((s) => s.isApprover);
   const addToast = useToastStore((s) => s.addToast);
   const deactivateCustomer = useDeactivateCustomer();
-  const resendEmail = useResendCustomerEmailVerification();
   const resetPassword = useResetCustomerPassword();
 
   // Load the full customer list so table pagination (10/20/…) works over every record.
@@ -120,21 +118,6 @@ export default function CustomerManagement() {
         (error as { message?: string })?.message ||
         "Failed to deactivate customer";
       addToast(message, "error");
-    }
-  };
-
-  const handleResendEmail = async (customer: Customer) => {
-    try {
-      await resendEmail.mutateAsync(customer.id);
-      addToast("Customer email reset initiated successfully", "success");
-    } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { message?: string } }; message?: string })?.response?.data
-          ?.message ||
-        (error as { message?: string })?.message ||
-        "Failed to reset customer email";
-      addToast(message, "error");
-      throw error;
     }
   };
 
@@ -266,7 +249,6 @@ export default function CustomerManagement() {
                     initialTab={viewInitialTab}
                     onEdit={() => handleEditCustomer(viewCustomer)}
                     onDeactivate={() => handleDeactivateCustomer(viewCustomer)}
-                    onResendEmail={() => handleResendEmail(viewCustomer)}
                     onResetPassword={() => handleResetPassword(viewCustomer)}
                   />
                 );

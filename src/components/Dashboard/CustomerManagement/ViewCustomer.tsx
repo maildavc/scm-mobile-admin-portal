@@ -16,7 +16,6 @@ interface ViewCustomerProps {
   customer: Customer;
   onEdit?: () => void;
   onDeactivate?: () => void;
-  onResendEmail?: () => void;
   onResetPassword?: () => void;
   initialTab?: string;
 }
@@ -25,7 +24,6 @@ const ViewCustomer: React.FC<ViewCustomerProps> = ({
   customer,
   onEdit,
   onDeactivate,
-  onResendEmail,
   onResetPassword,
   initialTab = "Customer Info",
 }) => {
@@ -64,7 +62,6 @@ const ViewCustomer: React.FC<ViewCustomerProps> = ({
       ) : activeTab === "Configuration" && showConfiguration ? (
         <ConfigurationTab
           onDeactivate={onDeactivate}
-          onResendEmail={onResendEmail}
           onResetPassword={onResetPassword}
         />
       ) : activeTab === "Documents" ? (

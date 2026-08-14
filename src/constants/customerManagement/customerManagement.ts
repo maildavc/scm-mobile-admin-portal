@@ -223,12 +223,6 @@ export const getBreadcrumbs = (activeItem?: string) => [
 
 export const CONFIG_OPTIONS = [
   {
-    key: "email" as const,
-    title: "Email address",
-    description: "Initiate a change or reset customer email address",
-    buttonText: "Reset Customer Email",
-  },
-  {
     key: "password" as const,
     title: "Password",
     description: "Initiate a change or reset customer password",

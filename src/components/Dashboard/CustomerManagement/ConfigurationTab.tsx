@@ -5,15 +5,13 @@ import { CONFIG_OPTIONS } from "@/constants/customerManagement/customerManagemen
 
 interface ConfigurationTabProps {
   onDeactivate?: () => void | Promise<void>;
-  onResendEmail?: () => void | Promise<void>;
   onResetPassword?: () => void | Promise<void>;
 }
 
-type ActionKey = "email" | "password" | "deactivate";
+type ActionKey = "password" | "deactivate";
 
 const ConfigurationTab: React.FC<ConfigurationTabProps> = ({
   onDeactivate,
-  onResendEmail,
   onResetPassword,
 }) => {
   const [pendingAction, setPendingAction] = useState<ActionKey | null>(null);
@@ -32,7 +30,6 @@ const ConfigurationTab: React.FC<ConfigurationTabProps> = ({
 
   const configOptions = CONFIG_OPTIONS.map((option) => {
     const handlers: Record<ActionKey, (() => void | Promise<void>) | undefined> = {
-      email: onResendEmail,
       password: onResetPassword,
       deactivate: onDeactivate,
     };
