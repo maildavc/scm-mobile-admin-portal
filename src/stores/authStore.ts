@@ -15,7 +15,7 @@ const isApproverRole = (role?: string): boolean =>
 const isInitiatorRole = (role?: string): boolean =>
   ["initiator", "manager"].includes(role?.toLowerCase() ?? "");
 
-interface AuthState {
+export interface AuthState {
   // State
   user: User | null;
   organization: Organization | null;

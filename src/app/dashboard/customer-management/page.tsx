@@ -16,6 +16,7 @@ import {
 import ActionButton from "@/components/Dashboard/ActionButton";
 import { createCustomerColumns } from "./columns";
 import { useAuthStore } from "@/stores/authStore";
+import type { AuthState } from "@/stores/authStore";
 import ViewCustomerRequest from "@/components/Dashboard/CustomerManagement/ViewCustomerRequest";
 import { Customer } from "@/types/customer";
 import {
@@ -25,6 +26,7 @@ import {
 } from "@/hooks/useCustomers";
 import { useKycRequests } from "@/hooks/useKyc";
 import { useToastStore } from "@/stores/toastStore";
+import type { ToastState } from "@/stores/toastStore";
 import { rollupKycStatus } from "@/utils/kycStatus";
 
 const normalizeStatus = (value?: string | null) =>
@@ -47,8 +49,8 @@ export default function CustomerManagement() {
   const [editCustomer, setEditCustomer] = useState<Customer | null>(null);
   const [viewCustomer, setViewCustomer] = useState<Customer | null>(null);
   const [viewInitialTab, setViewInitialTab] = useState("Customer Info");
-  const isApprover = useAuthStore((s) => s.isApprover);
-  const addToast = useToastStore((s) => s.addToast);
+  const isApprover = useAuthStore((s: AuthState) => s.isApprover);
+  const addToast = useToastStore((s: ToastState) => s.addToast);
   const deactivateCustomer = useDeactivateCustomer();
   const resetPassword = useResetCustomerPassword();
 

@@ -8,7 +8,7 @@ interface Toast {
   type: ToastType;
 }
 
-interface ToastState {
+export interface ToastState {
   toasts: Toast[];
   addToast: (message: string, type: ToastType) => void;
   removeToast: (id: string) => void;
