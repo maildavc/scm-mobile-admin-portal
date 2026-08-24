@@ -52,10 +52,16 @@ export interface RejectKYCDocumentCommand {
 }
 
 export interface KYCActionResult {
-  status: string;
-  kycLevel: string;
-  comments: string;
-  updatedAt: string;
+  success?: boolean;
+  message?: string;
+  status?: string;
+  kycLevel?: string;
+  kycRequestId?: string;
+  comments?: string;
+  updatedAt?: string;
+  actionTimestamp?: string;
+  newStatus?: number | string;
+  errors?: string[];
 }
 
 type BackendEnvelope<T> = {
@@ -63,6 +69,18 @@ type BackendEnvelope<T> = {
   value: T;
   error?: unknown;
 };
+
+function unwrapActionResult(
+  data: BackendEnvelope<KYCActionResult> | KYCActionResult,
+): KYCActionResult {
+  const result = (data as BackendEnvelope<KYCActionResult>).value ?? (data as KYCActionResult);
+  if (result && result.success === false) {
+    const error = new Error(result.message || result.errors?.[0] || "KYC action failed");
+    (error as { response?: { data?: KYCActionResult } }).response = { data: result };
+    throw error;
+  }
+  return result;
+}
 
 // --- Service Methods ---
 
@@ -79,17 +97,19 @@ export const kycService = {
   },
 
   getCustomerDocuments: async (customerId: string): Promise<CustomerDocumentDto[]> => {
-    // The endpoint theoretically accepts pagination ?Page=1&Limit=100
-    const { data } = await apiClient.get<BackendEnvelope<CustomerDocumentsResponseDto>>(
-      `/api/v1/customers/${customerId}/documents`,
-      { params: { page: 1, limit: 100 } },
-    );
-    // Unwrap based on CustomerDocumentsResponseDto wrapper
-    if (data.value && Array.isArray(data.value.data)) {
-      return data.value.data;
+    const { data } = await apiClient.get<
+      BackendEnvelope<CustomerDocumentsResponseDto | CustomerDocumentDto[]>
+    >(`/api/v1/customers/${customerId}/documents`, {
+      params: { page: 1, limit: 100 },
+    });
+
+    const payload =
+      data.value ?? (data as unknown as CustomerDocumentsResponseDto | CustomerDocumentDto[]);
+    if (Array.isArray(payload)) return payload;
+    if (payload && Array.isArray((payload as CustomerDocumentsResponseDto).data)) {
+      return (payload as CustomerDocumentsResponseDto).data;
     }
-    const fallback = data as unknown as CustomerDocumentsResponseDto;
-    return fallback?.data || [];
+    return [];
   },
 
   approveKycDocument: async (
@@ -100,7 +120,7 @@ export const kycService = {
       `/api/v1/kyc/documents/${documentId}/approve`,
       payload,
     );
-    return data.value ?? (data as unknown as KYCActionResult);
+    return unwrapActionResult(data);
   },
 
   rejectKycDocument: async (
@@ -111,6 +131,6 @@ export const kycService = {
       `/api/v1/kyc/documents/${documentId}/reject`,
       payload,
     );
-    return data.value ?? (data as unknown as KYCActionResult);
+    return unwrapActionResult(data);
   },
 };

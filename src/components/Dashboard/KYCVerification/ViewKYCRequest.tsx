@@ -8,13 +8,20 @@ import RejectModal from "@/components/Dashboard/Shared/RejectModal";
 import { StatusBadge, StatusType } from "@/components/Dashboard/StatusBadge";
 import { KYCRequest } from "@/constants/kycVerification/kycVerification";
 import { useCustomerDocuments, useApproveKycDocument, useRejectKycDocument } from "@/hooks/useKyc";
-import { formatDateToMMMdyyyy, formatTimeTohmma } from "@/utils/dateFormatter";
+import { formatDateTimeDdMmYyyy } from "@/utils/dateFormatter";
+import {
+  isApprovedKycStatus,
+  isPendingKycStatus,
+  isRejectedKycStatus,
+  toKycBadgeStatus,
+} from "@/utils/kycStatus";
 
 interface ViewKYCRequestProps {
   request: KYCRequest;
   onApprove: () => void;
   onReject: () => void;
   onBack: () => void;
+  isApprover?: boolean;
 }
 
 const DetailRow = ({
@@ -36,10 +43,24 @@ const DetailRow = ({
   </div>
 );
 
-const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({ request, onApprove, onReject }) => {
-  const { data: documents = [], isLoading: isLoadingDocs } = useCustomerDocuments(
-    request.customerId,
-  );
+const getQueryErrorMessage = (error: unknown) => {
+  const err = error as { response?: { data?: { message?: string; error?: string } }; message?: string };
+  const fromBody = err?.response?.data?.message || err?.response?.data?.error;
+  if (typeof fromBody === "string" && fromBody.trim()) return fromBody;
+  return err?.message || "Unable to load documents for this customer.";
+};
+
+const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
+  request,
+  onApprove,
+  onReject,
+}) => {
+  const {
+    data: documents = [],
+    isLoading: isLoadingDocs,
+    isError: isDocsError,
+    error: docsError,
+  } = useCustomerDocuments(request.customerId);
   const { mutate: approveDoc, isPending: isApproving } = useApproveKycDocument();
   const { mutate: rejectDoc, isPending: isRejecting } = useRejectKycDocument();
 
@@ -47,11 +68,18 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({ request, onApprove, onR
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [viewStatus, setViewStatus] = useState<"review" | "success" | "rejected">("review");
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
+  const [actionScope, setActionScope] = useState<"document" | "request">("request");
+
+  const isRequestPending = isPendingKycStatus(request.status);
+  const canReview = isRequestPending;
+  const pendingDocuments = documents.filter((doc) => isPendingKycStatus(doc.status));
+  const requestActionId = pendingDocuments[0]?.id || request.id;
 
   const handleApproveConfirm = () => {
-    if (!selectedDocId) return;
+    const documentId = actionScope === "document" ? selectedDocId : requestActionId;
+    if (!documentId) return;
     approveDoc(
-      { documentId: selectedDocId, payload: { customerId: request.customerId } },
+      { documentId, payload: { customerId: request.customerId } },
       {
         onSuccess: () => {
           setIsApproveModalOpen(false);
@@ -62,9 +90,10 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({ request, onApprove, onR
   };
 
   const handleRejectConfirm = (reason: string) => {
-    if (!selectedDocId) return;
+    const documentId = actionScope === "document" ? selectedDocId : requestActionId;
+    if (!documentId) return;
     rejectDoc(
-      { documentId: selectedDocId, payload: { customerId: request.customerId, reason } },
+      { documentId, payload: { customerId: request.customerId, reason } },
       {
         onSuccess: () => {
           setIsRejectModalOpen(false);
@@ -74,13 +103,18 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({ request, onApprove, onR
     );
   };
 
-  const handleDocumentAction = (id: string, action: "Approve" | "Reject") => {
+  const openDocumentAction = (id: string, action: "Approve" | "Reject") => {
+    setActionScope("document");
     setSelectedDocId(id);
-    if (action === "Approve") {
-      setIsApproveModalOpen(true);
-    } else {
-      setIsRejectModalOpen(true);
-    }
+    if (action === "Approve") setIsApproveModalOpen(true);
+    else setIsRejectModalOpen(true);
+  };
+
+  const openRequestAction = (action: "Approve" | "Reject") => {
+    setActionScope("request");
+    setSelectedDocId(requestActionId);
+    if (action === "Approve") setIsApproveModalOpen(true);
+    else setIsRejectModalOpen(true);
   };
 
   if (viewStatus === "success") {
@@ -133,15 +167,23 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({ request, onApprove, onR
         isOpen={isApproveModalOpen}
         onClose={() => setIsApproveModalOpen(false)}
         onApprove={handleApproveConfirm}
-        title="Approve Document?"
-        description="Are you sure you want to approve this document?"
+        title={actionScope === "request" ? "Approve KYC Request?" : "Approve Document?"}
+        description={
+          actionScope === "request"
+            ? "Are you sure you want to approve this KYC request?"
+            : "Are you sure you want to approve this document?"
+        }
       />
       <RejectModal
         isOpen={isRejectModalOpen}
         onClose={() => setIsRejectModalOpen(false)}
         onReject={handleRejectConfirm}
-        title="Reject Document?"
-        description="Are you sure you want to reject this document?"
+        title={actionScope === "request" ? "Reject KYC Request?" : "Reject Document?"}
+        description={
+          actionScope === "request"
+            ? "Are you sure you want to reject this KYC request?"
+            : "Are you sure you want to reject this document?"
+        }
         isSubmitting={isRejecting}
       />
 
@@ -156,7 +198,11 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({ request, onApprove, onR
             value={<StatusBadge status={(request.status || "Pending Verification") as StatusType} />}
           />
           <DetailRow label="Initiated By" value={request.initiatedBy.name} />
-          <DetailRow label="Date Requested" value={request.dateRequested} isLast={!request.reviewedBy && !request.rejectionReason} />
+          <DetailRow
+            label="Date Requested"
+            value={request.dateRequested}
+            isLast={!request.reviewedBy && !request.rejectionReason}
+          />
           {request.reviewedBy ? (
             <DetailRow
               label="Reviewed By"
@@ -172,8 +218,9 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({ request, onApprove, onR
         <div className="bg-white rounded-lg border border-[#F4F4F5] p-6">
           <h3 className="text-base font-bold text-[#2F3140] mb-4">Review Tips</h3>
           <p className="text-sm text-[#707781] leading-6">
-            Open each submitted document, confirm it matches the customer profile, then approve or
-            reject from the documents list. Request-level actions are handled per document.
+            {canReview
+              ? "Review the customer details and any uploaded files, then approve or reject this KYC request."
+              : "This request has already been reviewed. You can still open any available files."}
           </p>
         </div>
       </div>
@@ -184,16 +231,19 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({ request, onApprove, onR
         <div className="flex flex-col gap-4">
           {isLoadingDocs ? (
             <p className="text-sm text-gray-500">Loading documents...</p>
+          ) : isDocsError ? (
+            <p className="text-sm text-[#B2171E]">{getQueryErrorMessage(docsError)}</p>
           ) : documents.length === 0 ? (
             <p className="text-sm text-gray-500">
-              No documents found for this customer. Documents will appear here once the customer
-              uploads identity files.
+              {canReview
+                ? "No documents were returned for this customer. You can still approve or reject the KYC request below."
+                : "No documents were returned for this customer."}
             </p>
           ) : (
             documents.map((doc) => {
-              const isPending = doc.status === "Pending";
-              const isApproved = doc.status === "Approved";
-              const isRejected = doc.status === "Rejected";
+              const isPending = isPendingKycStatus(doc.status);
+              const isApproved = isApprovedKycStatus(doc.status);
+              const isRejected = isRejectedKycStatus(doc.status);
 
               return (
                 <div
@@ -204,8 +254,12 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({ request, onApprove, onR
                     <p className="text-xs text-[#707781]">{doc.documentType || "Document File"}</p>
                     <p className="text-sm font-bold text-[#2F3140]">{doc.fileName || doc.id}</p>
                     <p className="text-xs text-[#707781]">
-                      Added: {formatDateToMMMdyyyy(doc.createdAt)} {formatTimeTohmma(doc.createdAt)}
+                      Added: {formatDateTimeDdMmYyyy(doc.createdAt)}
                     </p>
+                    <StatusBadge
+                      status={toKycBadgeStatus(doc.status) as StatusType}
+                      displayLabel={doc.status || "Pending"}
+                    />
                   </div>
 
                   <div className="flex flex-wrap gap-3 items-center">
@@ -217,12 +271,12 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({ request, onApprove, onR
                       className="w-auto! px-6! py-2! font-semibold text-sm md:text-base"
                     />
 
-                    {isPending && (
+                    {canReview && isPending && (
                       <>
                         <Button
                           text={isRejecting && selectedDocId === doc.id ? "Rejecting..." : "Reject"}
                           variant="outline"
-                          onClick={() => handleDocumentAction(doc.id, "Reject")}
+                          onClick={() => openDocumentAction(doc.id, "Reject")}
                           disabled={isRejecting || isApproving}
                           className="w-auto! px-6! py-2! text-[#B2171E]! font-semibold text-sm md:text-base"
                         />
@@ -231,7 +285,7 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({ request, onApprove, onR
                             isApproving && selectedDocId === doc.id ? "Approving..." : "Approve"
                           }
                           variant="outline"
-                          onClick={() => handleDocumentAction(doc.id, "Approve")}
+                          onClick={() => openDocumentAction(doc.id, "Approve")}
                           disabled={isRejecting || isApproving}
                           className="w-auto! px-6! py-2! text-[#29C680]! font-semibold text-sm md:text-base"
                         />
@@ -242,6 +296,7 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({ request, onApprove, onR
                       <Button
                         text="Approved"
                         variant="outline"
+                        disabled
                         className="w-auto! px-6! py-2! text-[#29C680]! font-semibold text-sm md:text-base"
                       />
                     )}
@@ -250,6 +305,7 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({ request, onApprove, onR
                       <Button
                         text="Rejected"
                         variant="outline"
+                        disabled
                         className="w-auto! px-6! py-2! text-[#B2171E]! font-semibold text-sm md:text-base"
                       />
                     )}
@@ -260,6 +316,29 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({ request, onApprove, onR
           )}
         </div>
       </div>
+
+      {canReview ? (
+        <div className="mt-auto pt-6 flex justify-end gap-3">
+          <div className="w-32">
+            <Button
+              text="Reject"
+              variant="outline"
+              onClick={() => openRequestAction("Reject")}
+              disabled={isRejecting || isApproving}
+              className="text-[#B2171E]! text-xs md:text-sm"
+            />
+          </div>
+          <div className="w-40">
+            <Button
+              text={isApproving ? "Approving..." : "Approve"}
+              variant="primary"
+              onClick={() => openRequestAction("Approve")}
+              disabled={isRejecting || isApproving}
+              className="text-xs md:text-sm"
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

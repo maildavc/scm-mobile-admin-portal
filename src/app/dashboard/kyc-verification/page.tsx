@@ -16,6 +16,7 @@ import {
 import { createColumns } from "./columns";
 import ViewKYCRequest from "@/components/Dashboard/KYCVerification/ViewKYCRequest";
 import { useKycRequests } from "@/hooks/useKyc";
+import { useAuthStore } from "@/stores/authStore";
 import { formatDateTimeDdMmYyyy } from "@/utils/dateFormatter";
 
 const normalizeStatus = (value?: string | null) =>
@@ -34,6 +35,7 @@ const mapKycStatus = (statusName?: string) => {
 
 const KYCVerificationPage = () => {
   const [viewRequest, setViewRequest] = useState<KYCRequest | null>(null);
+  const isApprover = useAuthStore((s) => s.isApprover);
   const { data: rawRequests, isLoading } = useKycRequests();
 
   const handleViewRequest = (request: KYCRequest) => {
@@ -46,23 +48,29 @@ const KYCVerificationPage = () => {
 
   const mappedData: KYCRequest[] = useMemo(() => {
     if (!rawRequests) return [];
-    return rawRequests.map((req) => ({
-      id: req.id,
-      customerId: req.customerId || "",
-      customer: {
-        name: req.customer?.fullName || "Unknown Customer",
-        email: req.customer?.email || "No Email",
-      },
-      verificationType: req.levelName || req.typeName || "KYC Verification",
-      status: mapKycStatus(req.statusName),
-      initiatedBy: {
-        name: req.createdBy || req.customer?.fullName || "System",
-        email: req.customer?.email || "",
-      },
-      dateRequested: formatDateTimeDdMmYyyy(req.submittedAt || req.createdAt),
-      reviewedBy: req.reviewerName || req.reviewedBy,
-      rejectionReason: req.rejectionReason,
-    }));
+    return [...rawRequests]
+      .sort((a, b) => {
+        const aTime = Date.parse(a.submittedAt || a.createdAt || "") || 0;
+        const bTime = Date.parse(b.submittedAt || b.createdAt || "") || 0;
+        return bTime - aTime;
+      })
+      .map((req) => ({
+        id: req.id,
+        customerId: req.customerId || "",
+        customer: {
+          name: req.customer?.fullName || "Unknown Customer",
+          email: req.customer?.email || "No Email",
+        },
+        verificationType: req.levelName || req.typeName || "KYC Verification",
+        status: mapKycStatus(req.statusName),
+        initiatedBy: {
+          name: req.createdBy || req.customer?.fullName || "System",
+          email: req.customer?.email || "",
+        },
+        dateRequested: formatDateTimeDdMmYyyy(req.submittedAt || req.createdAt),
+        reviewedBy: req.reviewerName || req.reviewedBy,
+        rejectionReason: req.rejectionReason,
+      }));
   }, [rawRequests]);
 
   const columns = createColumns(handleViewRequest, mappedData.length);
@@ -130,6 +138,7 @@ const KYCVerificationPage = () => {
                 onApprove={() => setViewRequest(null)}
                 onReject={() => setViewRequest(null)}
                 onBack={handleBack}
+                isApprover={isApprover}
               />
             ) : (
               <div className="flex flex-col gap-6">

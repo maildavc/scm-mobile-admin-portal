@@ -46,7 +46,10 @@ export const useApproveKycDocument = () => {
     },
     onError: (error: any) => {
       addToast(
-        error?.response?.data?.message || error?.message || "Failed to approve document",
+        error?.response?.data?.message ||
+          error?.response?.data?.error ||
+          error?.message ||
+          "Failed to approve document",
         "error",
       );
     },
@@ -72,7 +75,10 @@ export const useRejectKycDocument = () => {
     },
     onError: (error: any) => {
       addToast(
-        error?.response?.data?.message || error?.message || "Failed to reject document",
+        error?.response?.data?.message ||
+          error?.response?.data?.error ||
+          error?.message ||
+          "Failed to reject document",
         "error",
       );
     },
