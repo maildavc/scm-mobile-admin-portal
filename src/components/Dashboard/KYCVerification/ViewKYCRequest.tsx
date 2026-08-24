@@ -9,6 +9,7 @@ import { StatusBadge, StatusType } from "@/components/Dashboard/StatusBadge";
 import { KYCRequest } from "@/constants/kycVerification/kycVerification";
 import { useCustomerDocuments, useApproveKycDocument, useRejectKycDocument } from "@/hooks/useKyc";
 import { formatDateTimeDdMmYyyy } from "@/utils/dateFormatter";
+import { formatDocumentType } from "@/types/kyc";
 import {
   isApprovedKycStatus,
   isPendingKycStatus,
@@ -251,7 +252,7 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
                   className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#F4F4F5] last:border-b-0 last:pb-0"
                 >
                   <div className="flex flex-col gap-1">
-                    <p className="text-xs text-[#707781]">{doc.documentType || "Document File"}</p>
+                    <p className="text-xs text-[#707781]">{formatDocumentType(doc.documentType)}</p>
                     <p className="text-sm font-bold text-[#2F3140]">{doc.fileName || doc.id}</p>
                     <p className="text-xs text-[#707781]">
                       Added: {formatDateTimeDdMmYyyy(doc.createdAt)}

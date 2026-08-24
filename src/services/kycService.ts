@@ -28,7 +28,7 @@ export interface KYCRequestDto {
 
 export interface CustomerDocumentDto {
   id: string;
-  documentType: string;
+  documentType: string | number;
   fileName: string;
   filePath: string;
   status: string;
