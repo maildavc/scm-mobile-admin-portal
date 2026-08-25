@@ -3,27 +3,22 @@
 import React from "react";
 import { FiArrowUpRight, FiArrowDownLeft, FiFileText } from "react-icons/fi";
 import { runTableExportAction } from "@/components/Dashboard/ActionButton";
+import { useCustomerCards, useCustomerPayments } from "@/hooks/useCustomers";
+import { formatDateTimeDdMmYyyy } from "@/utils/dateFormatter";
 
-interface SavedCard {
-  id: string;
-  type: string;
-  last4: string;
-  addedDate: string;
-  status: "Active" | "Deleted";
-}
+const redactCardNumber = (value?: string | null) => {
+  if (!value) return "••••";
+  const digits = value.replace(/\D/g, "");
+  const last4 = digits.slice(-4);
+  return last4 ? `•••• ${last4}` : "••••";
+};
 
-interface PaymentTransaction {
-  id: string;
-  title: string;
-  description: string;
-  amount: string;
-  date: string;
-  type: "credit" | "debit";
-}
-
-const SAVED_CARDS: SavedCard[] = [];
-
-const PAYMENTS_HISTORY: PaymentTransaction[] = [];
+const queryError = (error: unknown, fallback: string) =>
+  (error as { response?: { data?: { message?: string; error?: string } }; message?: string })
+    ?.response?.data?.message ||
+  (error as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+  (error as { message?: string })?.message ||
+  fallback;
 
 const ActionCard = ({
   title,
@@ -53,10 +48,27 @@ const ActionCard = ({
 );
 
 interface PaymentsAndCardsTabProps {
+  customerId?: string;
   mode?: "view" | "approval";
 }
 
-const PaymentsAndCardsTab: React.FC<PaymentsAndCardsTabProps> = ({ mode = "view" }) => {
+const PaymentsAndCardsTab: React.FC<PaymentsAndCardsTabProps> = ({
+  customerId,
+  mode = "view",
+}) => {
+  const {
+    data: cards = [],
+    isLoading: cardsLoading,
+    isError: cardsError,
+    error: cardsErr,
+  } = useCustomerCards(customerId);
+  const {
+    data: payments = [],
+    isLoading: paymentsLoading,
+    isError: paymentsError,
+    error: paymentsErr,
+  } = useCustomerPayments(customerId);
+
   return (
     <div>
       <div className="flex flex-col md:flex-row gap-4 mb-8">
@@ -65,87 +77,95 @@ const PaymentsAndCardsTab: React.FC<PaymentsAndCardsTabProps> = ({ mode = "view"
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Saved Cards Section */}
         <div className="bg-white rounded-lg border border-[#F4F4F5] p-6 h-fit">
           <h3 className="text-base font-bold text-[#2F3140] mb-6">Saved Cards</h3>
-
-          <div className="flex flex-col gap-4">
-            {SAVED_CARDS.length > 0 ? (
-              SAVED_CARDS.map((card) => (
+          {cardsLoading ? (
+            <p className="text-sm text-[#707781]">Loading cards...</p>
+          ) : cardsError ? (
+            <p className="text-sm text-[#B2171E]">{queryError(cardsErr, "Unable to load cards.")}</p>
+          ) : cards.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-[#707781] text-sm">
+              <p>No cards saved yet.</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {cards.map((card) => (
                 <div
-                  key={card.id}
+                  key={card.cardId || card.maskedCardNumber}
                   className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#F4F4F5] last:border-b-0 last:pb-0"
                 >
                   <div className="flex flex-col gap-1">
-                    <p className="text-xs text-[#707781]">{card.type}</p>
-                    <p className="text-sm font-bold text-[#2F3140]">{card.last4}</p>
-                    <p className="text-xs text-[#707781]">{`Added: ${card.addedDate}`}</p>
+                    <p className="text-xs text-[#707781]">{card.cardType || "Card"}</p>
+                    <p className="text-sm font-bold text-[#2F3140]">
+                      {redactCardNumber(card.maskedCardNumber)}
+                    </p>
+                    <p className="text-xs text-[#707781]">
+                      Added: {formatDateTimeDdMmYyyy(card.addedAt)}
+                    </p>
                   </div>
-
-                  <div className="flex-shrink-0">
-                    {mode === "approval" && card.status === "Deleted" ? (
-                      <span className="px-4 py-1.5 bg-[#F4F4F5] text-[#2F3140] text-xs font-bold rounded-lg block text-center min-w-[80px]">
-                        Deleted
-                      </span>
-                    ) : null}
-                  </div>
+                  {mode === "approval" && card.status === "Deleted" ? (
+                    <span className="px-4 py-1.5 bg-[#F4F4F5] text-[#2F3140] text-xs font-bold rounded-lg">
+                      Deleted
+                    </span>
+                  ) : null}
                 </div>
-              ))
-            ) : (
-              <div className="flex flex-col items-center justify-center py-8 text-[#707781] text-sm">
-                <p>No cards saved yet.</p>
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Payment History Section - Only show in view mode */}
         {mode === "view" && (
           <div className="bg-white rounded-lg border border-[#F4F4F5] p-6">
             <h3 className="text-base font-bold text-[#2F3140] mb-6">Payment History</h3>
-
-            <div className="flex flex-col gap-6">
-              {PAYMENTS_HISTORY.length > 0 ? (
-                PAYMENTS_HISTORY.map((transaction) => (
-                  <div
-                    key={transaction.id}
-                    className="flex items-start justify-between gap-4 pb-6 border-b border-[#F4F4F5] last:border-b-0 last:pb-0"
-                  >
-                    <div className="flex gap-3">
-                      <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center bg-[#F4F4F5] flex-shrink-0 ${
-                          transaction.type === "debit" ? "text-[#B2171E]" : "text-[#00C070]"
+            {paymentsLoading ? (
+              <p className="text-sm text-[#707781]">Loading payments...</p>
+            ) : paymentsError ? (
+              <p className="text-sm text-[#B2171E]">
+                {queryError(paymentsErr, "Unable to load payments.")}
+              </p>
+            ) : payments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-[#707781] text-sm">
+                <p>No payment history available.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-6">
+                {payments.map((transaction) => {
+                  const isDebit = String(transaction.type || "").toLowerCase().includes("debit");
+                  return (
+                    <div
+                      key={transaction.paymentId || `${transaction.date}-${transaction.amount}`}
+                      className="flex items-start justify-between gap-4 pb-6 border-b border-[#F4F4F5] last:border-b-0 last:pb-0"
+                    >
+                      <div className="flex gap-3">
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center bg-[#F4F4F5] flex-shrink-0 ${
+                            isDebit ? "text-[#B2171E]" : "text-[#00C070]"
+                          }`}
+                        >
+                          {isDebit ? <FiArrowUpRight size={20} /> : <FiArrowDownLeft size={20} />}
+                        </div>
+                        <div className="flex flex-col gap-0.5">
+                          <p className="text-sm font-bold text-[#2F3140]">
+                            {transaction.type || "Payment"}
+                          </p>
+                          <p className="text-xs text-[#707781]">{transaction.status || ""}</p>
+                          <p className="text-xs text-[#707781]">
+                            {formatDateTimeDdMmYyyy(transaction.date)}
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`text-sm font-bold whitespace-nowrap ${
+                          isDebit ? "text-[#B2171E]" : "text-[#00C070]"
                         }`}
                       >
-                        {transaction.type === "debit" ? (
-                          <FiArrowUpRight size={20} />
-                        ) : (
-                          <FiArrowDownLeft size={20} />
-                        )}
-                      </div>
-
-                      <div className="flex flex-col gap-0.5">
-                        <p className="text-sm font-bold text-[#2F3140]">{transaction.title}</p>
-                        <p className="text-xs text-[#707781]">{transaction.description}</p>
-                        <p className="text-xs text-[#707781]">{transaction.date}</p>
-                      </div>
+                        {transaction.currency || "NGN"} {transaction.amount ?? "—"}
+                      </span>
                     </div>
-
-                    <span
-                      className={`text-sm font-bold whitespace-nowrap ${
-                        transaction.type === "debit" ? "text-[#B2171E]" : "text-[#00C070]"
-                      }`}
-                    >
-                      {transaction.amount}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <div className="flex flex-col items-center justify-center py-8 text-[#707781] text-sm">
-                  <p>No payment history available.</p>
-                </div>
-              )}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>

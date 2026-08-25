@@ -91,3 +91,27 @@ export const useResetCustomerPassword = () => {
     mutationFn: (customerId: string) => customerService.resetCustomerPassword(customerId),
   });
 };
+
+export const useCustomerCards = (customerId: string | undefined) => {
+  return useQuery({
+    queryKey: ["customer-cards", customerId],
+    queryFn: () => customerService.getCustomerCards(customerId!),
+    enabled: !!customerId,
+  });
+};
+
+export const useCustomerPayments = (customerId: string | undefined) => {
+  return useQuery({
+    queryKey: ["customer-payments", customerId],
+    queryFn: () => customerService.getCustomerPayments(customerId!),
+    enabled: !!customerId,
+  });
+};
+
+export const useCustomerActivityLogs = (customerId: string | undefined) => {
+  return useQuery({
+    queryKey: ["customer-activity-logs", customerId],
+    queryFn: () => customerService.getCustomerActivityLogs(customerId!),
+    enabled: !!customerId,
+  });
+};

@@ -2,8 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { FiX, FiChevronRight } from "react-icons/fi";
+import { FiX } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 
 interface Breadcrumb {
@@ -53,28 +52,14 @@ const CustomerServicePageHeader: React.FC<CustomerServicePageHeaderProps> = ({
 
         {/* Right Controls */}
         <div className="flex items-center gap-4">
-          <div className="flex -space-x-2">
-            {/* Avatar Placeholders */}
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="w-8 h-8 rounded-full border-2 border-[#B2171E] bg-yellow-200 relative overflow-hidden"
-              >
-                <Image
-                  src={`/abbey.svg`} // Using existing asset as placeholder
-                  alt="Agent"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            ))}
-          </div>
-          <div
+          <button
+            type="button"
             onClick={handleClose}
+            aria-label="Close customer support"
             className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded flex items-center justify-center transition-colors"
           >
             <FiX size={20} />
-          </div>
+          </button>
         </div>
       </div>
 

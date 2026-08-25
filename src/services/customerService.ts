@@ -17,6 +17,45 @@ type BackendEnvelope<T> = {
   errors: unknown;
 };
 
+export interface CustomerCardDto {
+  cardId?: string;
+  maskedCardNumber?: string;
+  cardType?: string;
+  status?: string;
+  addedAt?: string;
+}
+
+export interface CustomerPaymentDto {
+  paymentId?: string;
+  type?: string;
+  amount?: number;
+  currency?: string;
+  status?: string;
+  date?: string;
+}
+
+export interface CustomerActivityLogDto {
+  action?: string;
+  description?: string;
+  performedBy?: string;
+  performedAt?: string;
+}
+
+type CustomerTabListResponse<T> = {
+  status?: string;
+  message?: string;
+  data?: T[];
+};
+
+function unwrapTabList<T>(data: BackendEnvelope<CustomerTabListResponse<T>> | CustomerTabListResponse<T>): T[] {
+  const payload = (data as BackendEnvelope<CustomerTabListResponse<T>>).value ?? data;
+  if (Array.isArray(payload)) return payload;
+  if (payload && Array.isArray((payload as CustomerTabListResponse<T>).data)) {
+    return (payload as CustomerTabListResponse<T>).data || [];
+  }
+  return [];
+}
+
 export const customerService = {
   getCustomers: async (params: GetCustomersParams): Promise<GetCustomersResponse> => {
     const { data } = await apiClient.get<BackendEnvelope<GetCustomersResponse>>(
@@ -94,6 +133,28 @@ export const customerService = {
       },
     );
     return data.value ?? (data as unknown as SimpleActionResponse);
+  },
+
+  getCustomerCards: async (customerId: string): Promise<CustomerCardDto[]> => {
+    const { data } = await apiClient.get<BackendEnvelope<CustomerTabListResponse<CustomerCardDto>>>(
+      `/api/v1/customers/${customerId}/cards`,
+      { params: { page: 1, limit: 100 } },
+    );
+    return unwrapTabList(data);
+  },
+
+  getCustomerPayments: async (customerId: string): Promise<CustomerPaymentDto[]> => {
+    const { data } = await apiClient.get<
+      BackendEnvelope<CustomerTabListResponse<CustomerPaymentDto>>
+    >(`/api/v1/customers/${customerId}/payments`, { params: { page: 1, limit: 100 } });
+    return unwrapTabList(data);
+  },
+
+  getCustomerActivityLogs: async (customerId: string): Promise<CustomerActivityLogDto[]> => {
+    const { data } = await apiClient.get<
+      BackendEnvelope<CustomerTabListResponse<CustomerActivityLogDto>>
+    >(`/api/v1/customers/${customerId}/activity-logs`, { params: { page: 1, limit: 100 } });
+    return unwrapTabList(data);
   },
 
   updateCustomerProducts: async (

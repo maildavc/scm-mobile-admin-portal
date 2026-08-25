@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   createCorrelationId,
   decodeBackendBody,
+  decodeBackendFile,
   encodeJsonRequest,
   findAuthTokens,
   getApiBaseUrl,
@@ -255,7 +256,50 @@ async function handle(request: NextRequest, context: RouteContext) {
       }
     }
 
-    const decoded = decodeBackendBody(await backendResponse.text());
+    const raw = Buffer.from(await backendResponse.arrayBuffer());
+    const isFileRoute =
+      /\/documents\/[^/]+\/file$/.test(normalizedPath) || /\/profile-image$/.test(normalizedPath);
+
+    if (isFileRoute) {
+      const fileDecoded = decodeBackendFile(raw);
+      if (fileDecoded.kind === "file" && fileDecoded.bytes) {
+        const clientResponse = new NextResponse(new Uint8Array(fileDecoded.bytes), {
+          status: backendResponse.status,
+          headers: {
+            "Content-Type": fileDecoded.contentType || "application/octet-stream",
+            "Content-Disposition": "inline",
+            "Cache-Control": "private, no-store",
+          },
+        });
+        if (refreshedTokens) {
+          setAuthCookies(clientResponse, refreshedTokens.accessToken, refreshedTokens.refreshToken);
+        }
+        clientResponse.headers.set(
+          "X-Correlation-ID",
+          backendResponse.headers.get("X-Correlation-ID") ||
+            request.headers.get("X-Correlation-ID") ||
+            "",
+        );
+        return clientResponse;
+      }
+      const clientResponse = NextResponse.json(fileDecoded.data, { status: backendResponse.status });
+      if (refreshedTokens) {
+        setAuthCookies(clientResponse, refreshedTokens.accessToken, refreshedTokens.refreshToken);
+      }
+      if (backendResponse.status === 401) {
+        clearAuthCookies(clientResponse);
+      }
+      clientResponse.headers.set(
+        "X-Correlation-ID",
+        backendResponse.headers.get("X-Correlation-ID") ||
+          request.headers.get("X-Correlation-ID") ||
+          "",
+      );
+      clientResponse.headers.set("Cache-Control", "no-store");
+      return clientResponse;
+    }
+
+    const decoded = decodeBackendBody(raw.toString("utf8"));
     const loginTokens = isLogin ? findAuthTokens(decoded.data) : null;
     const safeDecoded = loginTokens
       ? { ...decoded, data: removeAuthTokens(decoded.data) }

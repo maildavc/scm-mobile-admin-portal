@@ -13,7 +13,7 @@ import DocumentsTab from "./DocumentsTab";
 import { Customer } from "@/types/customer";
 import { useApproveRejectCustomer } from "@/hooks/useCustomers";
 import { useToastStore } from "@/stores/toastStore";
-import { formatDateTimeDdMmYyyy } from "@/utils/dateFormatter";
+import { formatDateDdMmYyyy, formatDateTimeDdMmYyyy } from "@/utils/dateFormatter";
 
 interface ViewCustomerRequestProps {
   customer: Customer;
@@ -61,6 +61,19 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
       label: "Last Updated",
       value: formatDateTimeDdMmYyyy(customer.updatedAt || customer.createdAt),
     },
+  ];
+  const profileInfoRows = [
+    { label: "First Name", value: customer.firstName || "—" },
+    { label: "Middle Name", value: customer.middleName || "—" },
+    { label: "Last Name", value: customer.lastName || "—" },
+    { label: "Citizenship", value: customer.citizenship || "—" },
+    { label: "Gender", value: customer.gender || "—" },
+    { label: "Date of Birth", value: formatDateDdMmYyyy(customer.dateOfBirth) },
+    { label: "Address", value: customer.address || "—" },
+    { label: "City", value: customer.city || "—" },
+    { label: "State", value: customer.state || "—" },
+    { label: "Country", value: customer.country || "—" },
+    { label: "Postal Code", value: customer.postalCode || "—" },
   ];
   const [viewStatus, setViewStatus] = useState<"review" | "success" | "rejected">("review");
 
@@ -181,7 +194,7 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
 
       <div className="mb-6">
         <Tabs
-          tabs={["Customer Info", "Active Products", "Cards", "Documents"]}
+          tabs={["Customer Info", "Active Products", "Payments", "Documents"]}
           activeTab={activeTab}
           onTabChange={setActiveTab}
         />
@@ -229,23 +242,29 @@ const ViewCustomerRequest: React.FC<ViewCustomerRequestProps> = ({
               </div>
             </div>
 
-            {/* Profile Information */}
             <div className="border rounded-xl p-6 border-[#F4F4F5]">
               <h3 className="text-sm font-semibold text-[#2F3140] mb-6">Profile Information</h3>
-              <div className="flex flex-col items-center justify-center py-12 text-center text-[#707781]">
-                <BiUser size={40} className="mb-3 opacity-30" />
-                <p className="text-sm">
-                  Extended profile details (BVN, NIN, address) are not yet available from the
-                  backend.
-                </p>
+              <div className="space-y-0">
+                {profileInfoRows.map((info, index) => (
+                  <DetailRow
+                    key={info.label}
+                    label={info.label}
+                    value={info.value}
+                    isLast={index === profileInfoRows.length - 1}
+                  />
+                ))}
               </div>
             </div>
           </div>
         )}
 
-        {activeTab === "Active Products" && <ActiveProductsTab mode="approval" />}
-        {activeTab === "Cards" && <PaymentsAndCardsTab mode="approval" />}
-        {activeTab === "Documents" && <DocumentsTab mode="approval" />}
+        {activeTab === "Active Products" && (
+          <ActiveProductsTab mode="approval" assignments={customer.productAssignments} />
+        )}
+        {activeTab === "Payments" && (
+          <PaymentsAndCardsTab mode="approval" customerId={customer.id} />
+        )}
+        {activeTab === "Documents" && <DocumentsTab mode="approval" customerId={customer.id} />}
       </div>
 
       {/* Footer Actions — keep visible on all tabs so reject/approve is always reachable */}

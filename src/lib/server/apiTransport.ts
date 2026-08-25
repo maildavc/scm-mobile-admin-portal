@@ -43,12 +43,64 @@ export function encryptPayload(plaintext: string): string {
 }
 
 export function decryptPayload(ciphertext: string): string {
+  return decryptPayloadBuffer(ciphertext).toString("utf8");
+}
+
+export function decryptPayloadBuffer(ciphertext: string): Buffer {
   const { key, iv } = getCipherConfig();
   const decipher = createDecipheriv("aes-128-cbc", key, iv);
   return Buffer.concat([
     decipher.update(Buffer.from(ciphertext, "base64")),
     decipher.final(),
-  ]).toString("utf8");
+  ]);
+}
+
+function sniffContentType(bytes: Buffer): string | null {
+  if (bytes.length >= 4 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
+    return "image/png";
+  }
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return "image/jpeg";
+  }
+  if (bytes.length >= 4 && bytes.subarray(0, 4).toString("ascii") === "%PDF") {
+    return "application/pdf";
+  }
+  if (bytes.length >= 6 && bytes.subarray(0, 3).toString("ascii") === "GIF") {
+    return "image/gif";
+  }
+  return null;
+}
+
+export function decodeBackendFile(raw: Buffer): {
+  kind: "file" | "json";
+  bytes?: Buffer;
+  contentType?: string;
+  data?: unknown;
+} {
+  const asText = raw.toString("utf8");
+  try {
+    const parsed = JSON.parse(asText) as JsonRecord;
+    const encrypted = parsed.response ?? parsed.Response;
+    if (typeof encrypted === "string" && encrypted.length > 0) {
+      const decrypted = decryptPayloadBuffer(encrypted);
+      const contentType = sniffContentType(decrypted);
+      if (contentType) {
+        return { kind: "file", bytes: decrypted, contentType };
+      }
+      try {
+        return { kind: "json", data: toCamelCase(JSON.parse(decrypted.toString("utf8"))) };
+      } catch {
+        return { kind: "file", bytes: decrypted, contentType: "application/octet-stream" };
+      }
+    }
+    return { kind: "json", data: toCamelCase(parsed) };
+  } catch {
+    const contentType = sniffContentType(raw);
+    if (contentType) {
+      return { kind: "file", bytes: raw, contentType };
+    }
+    return { kind: "json", data: asText };
+  }
 }
 
 export function transformKeys(value: unknown, transform: (key: string) => string): unknown {

@@ -4,6 +4,9 @@ import React from "react";
 import Table, { Column } from "../Table";
 import { FiFileText } from "react-icons/fi";
 import { runTableExportAction } from "@/components/Dashboard/ActionButton";
+import { useCustomerActivityLogs } from "@/hooks/useCustomers";
+import type { CustomerActivityLogDto } from "@/services/customerService";
+import { formatDateTimeDdMmYyyy } from "@/utils/dateFormatter";
 
 const ActionCard = ({
   title,
@@ -32,58 +35,60 @@ const ActionCard = ({
   </div>
 );
 
-type ActivityLogItem = {
-  id: string;
-  action: string;
-  dataPassed: string;
-  column3: string;
-  column4: string;
-};
-
-const ACTIVITY_LOG_DATA: ActivityLogItem[] = Array(6)
-  .fill({
-    id: "1",
-    action: "Name of action carried out here",
-    dataPassed: "What type of data should diplay here in a string",
-    column3: "information written here",
-    column4: "information written here",
-  })
-  .map((item, index) => ({ ...item, id: index.toString() }));
-
-const columns: Column<ActivityLogItem>[] = [
+const columns: Column<CustomerActivityLogDto>[] = [
   {
     header: "ACTION",
     className: "w-[25%]",
-    render: (item) => <span className="text-sm font-bold text-[#2F3140]">{item.action}</span>,
+    render: (item) => <span className="text-sm font-bold text-[#2F3140]">{item.action || "—"}</span>,
   },
   {
-    header: "DATA PASSED",
+    header: "DESCRIPTION",
     className: "w-[35%]",
-    render: (item) => <span className="text-sm font-bold text-[#2F3140]">{item.dataPassed}</span>,
+    render: (item) => (
+      <span className="text-sm font-bold text-[#2F3140]">{item.description || "—"}</span>
+    ),
   },
   {
-    header: "ANOTHER COLUMN",
+    header: "PERFORMED BY",
     className: "w-[20%]",
-    render: (item) => <span className="text-sm font-bold text-[#2F3140]">{item.column3}</span>,
+    render: (item) => (
+      <span className="text-sm font-bold text-[#2F3140]">{item.performedBy || "—"}</span>
+    ),
   },
   {
-    header: "ANOTHER COLUMN",
+    header: "DATE",
     className: "w-[20%]",
-    render: (item) => <span className="text-sm font-bold text-[#2F3140]">{item.column4}</span>,
+    render: (item) => (
+      <span className="text-sm font-bold text-[#2F3140]">
+        {formatDateTimeDdMmYyyy(item.performedAt)}
+      </span>
+    ),
   },
 ];
 
-const ActivityLogTab: React.FC = () => {
+interface ActivityLogTabProps {
+  customerId?: string;
+}
+
+const ActivityLogTab: React.FC<ActivityLogTabProps> = ({ customerId }) => {
+  const { data = [], isLoading, isError, error } = useCustomerActivityLogs(customerId);
+  const errorMessage =
+    (error as { response?: { data?: { message?: string; error?: string } }; message?: string })
+      ?.response?.data?.message ||
+    (error as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+    (error as { message?: string })?.message ||
+    "Unable to load activity logs.";
+
   return (
     <div>
       <div className="flex flex-col md:flex-row gap-4 mb-8">
         <ActionCard title="Download Table as PDF" actionText="Download" />
         <ActionCard title="Export Table as CSV" actionText="Export" />
       </div>
-      <Table data={[]} columns={columns} />
-      <div className="flex flex-col items-center justify-center py-12 text-[#707781] text-sm">
-        <p>No activity records found.</p>
-      </div>
+      {isError ? (
+        <p className="text-sm text-[#B2171E] mb-4">{errorMessage}</p>
+      ) : null}
+      <Table data={data} columns={columns} isLoading={isLoading} />
     </div>
   );
 };

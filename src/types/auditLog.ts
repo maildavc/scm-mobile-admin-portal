@@ -10,6 +10,7 @@ export interface AuditLogDto {
   ipAddress: string | null;
   service: string | null;
   environment: string | null;
+  dataPassed?: string | null;
   request: string | null;
   response: string | null;
   correlationId: string | null;

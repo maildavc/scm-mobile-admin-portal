@@ -1,3 +1,14 @@
+export const formatDateDdMmYyyy = (dateString?: string | Date | null): string => {
+  if (!dateString) return "—";
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return "—";
+
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const year = d.getUTCFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 export const formatDateTimeDdMmYyyy = (dateString?: string | Date | null): string => {
   if (!dateString) return "—";
   const d = new Date(dateString);

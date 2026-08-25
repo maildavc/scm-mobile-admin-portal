@@ -5,7 +5,7 @@ import Button from "@/components/Button";
 import { StatusBadge, StatusType } from "@/components/Dashboard/StatusBadge";
 import { BiUser } from "react-icons/bi";
 import { Customer } from "@/types/customer";
-import { formatDateTimeDdMmYyyy } from "@/utils/dateFormatter";
+import { formatDateDdMmYyyy, formatDateTimeDdMmYyyy } from "@/utils/dateFormatter";
 
 interface CustomerInfoTabProps {
   customer: Customer;
@@ -27,6 +27,20 @@ const CustomerInfoTab: React.FC<CustomerInfoTabProps> = ({ customer, onEdit, onD
       label: "Last Updated",
       value: formatDateTimeDdMmYyyy(customer.updatedAt || customer.createdAt),
     },
+  ];
+
+  const profileInfoRows = [
+    { label: "First Name", value: customer.firstName || "—" },
+    { label: "Middle Name", value: customer.middleName || "—" },
+    { label: "Last Name", value: customer.lastName || "—" },
+    { label: "Citizenship", value: customer.citizenship || "—" },
+    { label: "Gender", value: customer.gender || "—" },
+    { label: "Date of Birth", value: formatDateDdMmYyyy(customer.dateOfBirth) },
+    { label: "Address", value: customer.address || "—" },
+    { label: "City", value: customer.city || "—" },
+    { label: "State", value: customer.state || "—" },
+    { label: "Country", value: customer.country || "—" },
+    { label: "Postal Code", value: customer.postalCode || "—" },
   ];
 
   return (
@@ -71,14 +85,17 @@ const CustomerInfoTab: React.FC<CustomerInfoTabProps> = ({ customer, onEdit, onD
           </div>
         </div>
 
-        {/* Profile Information — fields not yet returned by API */}
         <div className="border rounded-xl p-6 border-[#F4F4F5]">
           <h3 className="text-sm font-semibold text-[#2F3140] mb-6">Profile Information</h3>
-          <div className="flex flex-col items-center justify-center py-12 text-center text-[#707781]">
-            <BiUser size={40} className="mb-3 opacity-30" />
-            <p className="text-sm">
-              Extended profile details (BVN, NIN, address) are not yet available from the backend.
-            </p>
+          <div className="space-y-0">
+            {profileInfoRows.map((info, index) => (
+              <DetailRow
+                key={info.label}
+                label={info.label}
+                value={info.value}
+                isLast={index === profileInfoRows.length - 1}
+              />
+            ))}
           </div>
         </div>
       </div>

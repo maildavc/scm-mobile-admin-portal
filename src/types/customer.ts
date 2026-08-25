@@ -1,10 +1,28 @@
 import { StatusType } from "@/components/Dashboard/StatusBadge";
 
+export interface CustomerProductAssignmentPayload {
+  productId: string;
+  canBuy: boolean;
+  canSell: boolean;
+}
+
 export interface Customer {
   id: string;
   name: string;
   email: string;
   phone: string;
+  firstName?: string | null;
+  middleName?: string | null;
+  lastName?: string | null;
+  citizenship?: string | null;
+  gender?: string | null;
+  dateOfBirth?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
+  postalCode?: string | null;
+  profileImageUrl?: string | null;
   status: StatusType | string;
   kycStatus: StatusType | string;
   createdAt: string;
@@ -14,6 +32,7 @@ export interface Customer {
   requestType?: string;
   /** Backend distinguishes portal users (`user`) from admin-created customers (`customer`). */
   sourceType?: "user" | "customer" | string;
+  productAssignments?: CustomerProductAssignmentPayload[];
 }
 
 export interface GetCustomersParams {
@@ -22,12 +41,6 @@ export interface GetCustomersParams {
   status?: string;
   kycStatus?: string;
   search?: string;
-}
-
-export interface CustomerProductAssignmentPayload {
-  productId: string;
-  canBuy: boolean;
-  canSell: boolean;
 }
 
 export interface CreateCustomerRequest {

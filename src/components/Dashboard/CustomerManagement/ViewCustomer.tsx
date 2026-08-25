@@ -41,7 +41,7 @@ const ViewCustomer: React.FC<ViewCustomerProps> = ({
   const tabs = [
     "Customer Info",
     "Active Products",
-    "Payments & Cards",
+    "Payments",
     "Documents",
     "Activity Log",
     ...(showConfiguration ? ["Configuration"] : []),
@@ -58,18 +58,18 @@ const ViewCustomer: React.FC<ViewCustomerProps> = ({
           onDeactivate={showConfiguration ? onDeactivate : undefined}
         />
       ) : activeTab === "Active Products" ? (
-        <ActiveProductsTab />
+        <ActiveProductsTab assignments={customer.productAssignments} />
       ) : activeTab === "Configuration" && showConfiguration ? (
         <ConfigurationTab
           onDeactivate={onDeactivate}
           onResetPassword={onResetPassword}
         />
       ) : activeTab === "Documents" ? (
-        <DocumentsTab />
-      ) : activeTab === "Payments & Cards" ? (
-        <PaymentsAndCardsTab />
+        <DocumentsTab customerId={customer.id} />
+      ) : activeTab === "Payments" ? (
+        <PaymentsAndCardsTab customerId={customer.id} />
       ) : activeTab === "Activity Log" ? (
-        <ActivityLogTab />
+        <ActivityLogTab customerId={customer.id} />
       ) : (
         <div className="flex items-center justify-center h-64 text-gray-500">
           Unable to display the selected customer tab.

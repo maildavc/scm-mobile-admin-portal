@@ -4,6 +4,7 @@ vi.mock("server-only", () => ({}));
 
 import {
   decodeBackendBody,
+  decodeBackendFile,
   encodeJsonRequest,
   encryptPayload,
   findAuthTokens,
@@ -49,6 +50,19 @@ describe("API transport", () => {
         data: { firstName: "Ada" },
       },
     });
+  });
+
+  it("unwraps encrypted image bytes from the gateway envelope", () => {
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    const { createCipheriv } = require("node:crypto");
+    const cipher = createCipheriv("aes-128-cbc", Buffer.from("1234567890abcdef"), Buffer.from("abcdef1234567890"));
+    const encrypted = Buffer.concat([cipher.update(png), cipher.final()]).toString("base64");
+    const wrapped = Buffer.from(JSON.stringify({ response: encrypted }));
+
+    const decoded = decodeBackendFile(wrapped);
+    expect(decoded.kind).toBe("file");
+    expect(decoded.contentType).toBe("image/png");
+    expect(decoded.bytes?.subarray(0, 4)).toEqual(png.subarray(0, 4));
   });
 
   it("finds tokens deeply and removes them before returning login data", () => {

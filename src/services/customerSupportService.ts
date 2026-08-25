@@ -32,6 +32,11 @@ export interface SupportMessage {
   createdAt: string;
 }
 
+type RawSupportMessage = Partial<SupportMessage> & {
+  content?: string;
+  sentAt?: string;
+};
+
 export interface ConversationMessagesResponse {
   conversation: SupportConversation;
   messages: SupportMessage[];
@@ -56,25 +61,83 @@ type BackendEnvelope<T> = {
   errors: unknown;
 };
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+}
+
+function normalizeConversation(row: Partial<SupportConversation> | undefined): SupportConversation {
+  return {
+    id: row?.id || "",
+    subject: row?.subject || "",
+    customerId: row?.customerId || "",
+    customerName: row?.customerName || row?.subject || "Customer",
+    customerEmail: row?.customerEmail || "",
+    status: row?.status || "",
+    priority: row?.priority || "",
+    lastMessageAt: row?.lastMessageAt || row?.createdAt || "",
+    createdAt: row?.createdAt || "",
+  };
+}
+
+function normalizeMessage(row: RawSupportMessage | undefined): SupportMessage {
+  return {
+    id: row?.id || "",
+    conversationId: row?.conversationId || "",
+    senderId: row?.senderId || "",
+    senderName: row?.senderName || "",
+    senderType: row?.senderType || "",
+    message: row?.message || row?.content || "",
+    createdAt: row?.createdAt || row?.sentAt || "",
+  };
+}
+
 export const customerSupportService = {
   getSupportConversations: async (
     page: number = 1,
     search?: string,
   ): Promise<SupportConversationListResponse> => {
-    const { data } = await apiClient.get<BackendEnvelope<SupportConversationListResponse>>(
+    const { data } = await apiClient.get<BackendEnvelope<unknown>>(
       "/api/v1/support-requests/messages",
       { params: { page, search } },
     );
-    return data.value ?? (data as unknown as SupportConversationListResponse);
+    const payload = asRecord(data.value ?? data);
+    const rows = (Array.isArray(payload.items) ? payload.items : payload.data) as
+      | Partial<SupportConversation>[]
+      | undefined;
+
+    const items = Array.isArray(rows) ? rows.map(normalizeConversation) : [];
+
+    return {
+      items,
+      totalCount: Number(payload.totalCount || items.length),
+      pageNumber: Number(payload.pageNumber || page),
+      totalPages: Number(payload.totalPages || 1),
+      hasPreviousPage: Boolean(payload.hasPreviousPage),
+      hasNextPage: Boolean(payload.hasNextPage),
+    };
   },
 
   getConversationMessages: async (
     conversationId: string,
   ): Promise<ConversationMessagesResponse> => {
-    const { data } = await apiClient.get<BackendEnvelope<ConversationMessagesResponse>>(
+    const { data } = await apiClient.get<BackendEnvelope<unknown>>(
       `/api/v1/support-requests/${conversationId}/messages`,
     );
-    return data.value ?? (data as unknown as ConversationMessagesResponse);
+    const payload = asRecord(data.value ?? data);
+    const nested = asRecord(payload.data);
+    const source = nested.messages || nested.conversation ? nested : payload;
+
+    return {
+      conversation: normalizeConversation(
+        (source.conversation as Partial<SupportConversation> | undefined) ||
+          (payload.conversation as Partial<SupportConversation> | undefined),
+      ),
+      messages: Array.isArray(source.messages)
+        ? (source.messages as RawSupportMessage[]).map(normalizeMessage)
+        : Array.isArray(payload.messages)
+          ? (payload.messages as RawSupportMessage[]).map(normalizeMessage)
+          : [],
+    };
   },
 
   sendMessage: async (command: SendMessageCommand): Promise<SupportMessage> => {

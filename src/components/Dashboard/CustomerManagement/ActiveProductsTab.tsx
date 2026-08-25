@@ -1,13 +1,27 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Table from "../Table";
 import { Column } from "../Table";
 import { StatusBadge } from "../StatusBadge";
-import { TbFilterEdit } from "react-icons/tb";
 import { FiFileText } from "react-icons/fi";
+import { TbFilterEdit } from "react-icons/tb";
 import { runTableExportAction } from "@/components/Dashboard/ActionButton";
-import { ACTIVE_PRODUCTS, Product } from "@/constants/customerManagement/activeProducts";
+import { useProducts } from "@/hooks/useProducts";
+import type { CustomerProductAssignmentPayload } from "@/types/customer";
+import { formatCompactAmount } from "@/utils/numberFormat";
+import { formatDateTimeDdMmYyyy } from "@/utils/dateFormatter";
+
+type AssignedProduct = {
+  id: string;
+  name: string;
+  code: string;
+  productType: string;
+  portfolioSize: string;
+  status: string;
+  lastUpdated: string;
+  changes?: string;
+};
 
 const FilterableHeader = ({ children }: { children: string }) => (
   <div className="flex text-xs text-[#2F3140] items-center gap-2">
@@ -15,73 +29,6 @@ const FilterableHeader = ({ children }: { children: string }) => (
     <TbFilterEdit size={18} color="#2F3140" />
   </div>
 );
-
-const getProductColumns = (mode: "view" | "approval"): Column<Product>[] => {
-  const columns: Column<Product>[] = [
-    {
-      header: (
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            className="rounded border-gray-300"
-            aria-label="Select all products"
-          />
-          <span className="uppercase text-[#2F3140]">PRODUCT (5)</span>
-        </div>
-      ),
-      className: "w-[25%]",
-      render: (product) => (
-        <div className="flex items-center gap-3">
-          <div>
-            <p className="font-bold text-[#2F3140] text-sm">{product.name}</p>
-            <p className="text-[#707781] text-xs">{product.code}</p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      header: <FilterableHeader>PRODUCT TYPE</FilterableHeader>,
-      className: "w-[15%]",
-      render: (product) => (
-        <span className="text-sm text-[#2F3140] font-medium">{product.productType}</span>
-      ),
-    },
-    {
-      header: <FilterableHeader>PORTFOLIO SIZE</FilterableHeader>,
-      className: "w-[15%]",
-      render: (product) => (
-        <span className="text-sm text-[#2F3140] font-medium">{product.portfolioSize}</span>
-      ),
-    },
-    {
-      header: <FilterableHeader>STATUS</FilterableHeader>,
-      className: "w-[15%]",
-      render: (product) => <StatusBadge status={product.status} />,
-    },
-    {
-      header: <FilterableHeader>LAST UPDATED ON</FilterableHeader>,
-      className: "w-[15%]",
-      render: (product) => (
-        <span className="text-sm text-[#2F3140] font-medium">{product.lastUpdated}</span>
-      ),
-    },
-  ];
-
-  if (mode === "approval") {
-    columns.push({
-      header: "CHANGES",
-      className: "w-[15%]",
-      render: (product) =>
-        product.changes ? (
-          <span className="px-3 py-1 bg-[#FDE4E5] text-[#B2171E] rounded-full text-xs font-semibold">
-            {product.changes}
-          </span>
-        ) : null,
-    });
-  }
-
-  return columns;
-};
 
 const ActionCard = ({
   title,
@@ -111,11 +58,96 @@ const ActionCard = ({
 );
 
 interface ActiveProductsTabProps {
+  assignments?: CustomerProductAssignmentPayload[];
   mode?: "view" | "approval";
 }
 
-const ActiveProductsTab: React.FC<ActiveProductsTabProps> = ({ mode = "view" }) => {
-  const columns = React.useMemo(() => getProductColumns(mode), [mode]);
+const ActiveProductsTab: React.FC<ActiveProductsTabProps> = ({
+  assignments = [],
+  mode = "view",
+}) => {
+  const { data: productsRes, isLoading } = useProducts({ page: 1, limit: 1000 });
+  const catalog = productsRes?.value?.data?.products ?? [];
+
+  const rows: AssignedProduct[] = useMemo(() => {
+    return assignments.map((assignment) => {
+      const product = catalog.find((item) => item.id === assignment.productId);
+      const permissions = [
+        assignment.canBuy ? "Buy" : null,
+        assignment.canSell ? "Sell" : null,
+      ]
+        .filter(Boolean)
+        .join(" / ");
+
+      return {
+        id: assignment.productId,
+        name: product?.name || "Assigned product",
+        code: product?.id?.slice(0, 8) || assignment.productId.slice(0, 8),
+        productType: product?.type || "—",
+        portfolioSize: formatCompactAmount(product?.size),
+        status: product?.status || "Assigned",
+        lastUpdated: formatDateTimeDdMmYyyy(product?.updated),
+        changes: permissions || undefined,
+      };
+    });
+  }, [assignments, catalog]);
+
+  const columns: Column<AssignedProduct>[] = [
+    {
+      header: (
+        <div className="flex items-center gap-2">
+          <input type="checkbox" className="rounded border-gray-300" aria-label="Select all products" />
+          <span className="uppercase text-[#2F3140]">PRODUCT ({rows.length})</span>
+        </div>
+      ),
+      className: "w-[25%]",
+      render: (product) => (
+        <div>
+          <p className="font-bold text-[#2F3140] text-sm">{product.name}</p>
+          <p className="text-[#707781] text-xs">{product.code}</p>
+        </div>
+      ),
+    },
+    {
+      header: <FilterableHeader>PRODUCT TYPE</FilterableHeader>,
+      className: "w-[15%]",
+      render: (product) => (
+        <span className="text-sm text-[#2F3140] font-medium">{product.productType}</span>
+      ),
+    },
+    {
+      header: <FilterableHeader>PORTFOLIO SIZE</FilterableHeader>,
+      className: "w-[15%]",
+      render: (product) => (
+        <span className="text-sm text-[#2F3140] font-medium">{product.portfolioSize}</span>
+      ),
+    },
+    {
+      header: <FilterableHeader>STATUS</FilterableHeader>,
+      className: "w-[15%]",
+      render: (product) => <StatusBadge status={product.status as never} />,
+    },
+    {
+      header: <FilterableHeader>LAST UPDATED ON</FilterableHeader>,
+      className: "w-[15%]",
+      render: (product) => (
+        <span className="text-sm text-[#2F3140] font-medium">{product.lastUpdated}</span>
+      ),
+    },
+  ];
+
+  if (mode === "approval") {
+    columns.push({
+      header: "ACCESS",
+      className: "w-[15%]",
+      render: (product) =>
+        product.changes ? (
+          <span className="px-3 py-1 bg-[#FDE4E5] text-[#B2171E] rounded-full text-xs font-semibold">
+            {product.changes}
+          </span>
+        ) : null,
+    });
+  }
 
   return (
     <div>
@@ -123,10 +155,7 @@ const ActiveProductsTab: React.FC<ActiveProductsTabProps> = ({ mode = "view" }) 
         <ActionCard title="Download Table as PDF" actionText="Download" />
         <ActionCard title="Export Table as CSV" actionText="Export" />
       </div>
-      <Table data={[]} columns={columns} />
-      <div className="flex flex-col items-center justify-center py-12 text-[#707781] text-sm">
-        <p>No active products allocated yet.</p>
-      </div>
+      <Table data={rows} columns={columns} isLoading={isLoading} />
     </div>
   );
 };

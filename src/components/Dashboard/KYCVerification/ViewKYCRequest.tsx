@@ -5,9 +5,11 @@ import Button from "@/components/Button";
 import Image from "next/image";
 import ApproveModal from "@/components/Dashboard/Shared/ApproveModal";
 import RejectModal from "@/components/Dashboard/Shared/RejectModal";
+import DocumentPreviewModal from "./DocumentPreviewModal";
 import { StatusBadge, StatusType } from "@/components/Dashboard/StatusBadge";
 import { KYCRequest } from "@/constants/kycVerification/kycVerification";
 import { useCustomerDocuments, useApproveKycDocument, useRejectKycDocument } from "@/hooks/useKyc";
+import type { CustomerDocumentDto } from "@/services/kycService";
 import { formatDateTimeDdMmYyyy } from "@/utils/dateFormatter";
 import { formatDocumentType } from "@/types/kyc";
 import {
@@ -70,6 +72,7 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
   const [viewStatus, setViewStatus] = useState<"review" | "success" | "rejected">("review");
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
   const [actionScope, setActionScope] = useState<"document" | "request">("request");
+  const [previewDoc, setPreviewDoc] = useState<CustomerDocumentDto | null>(null);
 
   const isRequestPending = isPendingKycStatus(request.status);
   const canReview = isRequestPending;
@@ -187,6 +190,14 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
         }
         isSubmitting={isRejecting}
       />
+      <DocumentPreviewModal
+        isOpen={Boolean(previewDoc)}
+        onClose={() => setPreviewDoc(null)}
+        fileName={previewDoc?.fileName}
+        filePath={previewDoc?.filePath}
+        documentType={previewDoc?.documentType}
+        status={previewDoc?.status}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-lg border border-[#F4F4F5] p-6">
@@ -267,7 +278,7 @@ const ViewKYCRequest: React.FC<ViewKYCRequestProps> = ({
                     <Button
                       text="View File"
                       variant="outline"
-                      onClick={() => window.open(doc.filePath, "_blank", "noopener,noreferrer")}
+                      onClick={() => setPreviewDoc(doc)}
                       disabled={!doc.filePath}
                       className="w-auto! px-6! py-2! font-semibold text-sm md:text-base"
                     />
