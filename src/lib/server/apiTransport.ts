@@ -71,8 +71,24 @@ function sniffContentType(bytes: Buffer): string | null {
   return null;
 }
 
+const REPLACEMENT_CHAR = Buffer.from([0xef, 0xbf, 0xbd]);
+
+// A binary file that was UTF-8 decoded before transport comes back with every
+// non-ASCII byte replaced by U+FFFD. The original bytes are unrecoverable, so
+// the payload must be rejected instead of handed to the browser.
+function isUtf8Mangled(bytes: Buffer): boolean {
+  const window = bytes.subarray(0, 64 * 1024);
+  let occurrences = 0;
+  let index = window.indexOf(REPLACEMENT_CHAR);
+  while (index !== -1) {
+    occurrences += 1;
+    index = window.indexOf(REPLACEMENT_CHAR, index + REPLACEMENT_CHAR.length);
+  }
+  return occurrences * REPLACEMENT_CHAR.length > window.length * 0.05;
+}
+
 export function decodeBackendFile(raw: Buffer): {
-  kind: "file" | "json";
+  kind: "file" | "json" | "corrupt";
   bytes?: Buffer;
   contentType?: string;
   data?: unknown;
@@ -83,6 +99,9 @@ export function decodeBackendFile(raw: Buffer): {
     const encrypted = parsed.response ?? parsed.Response;
     if (typeof encrypted === "string" && encrypted.length > 0) {
       const decrypted = decryptPayloadBuffer(encrypted);
+      if (isUtf8Mangled(decrypted)) {
+        return { kind: "corrupt" };
+      }
       const contentType = sniffContentType(decrypted);
       if (contentType) {
         return { kind: "file", bytes: decrypted, contentType };
@@ -95,6 +114,9 @@ export function decodeBackendFile(raw: Buffer): {
     }
     return { kind: "json", data: toCamelCase(parsed) };
   } catch {
+    if (isUtf8Mangled(raw)) {
+      return { kind: "corrupt" };
+    }
     const contentType = sniffContentType(raw);
     if (contentType) {
       return { kind: "file", bytes: raw, contentType };

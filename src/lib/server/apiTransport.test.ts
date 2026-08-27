@@ -65,6 +65,22 @@ describe("API transport", () => {
     expect(decoded.bytes?.subarray(0, 4)).toEqual(png.subarray(0, 4));
   });
 
+  it("rejects file payloads whose bytes were destroyed by a UTF-8 round trip", () => {
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    const noise = Buffer.concat(
+      Array.from({ length: 512 }, () => Buffer.from([0x80, 0x91, 0xa2, 0xff])),
+    );
+    const mangled = Buffer.from(Buffer.concat([png, noise]).toString("utf8"), "utf8");
+
+    const { createCipheriv } = require("node:crypto");
+    const cipher = createCipheriv("aes-128-cbc", Buffer.from("1234567890abcdef"), Buffer.from("abcdef1234567890"));
+    const encrypted = Buffer.concat([cipher.update(mangled), cipher.final()]).toString("base64");
+
+    const decoded = decodeBackendFile(Buffer.from(JSON.stringify({ response: encrypted })));
+    expect(decoded.kind).toBe("corrupt");
+    expect(decoded.bytes).toBeUndefined();
+  });
+
   it("finds tokens deeply and removes them before returning login data", () => {
     const response = {
       data: {

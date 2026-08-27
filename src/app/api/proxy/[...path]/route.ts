@@ -262,6 +262,20 @@ async function handle(request: NextRequest, context: RouteContext) {
 
     if (isFileRoute) {
       const fileDecoded = decodeBackendFile(raw);
+      if (fileDecoded.kind === "corrupt") {
+        const clientResponse = NextResponse.json(
+          {
+            message:
+              "The API returned this file as text instead of binary, so the content is corrupted and cannot be displayed. This needs a backend fix.",
+          },
+          { status: 502 },
+        );
+        if (refreshedTokens) {
+          setAuthCookies(clientResponse, refreshedTokens.accessToken, refreshedTokens.refreshToken);
+        }
+        clientResponse.headers.set("Cache-Control", "no-store");
+        return clientResponse;
+      }
       if (fileDecoded.kind === "file" && fileDecoded.bytes) {
         const clientResponse = new NextResponse(new Uint8Array(fileDecoded.bytes), {
           status: backendResponse.status,

@@ -7,6 +7,7 @@ import Button from "@/components/Button";
 import { StatusBadge, StatusType } from "@/components/Dashboard/StatusBadge";
 import { formatDocumentType } from "@/types/kyc";
 import { toKycBadgeStatus } from "@/utils/kycStatus";
+import { isUtf8MangledBytes, mimeForPreviewKind, sniffPreviewKind } from "@/utils/filePreview";
 
 interface DocumentPreviewModalProps {
   isOpen: boolean;
@@ -40,7 +41,7 @@ const toPreviewUrl = (filePath: string) => {
 };
 
 const PREVIEW_UNAVAILABLE_MESSAGE =
-  "This file could not be loaded. If storage is still private, a working download API is required.";
+  "This file could not be displayed. The API returned corrupted file content, so there is nothing valid to render.";
 
 const PreviewBody = ({
   filePath,
@@ -79,14 +80,19 @@ const PreviewBody = ({
           return;
         }
 
-        const blob = await response.blob();
-        if (blob.type.includes("pdf")) {
-          if (!cancelled) setResolvedKind("pdf");
-        } else if (blob.type.startsWith("image/")) {
-          if (!cancelled) setResolvedKind("image");
+        const bytes = new Uint8Array(await response.arrayBuffer());
+        if (isUtf8MangledBytes(bytes) || !sniffPreviewKind(bytes)) {
+          if (!cancelled) setError(PREVIEW_UNAVAILABLE_MESSAGE);
+          return;
         }
+
+        const sniffed = sniffPreviewKind(bytes)!;
+        const blob = new Blob([bytes], { type: mimeForPreviewKind(sniffed, bytes) });
         objectUrl = URL.createObjectURL(blob);
-        if (!cancelled) setBlobUrl(objectUrl);
+        if (!cancelled) {
+          setResolvedKind(sniffed);
+          setBlobUrl(objectUrl);
+        }
       } catch {
         if (!cancelled) setError(PREVIEW_UNAVAILABLE_MESSAGE);
       }
