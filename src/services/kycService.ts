@@ -117,7 +117,7 @@ export const kycService = {
     payload: ApproveKYCDocumentCommand,
   ): Promise<KYCActionResult> => {
     const { data } = await apiClient.put<BackendEnvelope<KYCActionResult>>(
-      `/api/v1/kyc/documents/${documentId}/approve`,
+      `/api/v1/kyc/documents/${encodeURIComponent(documentId)}/approve`,
       payload,
     );
     return unwrapActionResult(data);
@@ -128,7 +128,7 @@ export const kycService = {
     payload: RejectKYCDocumentCommand,
   ): Promise<KYCActionResult> => {
     const { data } = await apiClient.put<BackendEnvelope<KYCActionResult>>(
-      `/api/v1/kyc/documents/${documentId}/reject`,
+      `/api/v1/kyc/documents/${encodeURIComponent(documentId)}/reject`,
       payload,
     );
     return unwrapActionResult(data);

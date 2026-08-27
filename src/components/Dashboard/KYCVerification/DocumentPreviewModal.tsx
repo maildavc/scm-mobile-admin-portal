@@ -35,7 +35,11 @@ const getPreviewKind = (fileName?: string | null, filePath?: string | null) => {
 
 const toPreviewUrl = (filePath: string) => {
   if (filePath.startsWith("/api/")) {
-    return `/api/proxy${filePath}`;
+    const encodedPath = filePath
+      .split("/")
+      .map((segment) => (segment ? encodeURIComponent(segment) : segment))
+      .join("/");
+    return `/api/proxy${encodedPath}`;
   }
   return `/api/document-preview?url=${encodeURIComponent(filePath)}`;
 };

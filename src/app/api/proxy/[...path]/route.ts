@@ -208,7 +208,7 @@ async function handle(request: NextRequest, context: RouteContext) {
   const isValidPath =
     normalizedPath.startsWith("api/v1/") &&
     path.every(
-      (segment) => segment !== "." && segment !== ".." && /^[a-zA-Z0-9._-]+$/.test(segment),
+      (segment) => segment !== "." && segment !== ".." && /^[a-zA-Z0-9._:-]+$/.test(segment),
     );
   if (!isValidPath) {
     return NextResponse.json({ message: "Invalid API path." }, { status: 400 });
